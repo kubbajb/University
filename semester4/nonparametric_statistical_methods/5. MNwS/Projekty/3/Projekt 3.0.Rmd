@@ -1,0 +1,460 @@
+---
+title: "Projekt 3.0"
+author: " "
+date: "maj 2018"
+output: html_document
+---
+<style>
+body {text-align: justify}
+</style>
+
+
+#Wprowadzenie
+Celem projektu jest budowa modelu liniowego dla spalania w danych dotycz¹cych samochodów osobowych.    
+
+W danych z pliku __cars.csv__ wystêpuje 9 zmiennych:  
+- __mpg__ - spalanie w galonach na milê,  
+- __cylinders__ - liczba cylindrów,  
+- __displacement__ - objêtoœæ silnika w calach szeœciennych,  
+- __horsepower__ - moc w koniach mechanicznych,  
+- __weight__ - waga w funtach,  
+- __acceleration__ - czas przyspieszenia od 0 do 60 mil na godzinê, podany w sekundach,  
+- __year__ - rok produkcji,  
+- __origin__ - miejsce produkcji (1 - USA, 2 - Europa, 3 - Japonia),  
+- __name__ - nazwa samochodu.  
+
+Za³¹czam niezbêdne biblioteki:
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(readr)
+library(tidyr)
+library(ggplot2)
+library(corrgram)
+library(nortest)
+library(lmtest)
+library(bootStepAIC)
+```
+
+Wczytujê dane z pliku __cars.csv__, zapisujê je do ramki danych o nazwie __cars__ i wyœwietlam:
+```{r}
+cars <- read.csv("./cars.csv", h=T, sep=",", dec=".")
+glimpse(cars)
+```
+Zmienne __mpg__, __displacement__, __weight__ i __acceleration__ zawieraj¹ dane wyra¿one w brytyjskim systemie miar - jednostkach imperialnych. Funkcj¹ _mutate_ z biblioteki _dplyr_ zmodyfikuje dane na takie, jakich zwyczajowo u¿ywa siê w Polsce - zgodne z systemem metrycznym:  
+- __mpg__ - zmiana galonów na milê na litry na 100 kilometrów i nazwy na __lpk__ (liters per 100 kilometers) - [l/100km]  
+- __displacement__ - zamiana cali szeœciennych na centymetry szeœcienne - [cm^3^]  
+- __weight__ - zamiana funtów na kilogramy - [kg]  
+- __acceleration__ - zamiana mil na godzinê na kilometry na godzinê - [km/h]  
+- __year__ - dodanie 1900 w celu otrzymania pe³nej daty - [YYYY]  
+- __name__ - zamiana typu danych z czynnikowego na znakowy - [character]  
+```{r message=FALSE, warning=FALSE}
+cars <- cars %>%
+  mutate(mpg = round((100*3.785)/(1.609*mpg),2)) %>% 
+  mutate(name = as.character(name)) %>%
+  mutate(displacement = round(displacement*16.387,2)) %>%
+  mutate(weight = weight/2.205) %>%
+  mutate(year = year+1900)
+colnames(cars)[1] <- "lpk"
+```
+Niektóre nazwy samochodów z kolumny __name__ zawieraj¹ b³êdy, które poprawiam poni¿ej za pomoc¹ funkcji __gsub__. Usuwam te¿ wiersz z nazw¹ *"hi 1200d"*:
+```{r message=FALSE, warning=FALSE}
+cars$name <- gsub('chevy', 'chevrolet', cars$name)
+cars$name <- gsub('chevroelt', 'chevrolet', cars$name)
+cars$name <- gsub('mercedes benz', 'mercedes-benz', cars$name)
+cars$name <- gsub('maxda', 'mazda', cars$name)
+cars$name <- gsub('toyouta', 'toyota', cars$name)
+cars$name <- gsub('vokswagen', 'volkswagen', cars$name)
+cars$name <- gsub('vw', 'volkswagen', cars$name)
+cars <- cars[-c(which(cars$name == "hi 1200d")), ]
+```
+
+Nazwy konkretnych modeli samochodów s¹ zdecydowanie zbyt zró¿nicowane, by móc poddaæ je sensownej analizie. Stworzê zatem dodatkow¹ kolumnê o nazwie __brand__ poprzez "wy³uskanie" jej z kolumny __name__, okreœlaj¹c¹ markê danego samochodu, a nastêpnie usunê zmienn¹ __name__. Wykorzystujê wyra¿enia regularne dostêpne w R: 
+```{r}
+cars <- cars %>% 
+  mutate(brand = gsub('\\s(\\S|\\s)+', '', name))
+cars <- cars[, -c(9)]
+```
+Wyœwietlam obrobion¹ ramkê danych __cars__, na której bêdê dalej pracowaæ:
+```{r echo=FALSE}
+glimpse(cars)
+```
+Oraz podstawowe statystyki dla poszczególnych kolumn:
+```{r echo=FALSE} 
+summary(cars[1:7])
+```
+Ostateczne zestawienie zmiennych oraz ich opis bêdzie zatem nastêpuj¹cej postaci:  
+- __lpk__ - spalanie w litrach na 100 kilometrów,  
+- __cylinders__ - liczba cylindrów,  
+- __displacement__ - objêtoœæ silnika w centymetrach szeœciennych,  
+- __horsepower__ - moc w koniach mechanicznych,  
+- __weight__ - waga w kilogramach,  
+- __acceleration__ - czas przyspieszenia od 0 do 100 kilometrów na godzinê, podany w sekundach,  
+- __year__ - rok produkcji,  
+- __origin__ - miejsce produkcji (1 - USA, 2 - Europa, 3 - Japonia),  
+- __brand__ - marka samochodu.    
+
+__Wstêpne hipotezy badawcze:__  
+1. Iloœæ spalonego paliwa __lpk__ jest wprost proporcjonalna do liczby cylindrów - __cylinders__  
+2. Iloœæ spalonego paliwa __lpk__ jest wprost proporcjonalna do objêtoœci silnika - __displacemant__  
+3. Iloœæ spalonego paliwa __lpk__ jest wprost proporcjonalna do mocy - __horsepower__ 
+4. Iloœæ spalonego paliwa __lpk__ jest wprost proporcjonalna do wagi samochodu - __weight__ 
+5. Iloœæ spalonego paliwa __lpk__ jest odwrotnie proporcjonalna do czasu przyspieszenia od 0 do 100 km/h - __acceleration__   
+6. Iloœæ spalonego paliwa __lpk__ jest odwrotnie proporcjonalna do roku produkcji - __year__    
+7. Iloœæ spalonego paliwa __lpk__ jest istotnie zale¿na od miejsca produkcji - __origin__  
+8. Iloœæ spalonego paliwa __lpk__ jest istotnie zale¿na od marki pojazdu - __brand__    
+
+__Komentarz do hipotez__:  
+Pierwsze 3 hipotezy s¹ oczywiste - im silnik jest wiêkszy / ma wiêcej cylindrów / ma wiêcej mocy tym wiêcej spala. Jednoczeœnie spodziewam siê, ¿e spalanie bêdzie ros³o wraz ze wzrostem wagi pojazdu. Ciê¿kie samochody pal¹ nieporównywalnie wiêcej od lekkich.  
+Pi¹ta hipoteza równie¿ jest czysto logiczna - im samochód szybciej przyspiesza od 0 do 100 km/h tym wiêcej spala. Producenci d¹¿¹ do zwiêkszenia ekologicznoœci pojazdów, tym samym w szóstej hipotezie optymistycznie zak³adam, ¿e w miarê up³ywu lat ogólne spalanie bêdzie maleæ. Na tym etapie ciê¿ko stwierdziæ poziom zale¿noœci tych dwóch zmiennych ze zmienn¹ Y. Wydaj¹ siê one mniej istotne od 4 pierwszych zmiennych.  
+Jeœli chodzi o kraj pochodzenia wydaje siê on mieæ du¿e znaczenie. Samochody wyprodukowane w Stanach Zjednoczonych w szczególnoœci w latach 70-80, s¹ znane ze swojej paliwo¿ernoœci. Podczas, gdy te wyprodukowane w Japonii cechuj¹ siê na ogó³ ni¿szym zu¿yciem paliwa. Spodziewam siê równie¿ du¿ej zale¿noœci pomiêdzy spalaniem, a mark¹ pojazdów. Niektórzy producenci np. Honda, Mazda, Fiat stawiaj¹ na ograniczanie zu¿ycia paliwa, natomiast inni, spacjalizuj¹cy siê w 8-cylindrowych kr¹¿ownikach szos, takich jak Ford, Cadillac czy Chevrolet, bêd¹ w rankingu spalania znacznie wy¿ej.    
+
+
+#Analiza wizualna i opisowa
+Zmienn¹ objaœnian¹ __Y__ w modelu bedzie zmienna __lpk__, która wyra¿a spalanie w litrach na 100 kilometrów. Potencjalnymi zmiennymi objaœniaj¹cymi __X1, X2, ...__ s¹ pozosta³e zmienne z tabeli. W pierwszej czêœci projektu postaram siê oszacowaæ, które z nich b¹d¹ nadawaæ siê do dalszej analizy i uwzglêdnienia w koñcowym modelu, a które nale¿y odrzuciæ.       
+
+Przechodzê do badania zale¿noœci pomiêdzy zmienn¹ objaœnian¹ __lpk__, a potencjalnymi zmiennymi objaœniaj¹cymi __cylinders, displacement, ...__.    
+
+####Hipoteza 1.
+```{r message=FALSE, warning=FALSE, fig.align='center'}
+cars %>%
+  ggplot(aes(x = cars$cylinders, y = cars$lpk)) +
+  geom_jitter() +
+  geom_smooth(se = T) +
+  geom_smooth(method = "lm", col = "red", se = F) +
+  labs(title="Spalanie w zale¿noœci od iloœci cylindrów", x="cylinders", y="lpk") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+Wspó³czynnik korelacji:
+```{r echo=FALSE}
+print(cor(cars$lpk, cars$cylinders))
+```  
+Zgodnie z za³o¿eniem, wraz ze wzrostem liczby cylindrów roœnie iloœæ spalonego paliwa. Zmienna __cylinders__ jest silnie skorelowana ze zmienn¹ __lpk__.    
+
+####Hipoteza 2.
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center'}
+cars %>%
+  ggplot(aes(x = cars$displacement, y = cars$lpk)) +
+  geom_jitter() +
+  geom_smooth(se = T) +
+  geom_smooth(method = "lm", col = "red", se = F) +
+  labs(title="Spalanie w zale¿noœci od objêtoœci silnika", x="displacement", y="lpk") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+Wspó³czynnik korelacji:
+```{r echo=FALSE}
+print(cor(cars$lpk, cars$displacement))
+```
+Zgodnie z za³o¿eniem, wraz ze wzrostem objêtoœci silnika roœnie iloœæ spalonego paliwa. Zmienna __displacement__ jest silnie skorelowana ze zmienn¹ __lpk__.    
+
+####Hipoteza 3.
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center'}
+cars %>%
+  ggplot(aes(x = cars$horsepower, y = cars$lpk)) +
+  geom_jitter() +
+  geom_smooth(se = T) +
+  geom_smooth(method = "lm", col = "red", se = F) +
+  labs(title="Spalanie w zale¿noœci od mocy w koniach mechanicznych", x="horsepower", y="lpk") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+Wspó³czynnik korelacji:
+```{r echo=FALSE}
+print(cor(cars$lpk, cars$horsepower))
+```  
+Zgodnie z za³o¿eniem, wraz ze wzrostem mocy silnika roœnie iloœæ spalonego paliwa. Zmienna __horsepower__ jest silnie skorelowana ze zmienn¹ __lpk__.    
+
+####Hipoteza 4.
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center'}
+cars %>%
+  ggplot(aes(x = cars$weight, y = cars$lpk)) +
+  geom_jitter() +
+  geom_smooth(se = T) +
+  geom_smooth(method = "lm", col = "red", se = F) +
+  labs(title="Spalanie w zale¿noœci od wagi", x="weight", y="lpk") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+Wspó³czynnik korelacji:
+```{r echo=FALSE}
+print(cor(cars$lpk, cars$weight))
+```
+Zgodnie z za³o¿eniem, wraz ze wzrostem wagi samochodu roœnie iloœæ spalonego paliwa. Zmienna __weight__ jest silnie skorelowana ze zmienn¹ __lpk__.    
+
+####Hipoteza 5.
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center'}
+cars %>%
+  ggplot(aes(x = cars$acceleration, y = cars$lpk)) +
+  geom_jitter() +
+  geom_smooth(se = T) +
+  geom_smooth(method = "lm", col = "red", se = F) +
+  labs(title="Spalanie w zale¿noœci od od czasu przyspieszenia od 0 do 100 km/h", x="acceleration", y="lpk") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+Wspó³czynnik korelacji:
+```{r echo=FALSE}
+print(cor(cars$lpk, cars$acceleration))
+```  
+Zgodnie z za³o¿eniem, wraz ze wzrostem czasu przyspieszenia od 0 do 100 km/h maleje iloœæ spalonego paliwa. Zmienna __acceleration__ nie jest silnie skorelowana ze zmienn¹ __lpk__.    
+
+####Hipoteza 6.
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center'}
+cars %>%
+  ggplot(aes(x = cars$year, y = cars$lpk)) +
+  geom_jitter() +
+  geom_smooth(se = T) +
+  geom_smooth(method = "lm", col = "red", se = F) +
+  labs(title="Spalanie w zale¿noœci od roku produkcji", x="year", y="lpk") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+Wspó³czynnik korelacji:
+```{r echo=FALSE}
+print(cor(cars$lpk, cars$year))
+```  
+Zgodnie z za³o¿eniem, wraz ze wzrostem roku produkcji maleje iloœæ spalonego paliwa. Zmienna __year__ nie jest silnie skorelowana ze zmienn¹ __lpk__.    
+
+####Hipoteza 7.
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center'}
+cars %>%
+  ggplot(aes(x = cars$origin, y = cars$lpk)) +
+  geom_jitter() +
+  geom_smooth(se = T) +
+  geom_smooth(method = "lm", col = "red", se = F) +
+  labs(title="Spalanie w zale¿noœci od miejsca produkcji", x="origin", y="lpk") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+Wspó³czynnik korelacji:  
+```{r echo=FALSE}
+print(cor(cars$lpk, cars$origin))
+```
+Zgodnie z za³o¿eniem, œrednio najbardziej ekologiczne pojazdy produkowane s¹ w Japonii. Jest to jednak zmienna jakoœciowa i ¿eby móc j¹ wykorzystaæ musi byæ najpierw rozbita na zmienne zero-jedynkowe. Oprócz tego zmienna __origin__ nie jest silnie skorelowana ze zmienn¹ __lpk__.    
+
+####Hipoteza 8.
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center'}
+cars %>%
+  ggplot(aes(x = cars$brand, y = cars$lpk)) +
+  geom_boxplot() +
+  labs(title="Spalanie w zale¿noœci od marki samochodu", x="brand", y="lpk") +
+  theme(plot.title = element_text(hjust = 0.5), axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+W zestawieniu wystêpuj¹ ma³o liczne obserwacje, zaburzaj¹ce analizê. Zmniejszê liczbê marek o po³owê, uwzglêdniaj¹c tylko te najbardziej liczne.
+```{r message=FALSE}
+filtered_brands <- cars %>%
+  group_by(brand) %>%
+  summarise(amount = n()) %>%
+  top_n(floor(28/2)) %>%
+  arrange(desc(amount)) %>% 
+  ungroup() %>% 
+  inner_join(cars)
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.align='center'}
+filtered_brands %>%
+  ggplot(aes(x = filtered_brands$brand, y = filtered_brands$lpk)) +
+  geom_boxplot() +
+  labs(title="Spalanie w zale¿noœci od marki samochodu - najliczniejsze próby", x="brand", y="lpk") +
+  theme(plot.title = element_text(hjust = 0.5), axis.text.x = element_text(angle = 90, hjust = 1))
+```
+Wykres pude³kowy pokazuje, ¿e zgodnie z przewidywaniami, marki samochodów produkowanych w Japonii (Datsun, Honda, Mazda, Toyota) stawiaj¹ na energooszczêdnoœæ. Japoñskie samochody spalaj¹ œrednio znacznie mniej ni¿ amerykañskie. Marka samochodu mo¿e mieæ istotny wp³yw na spalanie.    
+
+Wspo³czynnik korelacji:  
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+cars$brandID <- as.integer(as.numeric(as.factor(cars$brand)))
+print(cor(cars$lpk, cars$brandID))
+```
+Dok³adam dodatkow¹ kolumnê o nazwie __brandID__, reprezentuj¹c¹ dan¹ markê w postaci liczbowej. Jest to jednak zmienna jakoœciowa i ¿eby móc j¹ wykorzystaæ musi byæ najpierw rozbita na zmienne zero-jedynkowe. Oprócz tego zmienna __brand__ jest bardzo s³abo skorelowana ze zmienn¹ __lpk__.    
+
+Podsumowanie korelacji ze zmienn¹ __lpk__:  
+```{r echo=FALSE}
+cor(cars[c(2:8, 10)], cars[1])
+```
+
+####Macierz korelacji miêdzy zmiennymi objaœniaj¹cymi
+Decydujê siê na pominiêcie zmiennych __origin__ i __brand__ ze wzglêdu na ich jakoœciowy charakter. Mecierz korelacji dla pozosta³ych zmiennych prezetowaæ siê bêdzie nastêpuj¹co:
+```{r echo=FALSE, message=FALSE, fig.align='center'} 
+corrgram(cars[2:7], lower.panel=panel.shade, upper.panel=panel.cor, main="Korelacje zmiennych objaœniaj¹cych")
+```
+Z wykresu mo¿na zauwa¿yæ du¿¹ korelacjê pomiêdzy zmiennymi: __cylinders__, __displacement__, __horsepower__ i __weight__. Czêœæ z nich bêdzie musia³a zostaæ odrzucona. Zmienne __acceleration__ i __origin__ s¹ umiarkowanie skolerowane z innymi zmiennymi. Natomiast zmienna __year__ nie jest silnie skorelowana z ¿adn¹ z pozosta³ych zmiennych i istnieje spora szansa, ¿e wejdzie do ostatecznego modelu.
+
+#Budowa modelu liniowego
+
+W poprzednim rozdziale zaobserwowa³am, ze zmiennymi silnie skorelowanymi ze zmienn¹ objaœnian¹ s¹: __cylinders__, __displacement__, __horsepower__ oraz __weight__. Jednoczeœnie s¹ one silnie skorelowane miêdzy sob¹, co stanowi na ich niekorzyœæ. Natomiast zmiennymi najs³abiej skorelowanymi ze mienn¹ __lpk__ i miêdzy sob¹ s¹: __acceleration__ i __year__. Spróbujê dopasowaæ najlepszy model opisuj¹cy iloœæ spalanego paliwa wykorzystuj¹c metodê Hellwiga oraz metodê bootstrapow¹.       
+
+###I.Metoda Hellwiga
+####1. Teoria
+Jest to formalna metoda doboru zmiennych objaœniaj¹cych do modelu statystycznego. Zmienne, które wybieramy do modelu powinny byæ __silnie skorelowane ze zmienn¹ objaœnian¹__, a __s³abo skorelowane miêdzy sob¹__. Nie jest to jednak œcis³e kryterium doboru zmiennych, oprócz tego wystêpuje __kryterium liczbowe__, tzw. *pojemnoœæ integralna kombinacji noœników informacji*. W tym przypadku noœnikami informacji s¹ wszystkie zmienne objaœniaj¹ce.    
+
+Zgodnie z teori¹ je¿eli mamy *m* potencjalnych zmiennych objaœniaj¹cych, to liczba wszystkich kombinacji jest równa *2^m^ - 1*. Dla wszystkich otrzymanych kombinacji definiujê tzw. *Indywidualn¹ pojemnoœæ noœników informacji*. Dopiero, gdy policzymy indywidualn¹ pojemnoœæ noœników informacji dla wszystkich kombinacji, mo¿emy obliczyæ *pojemnoœæ integraln¹ kombinacji noœników informacji*, która jest sum¹ indywidualnych pojemnoœci noœników informacji, wchodz¹cych w sk³ad tej kombinacji. Jest ona kryterium wyboru odpowiedniej kombinacji zmiennych objaœniaj¹cych, a wybieramy tê kombinacjê, gdzie wartoœæ __Hk__ jest najwiêksza.    
+
+####2. Wyznaczenie zmiennych
+Przygotowuje funkcjê o nazwie __hellwig__, która zwracaæ bêdzie dwie kolumny; pierwsz¹ zawieraj¹c¹ wszystkie kombinacje zmiennych niezale¿nych i drug¹ zawieraj¹c¹ *pojemnoœæ integraln¹* dla ka¿dej z tych kombinacji:
+```{r}
+hellwig <- function(x, y) {
+  R <- cor(x, method="pearson") #macierz korelacji zmiennych objaœniaj¹cych
+  R0 <- cor(x, y, method="pearson") #wektor korelacji pomiêdzy objaœnian¹ a objaœniaj¹cymi
+  #lista kombinacji 
+  k <- sapply(seq(2, length(x)), function(i)
+              utils::combn(length(x), i, simplify=FALSE))
+  k <- do.call("c", k)
+  #wyznaczanie indywidualnych pojemnoœci informacji
+  hfun <- function(v)
+  {
+    sapply(v, function(i) R0[i]^2 / sum(abs(R[v,i])) )
+  }
+  #wyznaczanie pojemnoœci integralnych kombinacji
+  h <- sapply(k, hfun)
+  #zapisanie do ramki danych
+  data.frame(k = sapply(k, paste, collapse="-"),
+             h = sapply(h, sum),
+             stringsAsFactors=FALSE)
+}
+```
+Wyœwietlam wyniki dzia³ania funkcji __hellwig__ dla 6 zmiennych objaœniaj¹cych:
+```{r echo= FALSE}
+hellwig1 <- hellwig(cars[c(2:7)], cars$lpk)
+glimpse(hellwig1)
+```
+Wyszukujê najwiêksz¹ wartoœæ __Hk__:
+```{r echo=FALSE}
+print(Hmax <- hellwig1[c(which((hellwig1[,2]) == max(hellwig1[,2]))), ])
+```
+Po obliczeniach otrzymujê wartoœæ __Hmax__ na poziomie __0.8700313__ dla kombinacji zmiennych 2-3-4-6, czyli __displacement__, __horsepower__, __weight__ i __year__.   
+
+####3. Model liniowy
+Szacujê wstêpny model liniowy, z wykorzystaniem wszystkich zmiennych, za pomoc¹ funkcji __lm__:  
+```{r echo=FALSE}
+summary(model <- lm(lpk ~., cars[1:7]))
+```
+Po wstêpnym oszacowaniu modelu okazuje siê, ¿e wartoœæ wspó³czynnika determinacji - R^2^ jest bardzo wysoka - ponad 89%. Natomiast jedynie 3 zmienne: __horsepower__, __weight__ i __year__ s¹ istotne statystycznie.
+
+Szacujê model liniowy zgodny z wynikami metody Hellwiga:
+```{r echo=FALSE}
+summary(modelH <- lm(lpk ~ displacement + horsepower+ weight + year, cars[1:7]))
+```
+Zmienna __displacement__ nie zosta³a odrzucona przez metodê Hellwiga, chocia¿ nie jest statystycznie istotna. Pozosta³e zmienne s¹ istotne i dobrze opisuj¹ zjawisko spalania. WskaŸnik R^2^ równie¿ jest wysoki i wynosi prawie 89%. Potwierdza to w pewnym stopniu poprawnoœæ wykonania modelu metod¹ Hellwiga.  
+Wspó³czynniki:
+```{r echo=FALSE}
+modelH$coefficients
+```
+
+####4. Test normalnoœci rozk³adu reszt
+```{r echo=FALSE, fig.align='center'}
+shapiro.test(modelH$residuals)
+ad.test(modelH$residuals)
+```
+Wartoœci p testów __Shapiro-Wilka__ i __Andersona-Darlinga__ s¹ równa odpowiednio 0.0028 i 0.012. Jest to mniej ni¿ przyjêty poziom istotnoœci i oznacza podstawy do odrzucenia hipotezy zerowej o normalnoœci. Rozk³ad reszt nie jest rozk³adem normalnym.    
+
+####5. Badanie isototnoœci zmiennych objaœniaj¹cych 
+Test Walda jest parametrycznym testem statystycznym, sprawdzaj¹cym istotnoœæ statystyczn¹ wspó³czynnika regresji. Jest sposobem na sprawdzenie, czy zmienne objaœniaj¹ce w modelu s¹ znacz¹ce - isotone. "Istotne" oznacza, ¿e dodaj¹ coœ do modelu; zmienne, które nic nie dodaj¹, mo¿na usun¹æ bez znacz¹cego wp³ywu na model. Hipoteza zerowa zak³ada, ¿e zmienne objaœniajce s¹ istotne.
+```{r echo=FALSE}
+waldtest(modelH)
+```
+Z przeprowadzonego testu Walda wynika, ¿e zmienne objaœniaj¹ce s¹ istotne. 
+
+####6. Badanie heteroskedastycznoœci
+Heteroskedastycznoœæ to sytuacja, w której przynajmniej jedna zmienna losowa z ci¹gu ró¿ni siê od innych wariancj¹ lub jej wariancja jest nieskoñczona. 
+```{r echo=FALSE, fig.align='center'}
+par(mfrow=c(1,2))
+plot(modelH)
+```
+Interesuj¹ce nas wykresy znajduj¹ siê w lewym górnym - __Residuals vs Fitted__ i lewym dolnym rogu - __Scale-Location__. W lewym górnym rogu znajduje siê wykres wartoœci reszt wzglêdem dopasowanych wartoœci, natomiast lewy dolny zawiera standaryzacjê reszt na osi Y. Jeœli nie wystêpuje heteroskedastycznoœæ, powinniœmy zaobserwowaæ ca³kowicie losowy, równy rozk³ad punktów w ca³ym zakresie osi X i p³ask¹ czerwon¹ liniiê.  
+Z powy¿szych wykresów mo¿na wywnioskowaæ, ze w modelu wystêpuje heteroskedastycznoœæ. Co dodatkowo potwierdze testem __Breusha-Pagana__:
+```{r echo=FALSE}
+bptest(modelH)
+```
+Wartoœæ p jest bardzo ma³a co oznacza podstawy do odrzucenia hipotezy zerowej - w modelu wystêpuje heteroskedastycznoœæ.  
+
+####7. Test Ramsaya RESET
+Jets to test poprawnoœci specyfikacji dla modeli regresji liniowej. Stosowany jest w celu sprawdzenia, czy to liniowa postaæ modelu (wzglêdem funkcji kwadratowej, lub szeœciennej) jest najlepszym mo¿liwym do wybrania modelem. Test umo¿liwia sprawdzenie poprawnoœci specyfikacji modelu bez porównywania do alternatywnej postaci, z tego te¿ powodu w przypadku stwierdzenia niepoprawnoœci nie sugeruje on lepszego wariantu.
+```{r}
+resettest(modelH, power=2:3, type = "regressor", data=cars[1:7])
+```
+W wyniku wywo³ania testu otrzymujê bardzo ma³¹ wartoœæ p, blisk¹ zeru. Odrzucam hipotezê zerow¹ na rzecz hipotezy alternatywnej. Oznacza to, ¿e postaæ modelu nie jest poprawna i wystêpuj¹ zmienne pominiête.
+
+###II. Metoda bootstrapowa - nieparametryczna wersja Monte Carlo
+####1. Teoria
+W statystyce bootstrapping to dowolny test lub dane, które polegaj¹ na losowym próbkowaniu ze zwracaniem. Bootstrapping pozwala przypisaæ miary dok³adnoœci (zdefiniowane w kategoriach odchylenia, wariancji, przedzia³ów ufnoœci, b³êdu prognozowania lub innych podobnych miar) do próbnych oszacowañ. Technika ta pozwala na oszacowanie rozk³adu próbek prawie ka¿dej statystyki przy u¿yciu losowych metod próbkowania. 
+
+####2. Wyznaczenie zmienych
+Szacujê model za pomoc¹ bootstrapowej metody krokowej (jedna zmienna – jeden krok) wstecznej z funkcji __boot.stepAIC__, która opiera siê na kryterium informacyjnym Akaike'a - __AIC__. Im wartoœæ AIC jest ni¿sza tym lepiej. Iloœæ symulacji ustawiam na __10000__:
+```{r}
+boots <- boot.stepAIC(lm(lpk ~., cars[1:7]), cars[1:7], alpha=.05, direction="backward", B=10000)
+```
+Po oszacowaniu okazuje siê, ze do modelu wesz³y 3 najistotniejsze zmienne: __horsepower__, __weight__ oraz __year__. Wspó³czynnik determinacji modelu jest bardzo wysoki i wynosi prawie 89%, z t¹ ró¿nic¹, ¿e z wykorzystaniem mniejszej iloœci zmiennych objaœniaj¹cych. Zmienna __displacement__ sugerowana przez metodê __Hellwiga__ zosta³a odrzucona ju¿ w pierwszym kroku. Oznacza to, ¿e nie jest ona istotna i nie powinna wystêpowaæ w finalnym modelu.
+
+####3. Model liniowy
+Szacujê model liniowy zgodny z wynikami krokowej metody bootstrapowej:
+```{r echo=FALSE}
+summary(modelB <- lm(lpk ~ horsepower + weight + year, cars[1:7]))
+```
+Wszystkie 3 zmienne uwzglêdnione w modelu: __horsepower__, __weight__ oraz __year__ s¹ statystycznie bardzo istotne (***) i dobrze opisuj¹ zjawisko spalania. WskaŸnik R^2^ jest porównywalnie wysoki do tego uzyskanego metod¹ Hellwiga i wynosi prawie 89%.
+```{r echo=FALSE, fig.align='center'}
+par(mfrow=c(1,2))
+plot(modelB)
+```
+
+####4. Porównanie przedzia³ów ufnoœci
+Zapisujê wspó³czynniki uzyskane dwiema metodami do zmiennych __coefs__, a nastêpnie die  ramki danych __hellwigRange__ i __bootsRange__ wype³niam wartoœciami przedzia³ów ufnoœci dla poszczególnych obserwacji.
+```{r}
+#zapisanie wspó³czynników z metody Hellwiga
+coefsH <- summary(modelH)$coefficients
+constRange <- coefsH[1,1] + qnorm(c(.025, .975))*coefsH[1,2]
+dispRange <- coefsH[2,1] + qnorm(c(.025, .975))*coefsH[2,2]
+horseRange <- coefsH[3,1] + qnorm(c(.025, .975))*coefsH[3,2]
+weightRange <- coefsH[4,1] + qnorm(c(.025, .975))*coefsH[4,2]
+yearRange <- coefsH[5,1] + qnorm(c(.025, .975))*coefsH[5,2]
+hellwigRange <- data.frame("const"=constRange, "displacement"=dispRange, "horsepower"=horseRange, "weight"=weightRange, "year"=yearRange)
+
+#zapisanie wspó³czynników z metody bootstrapowej
+coefsB <- summary(modelB)$coefficients
+constRange <- coefsB[1,1] + qnorm(c(.025, .975))*coefsB[1,2]
+horseRange <- coefsB[2,1] + qnorm(c(.025, .975))*coefsB[2,2]
+weightRange <- coefsB[3,1] + qnorm(c(.025, .975))*coefsB[3,2]
+yearRange <- coefsB[4,1] + qnorm(c(.025, .975))*coefsB[4,2]
+bootsRange <- data.frame("const"=constRange, "horsepower"=horseRange, "weight"=weightRange, "year"=yearRange)
+```
+```{r}
+hellwigRange
+bootsRange
+```
+Z tabelek mo¿na zaobserwowaæ, ¿e przedzia³y ufnoœci wspó³czynników __horsepower__ oraz __weight__ uzyskaych metod¹ bootstrapow¹, s¹ nieco wê¿sze od tych uzyskanych metod¹ Hellwiga. Dla zmiennej __year__ nie zaobserwowano istotnej ró¿nicy.    
+
+####5. Wykresy rozk³adów wspó³czynników 
+Dokonam porównania przedzia³ów ufnoœci wspó³czynników uzyskanych metod¹ Hellwiga oraz metod¹ bootstrapow¹. Wykresy bêd¹ prezentowa³y wartoœci 3 zmiennych które zosta³y uwzglêdnione w dwóch testach. S¹ to: __horsepower__, __weight__, oraz __year__.    
+
+#####5.1 Wspó³czynnik horsepower
+£¹czê wyniki dwóch metod we wspóln¹ ramkê danych __par_horsepower__. Dla pozosta³ych zmiennych postêpujê analogicznie.
+```{r fig.align='center'}
+par_horsepower <- tibble(Bootstrap = coefsB[2,1] + rnorm(10^4)*coefsB[2,2],
+                         Hellwig = coefsH[3,1] + rnorm(10^4)*coefsH[3,2]) %>% gather(type, parameter)
+par_horsepower %>%
+  ggplot(aes(x = parameter, col = type, fill= type)) + 
+  geom_density(alpha = .5) +
+  labs(title="Gêstoœæ rozk³adu wspó³czynnika horsepower", x="parametr", y="gêstoœæ rozk³adu") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+Przedzia³ ufnoœci wspó³czynnika __horsepower__ uzyskany metod¹ bootstrapow¹ jest nieznacznie wê¿szy od uzyskanego metod¹ Hellwiga. Mo¿e to œwiadczyæ o lepszym dopasownaiu modelu.    
+
+#####5.2 Wspó³czynnik weight
+```{r echo=FALSE, fig.align='center'}
+par_weight <- tibble(Bootstrap = coefsB[3,1] + rnorm(10^4)*coefsB[3,2],
+                         Hellwig = coefsH[4,1] + rnorm(10^4)*coefsH[4,2]) %>% gather(type, parameter)
+par_weight %>%
+  ggplot(aes(x = parameter, col = type, fill= type)) + 
+  geom_density(alpha = .5) +
+  labs(title="Gêstoœæ rozk³adu wspó³czynnika weight", x="parametr", y="gêstoœæ rozk³adu") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+Wykres bootstrapowy jest przesuniêty wzglêdem uzyskanego metod¹ Hellwiga. Bootstrapowy przedzia³ ufnoœci dla wspó³czynnika __weight__ jest znacznie wê¿szy, co mo¿e œwiadczyæ o lepszym dopasowaniu modelu.    
+
+#####5.2 Wspó³czynnik year
+```{r echo=FALSE, fig.align='center'}
+par_year <- tibble(Bootstrap = coefsB[4,1] + rnorm(10^4)*coefsB[4,2],
+                         Hellwig = coefsH[5,1] + rnorm(10^4)*coefsH[5,2]) %>% gather(type, parameter)
+par_year %>%
+  ggplot(aes(x = parameter, col = type, fill= type)) + 
+  geom_density(alpha = .5) +
+  labs(title="Gêstoœæ rozk³adu wspó³czynnika year", x="parametr", y="gêstoœæ rozk³adu") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+Przedzia³y ufnoœci uzyskane obiema metodami nie ró¿ni¹ siê istotnie.  
+
+#Podsumowanie
+Model sporz¹dzony z wykorzystaniem metody Hellwiga wydajê siê s³abszy i mniej dok³adne opisuj¹cy zjawisko spalania ni¿ model stworzony metod¹ bootstrapow¹. Po przenalizowaniu modelu Hellwiga okazuje siê, ¿e nie spe³nia on podstawowych wymagañ, takich jak normalnoœæ rozk³adu reszt czy brak heteroskedastycznoœci. Model bootstrapowy nie mo¿e byæ zdiagnozowany pod tym samym k¹tem co model sporz¹dzony z wykorzystaniem metody klasycznej, ze wzglêdu na brak przewidywanych za³o¿eñ. Jednak po porównaniu przedzia³ów ufnoœci, okaza³ siê dok³adniejszy, a zatem istniej¹ podstawy by s¹dziæ, ¿e lepiej opisuje on omawiany proces spalania.

@@ -1,0 +1,79 @@
+*
+{
+  margin: 0;
+}
+
+:root {
+  --kolorek: lightblue;
+  --koloorek: lightcyan;
+}
+header {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  overflow: hidden;
+  width: 98vw;
+}
+
+.button-full {
+  border-radius: 5%;
+  background-color: var(--kolorek);
+  width: 200px;
+  height: 100px;
+  padding: 10px;
+  margin: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.button-mini {
+  border-radius: 15%;
+  background-color: var(--koloorek);
+  color: darkcyan;
+  font-weight: 800;
+  width: 50px;
+  height: 50px;
+  padding: 10px;
+  margin: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.5s;
+  visibility: collapse;
+}
+
+.button-mini:hover {
+  width: 60px;
+  height: 60px;
+  margin: 5px;
+  transition: 0.5s;
+}
+
+
+/*Spraw by przyciski (klasa button-full) stawały się kwadratami 100x100 
+z białą, pogróbioną czcionką gdy szerokość strony jest mniejsza niż 875*/
+@media only screen and (max-width: 875px) {
+  .button-full {
+  color: white;
+  font-weight: 700;
+  width: 100px;
+  height: 100px;
+  }
+}
+
+/*Spraw by przyciski (klasa button-full) stawały się kołami o promieniu 50px gdy szerokosć przeglądarki jest mniejsza lub równa 600*/
+@media only screen and (max-width: 600px) {
+    .button-full {
+    border-radius: 50px;
+    width: 100px;
+    }
+}
+
+/*Spraw by przyciski (klasa button-mini) pojawiały się gdy szerokość strony jest mniejsza niż 1000px*/
+@media only screen and (max-width: 1000px) {
+    .button-mini {
+      transition: 0.5s;
+      visibility: visible;
+    }
+}

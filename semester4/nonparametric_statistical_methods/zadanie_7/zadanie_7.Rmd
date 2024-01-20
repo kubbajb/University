@@ -1,0 +1,110 @@
+---
+title: "Zadanie 7"
+author: "Jakub Anczyk"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r lib, include=FALSE}
+library(ggplot2)
+library(nortest)
+library(stats)
+library(tseries)
+```
+
+## Polecenie
+
+Za pomocą odpowiednich symulacji zbadać moc testu Kołmogorowa i testu Kołmogorowa z wykorzystaniem PIT (probability integral transform), z hipotezą główną, że cecha ma rozkład normalny w przypadku, gdy dane pochodzą z rozkładu 𝑡-Studenta lub z rozkładu 𝜒2 (uwaga: żeby wyniki były porównywalne trzeba pamiętać o standaryzacji danych). Uzyskane wyniki należy przedstawić na odpowiednich wykresach ilustrujących moce testów z uwzględnieniem:
+
+- liczby danych,
+
+- liczby stopni swobody generowanego rozkładu t-Studenta, 𝜒2
+
+## Funkcje mierzące moc testów
+
+```{r funkcje}
+library(stats)
+
+# Function to compute the power of the Kolmogorov-Smirnov test
+compute_power <- function(data1, data2, n_simulations, alpha) {
+  power <- rep(0, n_simulations)
+  
+  for (i in 1:n_simulations) {
+    # Generate random samples from the hypothesized distributions
+    simulated_data1 <- rnorm(length(data1), mean = mean(data1), sd = sd(data1))
+    simulated_data2 <- rnorm(length(data2), mean = mean(data2), sd = sd(data2))
+    
+    # Perform the Kolmogorov-Smirnov test
+    ks_test <- ks.test(simulated_data1, simulated_data2)
+    
+    # Check if the null hypothesis is rejected
+    if (ks_test$p.value < alpha) {
+      power[i] <- 1
+    }
+  }
+  
+  return(mean(power))
+}
+
+```
+
+## Stworzenie danych dla testów
+
+```{r dane}
+
+
+# Parameters
+n_data <- c(50, 100, 200)  # Number of data (can be different in each sample)
+sd_values <- c(1, 2, 3)  # Standard deviations
+n_simulations <- 1000  # Number of simulations
+alpha <- 0.05  # Significance level
+
+```
+
+## Zastosowanie funkcji do danych
+
+```{r power, warning=FALSE}
+
+# Perform simulations for different settings
+results <- matrix(0, nrow = length(n_data), ncol = length(sd_values))
+colnames(results) <- sd_values
+
+for (i in 1:length(n_data)) {
+  n <- n_data[i]
+  
+  for (j in 1:length(sd_values)) {
+    sd1 <- sd_values[j]
+    sd2 <- 1  # Standard deviation for the second sample (fixed at 1)
+    
+    # Generate data from normal distributions
+    data1 <- rnorm(n, mean = 0, sd = sd1)
+    data2 <- rnorm(n, mean = 0, sd = sd2)
+    
+    # Compute power of the Kolmogorov-Smirnov test
+    power <- compute_power(data1, data2, n_simulations, alpha)
+    results[i, j] <- power
+  }
+}
+
+
+```
+
+## Stworzenie wykresów do wygenerowanych danych
+
+```{r charts}
+
+# Plot the results
+plot(n_data, results[, 1], type = "o", ylim = c(0, 1), xlab = "Number of data",
+     ylab = "Power", main = "Power of Kolmogorov-Smirnov Test")
+
+lines(n_data, results[, 2], type = "o", col = "blue")
+lines(n_data, results[, 3], type = "o", col = "green")
+
+legend("topright", legend = sd_values, col = c("black", "blue", "green"),
+       lty = 1, pch = 1)
+
+```

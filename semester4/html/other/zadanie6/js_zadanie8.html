@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <title>Zadanie 8 - JavaScript</title>
+    <style>
+      #image_container {
+        width: 194px;
+        height: 194px;
+        background-color: black;
+      }
+    </style>
+    <script> 
+      var intervalId = window.setInterval(function(){
+        change_the_cat()
+      }, 2000);
+
+      function change_the_cat() {
+        const container = document.getElementById("image_container");
+        const image = document.getElementById("myImage");
+
+        let rand = Math.random();
+        if (rand < 0.5){
+          if (rand < 0.25){
+            image.src = "panko1.jpg";
+          } 
+          else
+          {
+            image.src = "panko2.jpg";
+          }
+        }
+        else{
+          if (rand < 0.75){
+            image.src = "panko3.jpg";
+          } 
+          else
+          {
+            image.src = "panko4.jpg";
+          }
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="image_container"><img id="myImage" src="panko1.jpg"></div>
+    <script>
+    </script>
+  </body>
+</html>

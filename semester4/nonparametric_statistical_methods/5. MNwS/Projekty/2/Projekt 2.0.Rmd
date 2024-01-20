@@ -1,0 +1,485 @@
+---
+title: "Projekt 2.0"
+author: " "
+date: "13 marca 2018"
+---
+
+##Wprowadznie
+Tematem projektu jest stworzenie funkcji symuluj¹cej próbki z rozk³adów miesznaych oraz analiza mocy testów zgodnoœci i rangowych, dla próbek otrzymanych w ten sposób. Analiza bêdzie polega³a na wyznaczeniu ramek danych zawieraj¹cych wartoœci mocy testów dla poszczególnych przypadków uwzglêdniaj¹cych zmiane:  
+- d³ugoœci próby,  
+- parametrów pierwszego i drugiego rozk³adu,  
+- prawdopodobieñstwa wylosowania liczb z pierwszego rozk³adu,  
+oraz przedstawienie wyników na wykresach.
+
+W analizie wykorzystane zostan¹ 4 testy: Shapiro-Wilka, Andersona-Darlinga, Jarque-Bera i Wilcoxona.
+
+Test Shapiro-Wilka: __shapiro.test(x)__  
+Jeden z najbardziej popularnych testów standardowych, wykorzystywany do testowania normalnoœci danych. Analiza porównawcza przy u¿yciu metod Monte-Carlo wykaza³a, ¿e test Shapiro-Wilka ma najwiêksza moc spoœród testów badaj¹cych normalnoœæ. Hipotez¹ zerowymi w tym teœcie jest stwierdzenie, ¿e próba pochodzi z rozk³adu normalnego
+
+Test Adersona-Darlinga: __ad.test(x)__  
+Jeden z testów statystycznych zgodnoœci rozk³adu z zadanym rozk³adem wzorcowym. Zwykle stosuje siê go do sprawdzenia zgodnoœci z rozk³adem normalnym. Jest modyfikacj¹ testu Craméra-von Misesa dokonan¹ w celu poprawy jego czu³oœci w "ogonach" testowanego rozk³adu.
+
+Test Jarque-Bera: __jarque.bera.test(x)__  
+Testuje wartoœæ normalnoœci dla 'x' przy u¿yciu statystyki Jarque-Bera. Test ten jest statystyk¹ wspóln¹ wykorzystuj¹c¹ wspó³czynniki skoœnoœci i kurtozy. Zwykle wykorzystywany jest do du¿ych zastawów danych, gdy¿ inne testy normalnoœci nie s¹ wiarygodne przy testowaniu wiêkszych prób (np. Shapiro-Wilka dla iloœci danych powy¿ej 2000). Hipotez¹ zerow¹ w tym teœcie jest stwierdzenie, ¿e próba pochodzi z rozk³adu normalnego.
+
+Test Wilcoxona: __wilcox.test(x, y)__  
+Jest nieparametryczn¹ alternatyw¹ dla testu t-Studenta dla przypadku dwóch równolicznych próbek daj¹cych siê po³¹czyæ w pary. Czêsto u¿ywa siê tego testu do porównywania danych zebranych przed i po eksperymencie, w celu zbadania, czy nast¹pi³a istotna statystycznie zmiana.  
+
+W projekcie dla ka¿dego rozwa¿anego przypadku bêd¹ tworzone wektory, w zale¿noœci od których bêdziemy badaæ moc poszczególnych testów.    
+Zmienne, których bêdziemy uwzglêdniaæ to:  
+- d³ugoœæ próby (`n`),  
+- parametry pierwszego i drugiego rozk³adu (`par_1` i `par_2`), które w zale¿noœci od rodzaju wybranego rozk³adu bêd¹ reprezentowa³y; wartoœci oczekiwane, odchylenia standardowe, parametry lambda, iloœæ stopni swobody lub prawdopodobieñstwo,  
+- prawdopodobieñstwo wylosowania liczby z pierwszego rozk³adu (`p`),    
+- dodatkowo przy ka¿dym wywo³aniu funkcji rmix podajemy parametry zawieraj¹ce nazwy rozk³adów, które chcemy otrzymaæ (`family_1` i `family_2`).  
+
+We wszystkich punktach iloœæ wykonywanych symulacji (`N`) bêdzie wynosi³a 300. Wartoœci prawdopodobieñstwa (p) bêd¹ rzêdu: 0.35, 0.55, 0.65. D³ugoœæ próby (n) bêdzie ró¿na w zale¿noœci od podpunktu, ale zawsze bêdzie to wartoœæ co najmniej 40. W ka¿dym z rozwa¿anych przypadków podana bêdzie hipoteza zerowa i alternatywna oraz oczekiwany wynik i wnioski.  
+
+```{r labrarys, message=FALSE, warning=FALSE}
+#za³adowanie bibliotek
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(tseries)
+library(nortest)
+```
+
+
+##Zadanie 1  
+Podstaw¹ do analizy mocy testów w kolejnych zadaniach bêdzie stworzenie funckji __rmix__, która w zale¿noœci od parametrów: n, family_1, par_1, family_2, par_2 i p, bêdzie zwracaæ n-elementowy wektor, w którym ka¿da liczba z prawdopodobieñstwem __p__ pochodzi z rozk³adu typu family_1 o parametrach par_1, a z prawdopodobieñstwem __(1-p)__ pochodzi z rozk³adu typu family_2 i parametrach par_2.  
+Zmienne __family__ przyjmuj¹ napisy odpowiadaj¹ce poszczególnym nazwom funkcji do generowania rozk³adów.
+
+```{r zadanie1, warning=TRUE}
+rmix <- function(n, family_1, par_1 , family_2, par_2, p){
+  
+  index <- sample(c(1,2), n, prob = c(p, 1-p), replace = T)
+  
+  #iloœæ liczb, które bêd¹ pochodziæ z rozk³adu typu family_1
+  sum1 <- length(which(index == 1))
+  #iloœæ liczb, które bêd¹ pochodziæ z rozk³adu typu family_2
+  sum2 <- length(which(index == 2))
+  
+  if(family_1 == "norm"){ 
+    sample_1 <- rnorm(sum1, mean = par_1[1], sd = par_1[2])
+  } else if(family_1 == "t"){
+    sample_1 <- rt(sum1, dt = par_1[1])
+  } else if(family_1 == "binom"){
+    sample_1 <- rbinom(sum1, size = par_2[1], prob = par_2[2])
+  } else if(family_1 == "poisson"){
+    sample_1 <- rpois(sum1, lambda = par_1[1])
+  }
+  
+  if(family_2 == "norm"){
+    sample_2 <- rnorm(sum2, mean = par_2[1], sd = par_2[2])
+  } else if(family_2 == "t"){
+    sample_2 <- rt(sum2, df = par_2[1])
+  } else if(family_2 == "binom"){
+    sample_2 <- rbinom(sum2, size = par_2[1], prob = par_2[2])
+  } else if(family_2 == "poisson"){
+    sample_2 <- rpois(sum2, lambda = par_2[1]) 
+  }
+  c(sample_1, sample_2)
+}
+```
+
+##Zadanie 2
+Zadanie zawiera analizê mocy 3 testów zgodnoœci dla mieszanki dwóch rozk³adów normalnych przy hipotezie zerowej o rozk³adzie normalnym.
+
+####1. Badanie wp³ywu zmiany d³ugoœci próby (n) i prawdopodobieñstwa wylosowania liczby z pierwszego rozk³adu (p) na moc 3 testów
+
+Obliczenia wykonane w poni¿szej analizie bêd¹ mia³y na celu stwierdzenie prawid³owoœci nastêpuj¹cych hipotez: 
+
+___W zale¿noœci od zmiany d³ugoœci próby:___  
+H0: wraz ze zwiêkszaniem d³ugoœci próby roœnie moc testu  
+H1: wraz ze zwiêkszaniem d³ugoœci próby maleje moc testu  
+
+___W zale¿noœci od zmiany poziomu prawdopodobieñstwa wyst¹pienia zmiennych z 1 rozk³adu:___  
+H0: wraz ze zwiêkszaniem prawdopodobieñstwa roœnie moc testu  
+H1: wraz ze zwiêkszaniem prawdopodobieñstwa maleje moc testu
+
+W obu przypadkach prawid³owym wynikiem powinien byæ brak podstaw do odrzucenia hipotez zerowych.
+
+Wprowadzenie wartoœci do poszczególnych zmiennych:
+```{r}
+#iloœæ symulacji
+N <- 300
+#dlugoœæ próby
+n <- seq(40, 100, by = 4)
+#typ rozk³adu 1
+family_1 <- "norm"
+#typ rozk³adu 2
+family_2 <- "norm"
+#prawdopodobienstwo pierwszego rozk³adu
+p <- c(.35, .55, .65)
+#parametry1
+par_1 <- c(2, 1)
+#parametry2
+par_2 <- c(4, 3)
+#nazwa testu
+name <- c("Test Shapiro-Wilka", "Test Andersona-Darlinga", "Test Jarque-Bera")
+```
+
+Nastêpnie za pomoca funkcji __expand.grid__ tworzê ramkê danych wszystkich kombinacji o nazwie 'params' z ka¿d¹ mo¿liw¹ trójk¹ z badanych wartoœci.
+```{r}
+params <- expand.grid(n = n, p = p, name = name)
+```
+
+Dla ka¿dej trójki danych z pomoc¹ odpowiedniej funkcji (shapiro.test, ad.test lub jarque.bera.test) obliczana jest moc testów i za pomoc¹ __sapply__ do³¹czana do wektora __powers__
+```{r zadanie 2-1}
+#ustawienie ziarna generatora na 20
+set.seed(20)
+
+powers <- sapply(1:nrow(params),
+                 function(i){
+                   n <- params[i, 1]
+                   p <- params[i, 2]
+                   name <- params[i, 3]
+                   
+                   p_vector <- sapply(rep(n, N), function(x){
+                     sample <- rmix(n, family_1, par_1, family_2, par_2, p)
+                     
+                     if (name == "Test Shapiro-Wilka"){
+                       return <- shapiro.test(sample)$p.value
+                     } else if (name == "Test Andersona-Darlinga"){
+                       return <- ad.test(sample)$p.value 
+                     } else if (name == "Test Jarque-Bera"){
+                       return <- jarque.bera.test(sample)$p.value
+                     }   
+                     return
+                   })
+                   mean(p_vector < 0.05)
+                 })
+```
+
+Nastêpnie tworzona jest ramka danych __power_df__, do której przepisujemy ramkê __params__ i dla ka¿dej 3 danych w nowej kolumnie o nazwie __power__ dopasowywana jest wyliczona moc z wektora __powers__:
+```{r}
+power_df <- bind_cols(params, power = powers)
+```
+
+Tworzenie zestawienia 3 wykresów dla ka¿dego z podanych na pocz¹tku wartoœci prawdopodobieñstwa (p). Na osi poziomej X znajduje siê d³ugoœæ próby (n), a na osi pionowej Y moc testu (power). Poszczególne testy (name) zosta³y zilustrowane za pomoc¹ kolorowych linii z funkcji __facet_wrap__.
+
+```{r}
+power_df %>%
+  ggplot(aes(x = n, y = power, color = factor(name))) +
+  labs(title = "Moce 3 testów w zale¿noœci od parametrów n i p", x = "dlugoœæ próby (n)", y = "moc") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_line() + 
+  facet_wrap(~ p, nrow = 3)
+```
+
+__Interpretacja__  
+W obu rozwa¿anych przypadkach nie ma podstaw do odrzucenia hipotez zerowych, gdy¿ moc testu znacz¹co roœnie wraz ze zwiekszaniem d³ugoœci próby (`n`) oraz wraz ze zwiêkszaniem prawdopodobieñstwa wylosowania liczby z pierwszego rozk³adu (`p`). Test Andersona-Darlinga cechuje siê najwiêksz¹ moc¹, natomiast test Jarque-Bera wypada w tym przypadku najs³abiej.  
+
+####2. Badanie wp³ywu zmiany pierwszego elementu wektora par_1 na moc 3 testów  
+
+Obliczenie wykonane w poni¿szej analizie bêd¹ mia³y na celu stwierdzenie prawid³owoœci hipotezy: 
+
+___W zale¿noœci od zmiany wielkoœci pierwszego parametru wektora par_1:___  
+H0: wraz ze zwiêkszaniem wielkoœci par_1[1] roœnie moc testu  
+H1: wraz ze zwiêkszaniem wielkoœci par_1[1] maleje moc testu 
+
+Wprowadzenie wartoœci do poszczególnych zmiennych:
+```{r}
+#dlugoœæ próby
+n <- c(40, 100, 150)
+#prawdopodobienstwo pierwszego rozk³adu
+p <- .65
+#pierwsze elementy par_1 zmienne
+paramki <- seq(2, 25, by = 1)
+#parametry2
+par_2 <- c(8, 3)
+```
+
+Powtórzenie wszystkich poleceñ analogicznie jak wy¿ej.
+```{r zadanie 2-2, echo=FALSE}
+params <- expand.grid(n = n, paramki = paramki, name = name)
+
+set.seed(20)
+powers <- sapply(1:nrow(params),
+                 function(i){
+                   lengths <- params[i, 1]
+                   pars <- params[i, 2]
+                   names <- params[i, 3]
+                   
+                   p_vector <- sapply(rep(lengths, N), function(x){
+                     sample <- rmix(lengths, family_1, c(pars, 2), family_2, par_2, p)
+                     
+                     if(names == "Test Shapiro-Wilka"){
+                       return <- shapiro.test(sample)$p.value
+                     } else if (names == "Test Andersona-Darlinga"){
+                       return <- ad.test(sample)$p.value 
+                     } else if (names == "Test Jarque-Bera"){
+                       return <- jarque.bera.test(sample)$p.value
+                     }
+                     return
+                   })
+                   mean(p_vector < 0.05)
+                 })
+
+power_df <- bind_cols(params, power = powers)
+
+power_df %>%
+  ggplot(aes(x = paramki, y = power, color = factor(name))) +
+  labs(title = "Moce 3 testów w zale¿noœci od pierwszego elementu wektora par_1", x = "par_1[1]", y = "moc") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_line() + 
+  facet_wrap(~ n, nrow = 3)
+```
+
+__Interpretacja__  
+Zgodnie z przewidywaniami nie ma podstaw do odrzucenia hipotezy zerowej, moc testu maleje wraz ze zwiêkszaniem siê pierwszwego elementu wektora par_1 dla wartoœci miejszych od `8` oraz roœnie wraz ze zwiêkszaniem siê pierwszwego elementu wektora par_1 dla wartoœci wiêkszych od `8`. Moc jest najni¿sza w punkcie równym `8`, dzieje siê tak poniewa¿ w tym miejscu wartoœci oczekiwane dwóch rozk³adów s¹ takie same, wiêc rozk³ady nie ró¿ni¹ siê znacz¹co. Dla d³ugoœci próby równej `40` mo¿emy zaobserowaæ, ¿e test Jarque-Bera cechuje siê najmniejsz¹ moc¹.  
+
+####3. Badanie wp³ywu zmiany drugiego elementu wektora par_1 na moc 3 testów  
+
+Obliczenia wykonane w poni¿szej analizie bêd¹ mia³y na celu stwierdzenie prawid³owoœci hipotezy: 
+
+___W zale¿noœci od zmiany wielkoœci drugiego parametru wektora par_1:___  
+H0: wraz ze zwiêkszaniem wielkoœci par_1[2] roœnie moc testu  
+H1: wraz ze zwiêkszaniem wielkoœci par_1[2] maleje moc testu
+
+Wprowadzenie wartoœci do poszczególnych zmiennych:
+```{r}
+#dlugoœæ próby
+n <- c(40, 100, 150)
+#prawdopodobienstwo pierwszego rozk³adu
+p <- .65
+#drugie elementy par_1 zmienne
+paramki <- seq(5, 10, by = .15)
+#parametry2
+par_2 <- c(8, 3)
+```
+
+```{r zadanie 2-3, echo=FALSE}
+params <- expand.grid(n = n, paramki = paramki, name = name)
+
+set.seed(20)
+powers <- sapply(1:nrow(params),
+                 function(i){
+                   lengths <- params[i, 1]
+                   pars <- params[i, 2]
+                   names <- params[i, 3]
+                   
+                   p_vector <- sapply(rep(lengths, N), function(x){
+                     sample <- rmix(lengths, family_1, c(7, pars), family_2, par_2, p)
+                     
+                     if(names == "Test Shapiro-Wilka"){
+                       return <- shapiro.test(sample)$p.value
+                     } else if (names == "Test Andersona-Darlinga"){
+                       return <- ad.test(sample)$p.value 
+                     } else if (names == "Test Jarque-Bera"){
+                       return <- jarque.bera.test(sample)$p.value
+                     }
+                     return
+                   })
+                   mean(p_vector < 0.05)
+                 })
+
+power_df <- bind_cols(params, power = powers)
+
+power_df %>%
+  ggplot(aes(x = paramki, y = power, color = factor(name))) +
+  labs(title = "Moce 3 testów w zale¿noœci od drugiego elementu wektora par_1", x = "par_1[2]", y = "moc") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_line() + 
+  facet_wrap(~ n, nrow = 3)
+```
+
+__Interpretacja__  
+Nie ma podstaw do odrzucenia hipotezy H0, gdy¿ zmiana drugiego parametru pierwszego wektora (`par_1[2]`) powoduje stopniowy wzrost mocy testów. Najlepiej sprawdza siê tutaj test Andersona-Darlinga, natomiast najs³abszy jest ponownie test Jarque-Bera.   
+
+####4. Badanie wp³ywu zmiany pierwszego elementu wektora par_2 na moc 3 testów    
+
+Obliczenia wykonane w poni¿szej analizy bêd¹ mia³y na celu stwierdzenie prawid³owoœci hipotezy: 
+
+___W zale¿noœci od zmiany wielkoœci pierwszego parametru wektora par_2:___  
+H0: wraz ze zwiêkszaniem wielkoœci par_2[1] maleje moc testu   
+H1: wraz ze zwiêkszaniem wielkoœci par_2[1] roœnie moc testu  
+
+Wprowadzenie wartoœci do poszczególnych zmiennych:
+```{r}
+#dlugoœæ próby
+n <- c(40, 100, 150)
+#prawdopodobienstwo pierwszego rozk³adu
+p <- .65
+#parametry1
+par_1 <- c(7, 2)
+#pierwsze elementy par_2 zmienne
+paramki <- seq(3, 11, by = .2)
+```
+
+```{r zadanie 2-4, echo=FALSE}
+params <- expand.grid(n = n, paramki = paramki, name = name)
+
+set.seed(20)
+powers <- sapply(1:nrow(params),
+                 function(i){
+                   lengths <- params[i, 1]
+                   pars <- params[i, 2]
+                   names <- params[i, 3]
+                   
+                   p_vector <- sapply(rep(lengths, N), function(x){
+                     sample <- rmix(lengths, family_1, par_1, family_2, c(pars, 3), p)
+                     
+                     if(names == "Test Shapiro-Wilka"){
+                       return <- shapiro.test(sample)$p.value
+                     } else if (names == "Test Andersona-Darlinga"){
+                       return <- ad.test(sample)$p.value 
+                     } else if (names == "Test Jarque-Bera"){
+                       return <- jarque.bera.test(sample)$p.value
+                     }
+                     return
+                   })
+                   mean(p_vector < 0.05)
+                 })
+
+power_df <- bind_cols(params, power = powers)
+
+power_df %>%
+  ggplot(aes(x = paramki, y = power, color = factor(name))) +
+  labs(title = "Moce 3 testów w zale¿noœci od pierwszego elementu wektora par_2", x = "par_2[1]", y = "moc") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_line() + 
+  facet_wrap(~ n, nrow = 3)
+```
+
+__Interpretacja__  
+S¹ podstawy do odrzucenia hipotezy zerowej, gdy¿ zmiana pierwszego parametru drugiego wektora (`par_2[1]`) pododuje spadek mocy dla wartoœci zbli¿aj¹cych siê do `7` z lewej strony praz stopniowy wzrost mocy dla wartoœci oddalaj¹cych siê od `7` z prawej. W punkcie, w którym wartoœci `par_1[1]` i `par_2[1]` s¹ sobie równe moce testów zbli¿aj¹ siê do zera, co wynika z tego, ¿e mieszany rozk³ad bêdzie prawie taki sam jak ten, z którym badamy zgodnoœæ. Wszystkie 3 testy maj¹ podobn¹ moc.  
+
+####5. Badanie wp³ywu zmiany drugiego elementu wektora par_2 na moc 3 testów 
+
+Obliczenia wykonane w poni¿szej analizie bêd¹ mia³y na celu stwierdzenie prawid³owoœci hipotezy: 
+
+___W zale¿noœci od zmiany wielkoœci drugiego parametru wektora par_2:___  
+H0: wraz ze zwiêkszaniem wielkoœci par_2[2] maleje moc testu  
+H1: wraz ze zwiêkszaniem wielkoœci par_2[2] roœnie moc testu 
+
+Wprowadzenie wartoœci do poszczególnych zmiennych:
+```{r}
+#dlugoœæ próby
+n <- c(40, 100, 150)
+#prawdopodobienstwo pierwszego rozk³adu
+p <- .65
+#parametry1
+par_1 <- c(7, 3)
+#drugie elementy par_2 zmienne
+paramki <- seq(1, 5, by = .2)
+```
+
+```{r zadanie 2-5, echo=FALSE}
+params <- expand.grid(n = n, paramki = paramki, name = name)
+
+set.seed(20)
+powers <- sapply(1:nrow(params),
+                 function(i){
+                   lengths <- params[i, 1]
+                   pars <- params[i, 2]
+                   names <- params[i, 3]
+                   
+                   p_vector <- sapply(rep(lengths, N), function(x){
+                     sample <- rmix(lengths, family_1, par_1, family_2, c(8, pars), p)
+                     
+                     if(names == "Test Shapiro-Wilka"){
+                       return <- shapiro.test(sample)$p.value
+                     } else if (names == "Test Andersona-Darlinga"){
+                       return <- ad.test(sample)$p.value 
+                     } else if (names == "Test Jarque-Bera"){
+                       return <- jarque.bera.test(sample)$p.value
+                     }
+                     return
+                   })
+                   mean(p_vector < 0.05)
+                 })
+
+power_df <- bind_cols(params, power = powers)
+
+power_df %>%
+  ggplot(aes(x = paramki, y = power, color = factor(name))) +
+  labs(title = "Moce 3 testów w zale¿noœci od drugiego elementu wektora par_2", x = "par_2[2]", y = "moc") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_line() + 
+  facet_wrap(~ n, nrow = 3)
+```
+
+__Interpretacja__  
+S¹ podstawy do odrzucenia hipotezy H0, gdy¿ zmiana drugiego parametru drugiego wektora (`par_2[2]`) pododuje spadek mocy dla wartoœci zbli¿aj¹cych siê do `3` z lewej strony praz stopniowy wzrost mocy dla wartoœci oddalaj¹cych siê od `3` z prawej. Wszystkie 3 testy maj¹ podobn¹ moc.  
+
+__Wnioski ogólne__  
+Porównuj¹c moce testów miêdzy sob¹ na podstawie powy¿szych wykresów, ciê¿ko stwierdziæ, który spoœród nich cechuje siê najwiêksz¹ dok³adnoœci¹. Jednak w wiêkszoœci przypadków test Jarque-Bera odznacza³ siê najmniejsz¹ moc¹, natomiast najbardziej dok³¹dny by³ test Andersona-Darlinga.  
+
+##Zadanie 3
+W tym zadaniu spradzamy moc testu __Wilcoxona__ dla zmiennych z rozk³adu __Poissona__ dla zadanych parametrów, tak by stwierdziæ jak zmienia siê moc w zale¿noœci od `p, par_2 i n`. Na pocz¹tek wprowadzamy wartoœci do zmiennych, które bêd¹ przekazywane do funkcji __rmix__. Przyjmujemy, ¿e zmienna `par_1` nie zmienia siê i jest równa 8.    
+
+Obliczenia wykonane w poni¿szej analizy bêd¹ mia³y na celu stwierdzenie prawid³owoœci nastêpuj¹cych hipotez: 
+
+___W zale¿noœci od zmiany poziomu prawdopodobieñstwa wyst¹pienia zmiennych z 1 rozk³adu:___  
+H0: wraz ze zwiêkszaniem prawdopodobieñstwa maleje moc testu  
+H1: wraz ze zwiêkszaniem prawdopodobieñstwa roœnie moc testu  
+
+___W zale¿nosci od zmiany parametru par_2 - lambdy:___  
+H0: wraz ze zwiekszaniem par_2 roœnie moc testu  
+H1: wraz ze zwiekszaniem par_2 maleje moc testu  
+
+___W zale¿noœci od zmiany d³ugoœci próby:___  
+H0: wraz ze zwiêkszaniem d³ugoœci próby roœnie moc testu  
+H1: wraz ze zwiêkszaniem d³ugoœci próby maleje moc testu  
+
+We wszystich przypadkach prawid³owym wynikiem powinien byæ brak podstaw do odrzucenia hipotez zerowych.    
+
+Wprowadzamy wartoœci do zmiennych.
+```{r} 
+#iloœæ symulacji
+N <- 200
+#dlugoœci próby
+n <- seq(40, 100, by = 15)
+#typ rozk³adu 1
+family_1 <- "poisson"
+#parametr sta³y 
+par_1 <- c(5)
+#typ rozk³adu 2
+family_2 <- "poisson"
+#parametr - lambda 
+par_2 <- c(1:25) 
+#prawdopodobienstwa 
+p <- c(.40, .55, .75)
+```  
+
+Funkcj¹ __expand.grid__ tworzymy ramkê danych dla wszystich mo¿liwych kombinacji zmiennych n, par_2 i p. 
+```{r}
+params <- expand.grid(par_2 = par_2, p = p, n = n)
+```
+
+Po ustawieniu ziarna generatora na 20, dla ka¿dej trójki danych z pomoc¹ odpowiedniej funkcji __wilcox.test__ obliczana jest moc testów i za pomoc¹ __sapply__ do³¹czana do wektora __powers__.
+```{r zadanie3, warning=FALSE}
+set.seed(20)
+powers <- sapply(1:nrow(params),
+                 function(i){
+                   par_2 <- params[i, 1]
+                   p <- params[i, 2]
+                   n <- params[i, 3]
+                   
+                   p_vector <- sapply(rep(par_2, N), function(x){
+                     sample_1 <- rmix(n, family_1, par_1, family_2, par_2, p)
+                     sample_2 <- rpois(n, par_1[1]) 
+                     wilcox.test(sample_1, sample_2, paired = T)$p.value 
+                    })
+                   mean(p_vector < 0.05)
+                 })
+```
+
+Tworzymy now¹ ramkê danych o nazwie __wilcox_df__, któr¹ bêdziemy wykorzystywaæ do sporz¹dzenia wykresów. Ramka danych zawieraæ bêdzie te same wartoœci co ramka __params__ z dodatkow¹ kolumn¹ o nazwie __power__, zawieraj¹c¹ wyliczone wartoœci mocy dla ka¿dej mo¿liwej 3 danych.
+```{r}
+wilcox_df <- bind_cols(params, power = powers)
+```
+
+Za pomoc¹ funkcji __ggplot__ tworzymy wykres przedstawiaj¹cy zale¿noœci pomiêdzy n, par_2 oraz p.
+```{r}
+wilcox_df %>%
+  ggplot(aes(x = par_2, y = power, color = factor(n))) +
+  labs(title = "Wilcoxon - wp³yw n, p i lambda na moc testu", x = "lambda (par_2)", y = "moc") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_line() + 
+  facet_wrap(~ p, nrow = 4)
+```
+
+
+__Interpretacja__  
+Z wykresu __Wilcoxon - wp³yw n, p i lambda na moc testu__ mo¿na zauwa¿yæ, ¿e zgodne z przewidywaniami by³y tylko dwie z trzech postawionych wy¿ej hipotez. Nie ma podstaw do odrzucenia hipotez zerowych numer 1 i 3. Wraz ze zwiêkszaniem d³ugoœci próby `n` roœnie moc testu, natomiat maleje ona wraz ze zwiêkszaniem prawdopodobieñstwa wylosowania liczby z pierwszego rozk³adu `p`. Natomiast jeœli chodzi o parametr lambda `par_2` moc testu maleje gdy lambda drugiego rozk³adu jest mniejsza od ustalonej wczeœniej lambdy pierwszego rozk³adu `par`. W punkcie, w którym lambdy s¹ sobie równe moc testu wynosi 0, co wynika z tego, ¿e mieszany rozk³ad bêdzie prawie taki sam jak ten, z którym badamy zgodnoœæ. Po przekroczeniu punktu 'krytycznego' moc testu dla d³u¿yszch prób roœnie, a¿ osi¹ga wartoœæ 1.

@@ -1,0 +1,203 @@
+---
+title: "Sprawozdanie z Projektu - Ekonometria"
+author: "Jakub Anczyk"
+date: "2023-05-06"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages, include=FALSE}
+PackageNames <- c("regclass", "tidyverse", "stargazer", "magrittr", "moments", "stringr", "dplyr",  "caret", "ggplot2", "lmtest", "corrplot")
+
+for (i in PackageNames){
+  if(!require(i, character.only = T)){
+    install.packages(i, dependencies = T)
+    require(i, character.only = T)
+  }
+}
+```
+
+## Przewidywanie cen nieruchomości w Miami
+
+Zestaw danych wykorzystany do projektu pochodzi z Kaggle i zawiera podstawowe parametry 13 932 domów jednorodzinnych sprzedanych w Miami w 2016 roku: <https://www.kaggle.com/datasets/deepcontractor/miami-housing-dataset>.
+
+Celem projektu jest zbudowanie modelu pozwalającego przewidzieć cenę rynkową nieruchomości na podstawie jej parametrów.
+
+### Budowa modelu
+
+W pierwszym kroku wybieram wszystkie dane z podanego zestawu danych i tworzę zestaw danych wyłącznie numerycznych. Kod nie zawiera kolejnych kroków czyszczenia i dostosowywania danych, ponieważ dane są już gotowe do analizy. 
+
+Poniżej znajduje się krótkie podsumowanie dostępnych zmiennych:
+
+```{r load_data, echo=TRUE}
+data <- read.csv("miami-housing.csv")
+
+data_num <- data %>%
+  select_if(~all(!is.character(.)))
+  
+stargazer(data_num, type="text")
+```
+
+Następnie zaczynam budowę modelu ekonometrycznego od zbudowania macierzy korelacji, macierzy R0 oraz R:
+
+```{r cor_matrix, echo=TRUE}
+
+cor_matrix <- cor(data_num)
+R_0 <- cor_matrix[4,-4]
+R <- cor_matrix[-4,-4]
+```
+
+W kolejnym kroku buduję macierz zawierającą zestawienie wszystkich możliwych kombinacji zestawień zmiennych.
+
+```{r comb, echo=TRUE}
+comb <- expand.grid(rep(list(c(T,F)), 16))
+tot_comb <- nrow(comb)-1
+comb_capacity <- comb %>% mutate(capacity = 0)
+```
+
+Następnie obliczam całkowitą pojemność informacji każdej uzyskanej w ten sposób kombinacji.
+
+```{r calculate_information, echo=TRUE}
+
+for(row in 1:tot_comb)
+{
+  
+  k <-c(1:16)[unlist(comb[row,])]
+  H <- 0
+  
+  for(i in k)
+  {
+    H <- H + (R_0[i]^2)/sum(abs(R[k,i]))
+  }
+  
+  comb_capacity[row, 17] = H
+}
+```
+
+Finalnie sortuję uzyskane w ten sposób dane i wybieram kombinację o największej możliwej pojemności informacyjnej.
+
+```{r results, echo=TRUE}
+comb_capacity <- comb_capacity %>% arrange(desc(capacity))
+max_capacity <- comb_capacity[1,]
+x <-c(1:16)[unlist(comb_capacity[1,1:16])]
+y <- names(R_0[x])
+y[6] <- "SALE_PRC"
+```
+
+Teraz mozemy podsumować uzyskany w ten sposób model.
+
+```{r model, echo=TRUE}
+final_model <- lm(SALE_PRC ~ .,data[y])
+summary(final_model)
+```
+
+Jak widać, wszystkie wybrane zmienne są bardzo istotne dla modelu, osiągając p-value poniżej 2e-16, tj. mniejszą niż 0.0000000000000002. Zmienne te to kolejno:
+
+**TOT_LVG_AREA** (total living area) - to wartość odpowiadająca całkowitej powierzchni użytkowej lokalu w stopach kwadratowych.
+
+Znak przy tym współczynniku jest dodatni, co oznacza, że wzrost o jedną jednostkę (stopę kwadratową) oznacza wzrost ceny obiektu o $200.70 (ceteris paribus). 
+
+**SPEC_FEAT_VAL** (total value of special features) - podana w dolarach wartość wszystkich dodatkowych cech lokalu, takich jak baseny, jaccuzi, szklarnie przydomowe etc.,
+
+Znak przy tym współczynniku także jest dodatni, co oznacza, że wzrost o jedną jednostkę, tj. wzrost wartości znajdujących się w obrębie budynku obiektów o jednego dolara oznacza wzrost ceny samego obiektu o $3.61 (ceteris paribus).
+
+**SUBCNTR_DI** (subcenter distance) - odległość od najbliższego subcentrum, tj. centrum działalności handlowej lub usługowej. Wraz ze wzrostem odległości o jedną stopę, cena nieruchomości maleje o $2.70 (ceteris paribus). 
+
+**STRUCTURE_QUALITY** - jakość/klasa (strukturalna) budynku. Zgodnie z modelem przeskok o jedną klasę jakości w górę oznacza wzrost średniej ceny obiektu aż o $95340.00 (ceteris paribus). 
+
+### Diagnostyka
+
+Jak widać na następujących wykresach, zmienne pokazują różne aspekty zmiany ceny, to jest zachowują się różnie zestawione z ceną nieruchomości. Gdyby wykresy były do siebie podobne, oznaczałoby to dużą autokorelację. 
+
+Wizualna analiza wykresów pozwala przypuścić, że autokorelacja między zmiennymi jest niewielka.
+
+```{r plot}
+plot(data$SALE_PRC, data$TOT_LVG_AREA)
+plot(data$SALE_PRC, data$SPEC_FEAT_VAL)
+plot(data$SALE_PRC, data$SUBCNTR_DI)
+plot(data$SALE_PRC, data$structure_quality)
+
+R <- cor(data_num[,y])
+corrplot(R)
+dwtest(final_model)
+
+```
+
+#### Test normalności reszt
+
+Test normalności reszt pokazuje, że statystyka R-kwadrat jest niewystarczająca, aby pozytywnie ocenić model.
+
+```{r fittedresiduals}
+summary(final_model)
+qqnorm(final_model$residuals, pch = 1, frame = FALSE)
+qqline(final_model$residuals, col = "steelblue", lwd = 2)
+```
+
+Aby poprawić model, próbuję najpierw przekształcić go za pomocą logarytmu.
+
+```{r fittedresiduals2}
+
+final_model <- lm(log(SALE_PRC) ~ ., data = data[y])
+qqnorm(final_model$residuals, pch = 1, frame = FALSE)
+qqline(final_model$residuals, col = "steelblue", lwd = 2)
+summary(final_model)
+
+```
+
+Jest to rzeczywiście wystarczające aby uzyskać wartość R-kwadrat powyżej 70%, jednak podniesienie ceny jeszcze to czwartej potęgi pomoże uzyskać R-kwadrat bliższe 75%. Wciąż jednak nawet takie przekształcenie nie jest wystarczające by pozbyć się tzw. "grubych ogonów". 
+
+Taki rozkład oznacza dużo wyższe niż w rozkładzie normalnym prawdopodobieństwo wystąpienia skrajnie wysokich (gruby prawy ogon) lub niskich (gruby lewy ogon) wartości.
+
+Wynik testu Shapiro-Wilka pokazuje, że są podstawy do odrzucenia hipotezy zerowej o normalności reszt, tj. wartości resztowe nie mają rozkładu normalnego.
+
+```{r fittedresiduals3}
+
+final_model <- lm(log10(SALE_PRC)^4 ~ .,data = data[y])
+summary(final_model)
+qqnorm(final_model$residuals, pch = 1, frame = FALSE)
+qqline(final_model$residuals, col = "steelblue", lwd = 2)
+
+qqnorm(final_model$residuals, pch = 1, frame = FALSE)
+shapiro.test(sample(final_model$residuals, 5000, replace = FALSE, prob = NULL))
+
+# niestety p-value bardzo male, poniżej 0.05
+```
+
+#### Wykres i histogram wartości teoretycznych i reszt
+
+Jak widać na wykresie wartości teoretycznych i reszt, obserwacje koncentrują się wyraźnie wokół zera, choć wykres jest zdecydowanie niesymetryczny i ma rożną wariancję reszt dla różnych wartości teoretycznych. 
+
+Oznacza to, że błąd jest różny w zależności od wartości przewidzianej przez model.
+
+```{r residuals}
+
+final_model <- lm(sqrt(SALE_PRC) ~ .,data = data[y])
+hist(final_model$residuals)
+# Create the plot
+plot(final_model$fitted.values, final_model$residuals, xlab = "Fitted Values", ylab = "Residuals", main = "Fitted vs Residuals Plot")
+```
+
+#### Heterosdedastyczność - Test Breuscha-Pagana
+
+Bazując na bardzo małym p-value, istnieją podstawy do odrzucenia hipotezy zerowej o braku heteroskedastyczności. Oznacza to, że wariancja reszt w istocie jest różna a model niedopasowany.
+
+```{r bp}
+bptest(final_model)
+```
+
+#### Heterosdedastyczność - Test Durbina-Watsona
+
+Bazując na bardzo małym p-value dla tego testu, istnieją także podstawy do odrzucenia hipotezy zerowej o braku autokorelacji. Oznacza to, że zmienne są między sobą istotnie skorelowane, co także oznacza słabe dopasowanie modelu. 
+
+```{r dw}
+dwtest(final_model)
+```
+
+### Podsumowanie
+
+Ostatecznie model po przeprowadzeniu diagnostyki zostaje odrzucony z powodu braku spełnienia podstawowych założeń, między innymi o normalności reszt i nieheteroskedastyczności.

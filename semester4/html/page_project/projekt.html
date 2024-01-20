@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8" />  
+        <script>
+            function showPhotoshoot(id) {
+                var shoots = document.getElementsByClassName('photos');
+                for (var i = 0; i < shoots.length; i++) {
+                    if (shoots[i].id === id) {
+                        shoots[i].style.display = "block";
+                    } else {
+                        shoots[i].style.display = "none";
+                    }
+                }
+            };
+
+            const images = document.querySelectorAll("img[data-src]");
+
+            const options = {
+            rootMargin: "0px",
+            threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                const image = entry.target;
+                const src = image.getAttribute("data-src");
+
+                image.setAttribute("src", src);
+                image.removeAttribute("data-src");
+
+                observer.unobserve(image);
+              }
+            });
+            }, options);
+
+            images.forEach(image => {
+            observer.observe(image);
+            });
+        </script>
+
+        <style>
+            @font-face { font-family: Bayon; src: url('Bayon-Regular.TTF'); }
+
+            * {
+                overflow-y: hidden;
+            }
+
+            .menu {
+                color: #000;
+                font-family: BB-Regular,Helvetica Neue,Helvetica,Arial,sans-serif;
+                font-size: .700rem;
+                font-weight: 400;
+                line-height: 140%;
+                letter-spacing: 0;
+                text-align: left;
+                margin-left: -20px;
+            }
+
+            .menutitle {
+                color: #000;
+                font-family: BB-Regular,Helvetica Neue,Helvetica,Arial,sans-serif;
+                font-size: .700rem;
+                font-weight: 500;
+                line-height: 140%;
+                letter-spacing: 0;
+                text-align: left;
+                margin-left: 30px;
+                font-weight: bold;
+            }
+
+
+            .menulink a:link {
+                color: #1084b5;
+                text-decoration: none;
+            }
+
+            .menulink a:visited {
+                color: #1084b5;
+                text-decoration: none;
+            }
+
+            .menulink a:hover {
+                color: #2BF0FB;
+                font-weight: normal;
+                text-decoration:none;
+            }
+
+            .menulink a:active {
+                color: #F2CC0F;
+                font-weight: normal;
+                text-decoration:none;
+            } 
+
+            .menulink li, ul{
+                list-style-type: none;
+            }
+
+            .menulink a{
+                text-align: left;
+                margin-left:auto;
+                width:300px;
+                margin-right:auto;
+                -webkit-padding-start: 40px;
+                margin-top: 0px;
+                font-weight: bold;
+                font-weight: 100;
+            }
+
+            .photos img {
+                width: 500px;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            .head header{
+                position: fixed;
+                font-size: 1.25rem;
+                color: black;
+                font-family: "Bayon";
+                margin-left: 5px;
+                font-weight: 100;
+            }
+
+            nav {
+                float: left;
+                padding: 20px;
+                position: fixed;
+                top: 30px;
+                width: 30%;
+            }
+
+            article {
+                overflow-y: hidden;
+                float: left;
+                padding: 20px;
+                width: 70%;
+                overflow: auto;
+                height: 100vh;
+                margin-left: 30%;
+            }
+
+		</style>
+    </head>
+    
+   <body style="background-color:white">
+
+    <section class=head>
+        <header>
+            <a>JAKUB ANCZYK</a>
+        </header>
+    </section>
+
+    <section class=menu>
+        <nav>
+            <menu class='menu'>
+                <a class='menutitle'>Contact</a>
+                <div class="Contact">
+                    <ul>
+                      <li class='menulink'><a href="https://www.instagram.com/kuba_anczyk/">Instagram</a></li>
+                      <li class='menulink'><a href="https://www.facebook.com/jakub.anczyk.fotografia/">Facebook</a></li>
+                      <li>Tel: +48 666 639 043</li>
+
+                    </ul> 
+                </div><br>
+
+                <a class='menutitle'>Photography</a>
+                <div class="Photography">
+                    <ul>
+                      <li class='menulink'><a href="#" onclick="showPhotoshoot('photoshoot1')">Joe Colombo / New Horizons</a></li>
+                      <li class='menulink'><a href="#" onclick="showPhotoshoot('photoshoot2')">Joe Colombo / StratoSlider</a></li>
+                      <li class='menulink'><a href="#" onclick="showPhotoshoot('photoshoot3')">Joe Colombo & Kasia Skoczek / Songs That Made Us</a></li>
+                      <li class='menulink'><a href="#" onclick="showPhotoshoot('photoshoot4')">Ola Bieniek</a></li>
+                      <li class='menulink'><a href="#" onclick="showPhotoshoot('photoshoot5')">Jędrek Wachowski</a></li>
+                      <li class='menulink'><a href="#" onclick="showPhotoshoot('photoshoot6')">Asia Sawczuk</a></li>
+                      <li class='menulink'><a href="#" onclick="showPhotoshoot('photoshoot7')">Sonia Wachowska</a></li>
+                      <li class='menulink'><a href="#" onclick="showPhotoshoot('photoshoot8')">Cherry & Kopen</a></li>
+                      <li class='menulink'><a href="#" onclick="showPhotoshoot('photoshoot9')">Iceland</a></li>
+                      <li class='menulink'><a href="#" onclick="showPhotoshoot('photoshoot10')">Florian</a></li>
+                      <li class='menulink'><a href="#" onclick="showPhotoshoot('photoshoot11')">Kotlina</a></li>
+                      <li class='menulink'><a href="#" onclick="showPhotoshoot('photoshoot12')">Romek Puchowski / IBC 2015</a></li>
+                      <li class='menulink'><a href="#" onclick="showPhotoshoot('photoshoot13')">Random</a></li>
+                      <li class='menulink'><a href="#" onclick="showPhotoshoot('photoshoot14')">Analog</a></li>
+                    </ul> 
+                </div><br>
+            </menu>
+        </nav>
+    </section>
+
+    <section>
+        <article>
+            <div class="photos" id="photoshoot1" style="display: none;">
+                <img src="photos/joe/joe6.jpg"><br>
+                <img src="photos/joe/joe7.jpg"><br>
+                <img src="photos/joe/joe8.jpg"><br>
+                <img src="photos/joe/joe9.jpg"><br>
+                <img src="photos/joe/joe10.jpg"><br>
+            </div>
+
+            <div class="photos" id="photoshoot2" style="display: none;">
+                <img src="photos/joe/joe1.jpg"><br>
+                <img src="photos/joe/joe2.jpg"><br>
+                <img src="photos/joe/joe3.jpg"><br>
+                <img src="photos/joe/joe4.jpg"><br>
+                <img src="photos/joe/joe5.jpg"><br>
+            </div>
+
+            <div class="photos" id="photoshoot3" style="display: none;">
+                <img src="photos/joe/joe12.jpg"><br>
+            </div>
+
+            <div class="photos" id="photoshoot4" style="display: none;">
+                <img src="photos/ola/ola2.png"><br>
+                <img src="photos/ola/ola3.png"><br>
+                <img src="photos/ola/ola4.png"><br>
+                <img src="photos/ola/ola5.png"><br>
+                <img src="photos/ola/ola6.png"><br>
+                <img src="photos/ola/ola7.png"><br>
+                <img src="photos/ola/ola11.png"><br>
+            </div>
+
+            <div class="photos" id="photoshoot5" style="display: none;">
+                <img src="photos/jedrek/jdrk1.jpg"><br>
+                <img src="photos/jedrek/jdrk2.jpg"><br>
+                <img src="photos/jedrek/jdrk3.jpg"><br>
+                <img src="photos/jedrek/jdrk4.jpg"><br>
+                <img src="photos/jedrek/jdrk5.jpg"><br>
+                <img src="photos/jedrek/jdrk6.jpg"><br>
+                <img src="photos/jedrek/jdrk7.jpg"><br>
+                <img src="photos/jedrek/jdrk8.jpg"><br>
+                <img src="photos/jedrek/jdrk9.jpg"><br>
+                <img src="photos/jedrek/jdrk10.jpg"><br>
+                <img src="photos/jedrek/jdrk11.jpg"><br>
+            </div>
+
+            
+            <div class="photos" id="photoshoot6" style="display: none;">
+                <img src="photos/asia/asia1.jpg"><br>
+                <img src="photos/asia/asia2.jpg"><br>
+                <img src="photos/asia/asia3.jpg"><br>
+                <img src="photos/asia/asia4.jpg"><br>
+                <img src="photos/asia/asia5.jpg"><br>
+                <img src="photos/asia/asia6.jpg"><br>
+            </div>
+
+            <div class="photos" id="photoshoot7" style="display: none;">
+                <img src="photos/sonia/sonia1.jpg"><br>
+                <img src="photos/sonia/sonia2.jpg"><br>
+                <img src="photos/sonia/sonia3.jpg"><br>
+                <img src="photos/sonia/sonia4.jpg"><br>
+                <img src="photos/sonia/sonia5.jpg"><br>
+                <img src="photos/sonia/sonia6.jpg"><br>
+            </div>
+            
+            <div class="photos" id="photoshoot8" style="display: none;">
+                <img src="photos/cherry/cherry1.jpg"><br>
+                <img src="photos/cherry/cherry2.jpg"><br>
+                <img src="photos/cherry/cherry3.jpg"><br>
+                <img src="photos/cherry/cherry4.jpg"><br>
+                <img src="photos/cherry/cherry5.jpg"><br>
+            </div>
+            
+            <div class="photos" id="photoshoot9" style="display: none;">
+                <img src="photos/iceland/ice1.jpg"><br>
+                <img src="photos/iceland/ice2.jpg"><br>
+                <img src="photos/iceland/ice3.jpg"><br>
+                <img src="photos/iceland/ice4.jpg"><br>
+                <img src="photos/iceland/ice5.jpg"><br>
+                <img src="photos/iceland/ice6.jpg"><br>
+                <img src="photos/iceland/ice7.jpg"><br>
+                <img src="photos/iceland/ice8.jpg"><br>
+                <img src="photos/iceland/ice9.jpg"><br>
+                <img src="photos/iceland/ice10.jpg"><br>
+                <img src="photos/iceland/ice11.jpg"><br>
+                <img src="photos/iceland/ice12.jpg"><br>
+                <img src="photos/iceland/ice13.jpg"><br>
+                <img src="photos/iceland/ice14.jpg"><br>
+                <img src="photos/iceland/ice15.jpg"><br>
+            </div>
+
+            
+            <div class="photos" id="photoshoot10" style="display: none;">
+                <img src="photos/flo/flo1.png"><br>
+                <img src="photos/flo/flo2.png"><br>
+                <img src="photos/flo/flo3.png"><br>
+            </div>
+
+            
+            <div class="photos" id="photoshoot11" style="display: none;">
+                <img src="photos/kotlina/ktl1.jpg"><br>
+                <img src="photos/kotlina/ktl2.jpg"><br>
+            </div>
+
+            
+            <div class="photos" id="photoshoot12" style="display: none;">
+                <img src="photos/romek/romek1.jpg"><br>
+                <img src="photos/romek/romek2.jpg"><br>
+                <img src="photos/romek/romek3.jpg"><br>
+                <img src="photos/romek/romek4.jpg"><br>
+                <img src="photos/romek/romek5.jpg"><br>
+            </div>
+            
+            <div class="photos" id="photoshoot13" style="display: none;">
+                <img src="photos/random/rndm1.jpg"><br>
+                <img src="photos/random/rndm2.jpg"><br>
+                <img src="photos/random/rndm3.jpg"><br>
+                <img src="photos/random/rndm4.jpg"><br>
+                <img src="photos/random/rndm5.jpg"><br>
+                <img src="photos/random/rndm6.jpg"><br>
+            </div>            
+
+            <div class="photos" id="photoshoot14" style="display: none;">
+                <img src="photos/analog/analog1.jpg"><br>
+                <img src="photos/analog/analog2.jpg"><br>
+                <img src="photos/analog/analog3.jpg"><br>
+                <img src="photos/analog/analog4.jpg"><br>
+                <img src="photos/analog/analog5.png"><br>
+                <img src="photos/analog/analog6.jpg"><br>
+                <img src="photos/analog/analog7.png"><br>
+                <img src="photos/analog/analog8.jpg"><br>
+                <img src="photos/analog/analog9.png"><br>
+                <img src="photos/analog/analog10.png"><br>
+            </div>
+            
+        </article>
+    </section>
+
+
+
+   </body>
+
+</html>

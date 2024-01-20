@@ -1,0 +1,107 @@
+---
+title: "Indeks Giniego i krzywa Lorenza"
+author: "Jakub Anczyk"
+date: '2022-06-15'
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(warning = FALSE, include = FALSE)
+packages <- c("dplyr", "eurostat", "WDI", "DescTools", "tidyr", "ggplot2")
+
+installed_packages <- packages %in% rownames(installed.packages())
+if (any(installed_packages == FALSE)) {
+  install.packages(packages[!installed_packages])}
+
+invisible(lapply(packages, library, character.only = TRUE))
+
+```
+
+## Indeks Giniego dla Polski
+
+W tym zadaniu wykorzystałem zbiór danych Eurostatu <a href="https://ec.europa.eu/eurostat/web/income-and-living-conditions/data/database">Income and living conditions (ilc)</a>, zawierający rozkład dochodów według kwantyli i importowałem je za pomocą biblioteki "eurostat". Dokładne opisy zestawu danych dostępne są <a href="https://ec.europa.eu/eurostat/cache/metadata/en/ilc_esms.htm">pod tym linkiem</a>. 
+
+Do porównania wyliczonej wartości wykorzystałem zbiór danych Banku Światowego <a href="https://data.worldbank.org/indicator/SI.POV.GINI">World Development Indicators</a>.
+
+Wykorzystane w zadaniu funkcje umożliwiają wygenerowanie krzywej Lorenza i współczynnika Giniego dla dowolnego zestawu danych (za n należy podać kolumnę zawierającą częstotliwość), jednak najbardziej granularne dane w pierwszym zestawie zostały wyrażone w decylach. 
+
+```{r eurostat, echo=TRUE}
+
+dat <- get_eurostat(id = "ilc_di01", time_format="num")
+
+world_bank_gini <- WDI(indicator = "SI.POV.GINI", 
+                       extra = TRUE)
+
+eurostat_analysis <- dat %>%
+  dplyr::filter(
+    indic_il == "SHARE",
+    currency == "EUR",
+    geo == "PL",
+    time == "2020",
+    substr(quantile, 1, 1) == "D"
+  )
+
+gini_coefficient_eurostat_pl <- 100*(Gini(eurostat_analysis$values, unbiased = TRUE, conf.level = NA, R = 1000, type = "bca", na.rm = FALSE))
+
+world_bank_gini <- world_bank_gini %>% 
+  dplyr::filter(year == "2018") %>%
+  drop_na()
+
+gini_coefficient_wb <- world_bank_gini%>% 
+  dplyr::filter(year == "2018", iso3c == "POL")
+
+gini_coefficient_wb_pl <- gini_coefficient_wb$SI.POV.GINI
+gini_difference = gini_coefficient_wb_pl - gini_coefficient_eurostat_pl
+
+
+world_gini_plot <- ggplot(world_bank_gini, aes(x = reorder(iso3c, SI.POV.GINI), y = SI.POV.GINI)) + 
+  geom_bar(stat="identity", fill="black", na.rm = TRUE) + 
+  theme_bw() + 
+  geom_hline(yintercept = as.numeric(gini_coefficient_eurostat_pl), linetype="dashed", color = "red", size=0.8) + 
+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank())
+
+lorenz_curve <- Lc(eurostat_analysis$values, plot = TRUE)
+
+```
+
+## Wnioski
+
+Obliczony na podstawie powyższego kodu współczynnik Giniego wynosi `r toString(round(gini_coefficient_eurostat_pl, 2))`, natomiast najbardziej aktualna wartość dla tego współczynnika od Baku Światowego wynosi `r toString(gini_coefficient_wb_pl)`. 
+
+Należy zaznaczyć, że pierwsza wartość została obliczona na podstawie danych z 2020 a druga na podstawie danych z 2018 roku. Jako że wskaźnik ten od wielu lat maleje, można założyć przypuścić, że różnica wynosząca `r toString(round(gini_difference, 2))` wynika ze zmniejszenia się nierówności w Polsce między 2018 a 2020 rokiem.  
+
+Krzywa Lorenza dla Polski przedstawiona jest na poniższym wykresie. 
+
+```{r gini, echo=FALSE}
+
+png("lorenz_curve.png",
+    width = 600, height = 600,
+    bg = "white")
+plot(lorenz_curve)
+dev.off()
+
+png("world_gini_plot.png",
+    width = 600, height = 600,
+    bg = "white")
+plot(world_gini_plot)
+dev.off()
+
+```
+![""](lorenz_curve.png)
+
+W porównaniu do reszty świata Polska wypada na tym polu zdecydowanie dobrze - według danych Banku światowego zajmujemy 39 miejsce na liście Państw o najniższych współczynnikach Giniego. Na poniższym wykresie wartość współczynnika Giniego dla Polski, tj. `r toString(round(gini_coefficient_eurostat_pl, 2))`, przedstawiono za pomocą czerwonej, kropkowanej linii. 
+
+![""](world_gini_plot.png)
+
+## Metoda szacowania
+
+W celu uzasadnienia metody obliczania współczynnika Giniego, posłużę się opisem funkcji Gini() dostępnym w dokumentacji R: "Zakres współczynnika Giniego obejmuje wartości od 0 (brak koncentracji) do 1 (maksymalna koncentracja). Skorygowany współczynnik Giniego przyjmuje wartości od 0 do 1. 
+
+Właściwości wariancji współczynnika Giniego dla małych prób nie są znane, a przybliżenia wariancji współczynnika dla dużych prób są słabe (Mills i Zandvakili, 1997; Glasser, 1962; Dixon i in., 1987), dlatego przedziały ufności oblicza się za pomocą metod ponownego próbkowania bootstrapowego (Efron i Tibshirani, 1997). 
+
+Powszechnie stosowane są dwa rodzaje bootstrapowych przedziałów ufności: percentylowe i z korektą błędów (Mills i Zandvakili, 1997; Dixon i in., 1987; Efron i Tibshirani, 1997). Do większości zastosowań najbardziej odpowiednie są przedziały z korektą skośną. 
+
+Jest on ustawiony jako domyślny dla argumentu "type" ("bca"). Dixon (1987) opisuje udoskonalenie metody z korekcją skośną, znanej jako "przyspieszona" - pozwala ona uzyskać wartości bardzo zbliżone do konwencjonalnych przedziałów z korekcją skośną. (Iain Buchan (2002) Calculating the Gini coefficient of inequality, patrz: https://www.statsdirect.com/help/default.htm#nonparametric_methods/gini.htm)"

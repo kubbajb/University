@@ -1,0 +1,94 @@
+---
+title: 'Projekt R (Statystyka Opisowa i Ekonomiczna)'
+author: "Jakub Anczyk"
+date: '2022-05-30'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(include = TRUE)
+```
+
+## Temat projektu: Relacja między religijnością a wolnością
+
+Na temat projektu idnywidualnego wybrałem zbadanie relacji między religijnością populacji wybranych państw i regionów według odsetka populacji, który identyfikuje się z dowolną religią a wolnością, mierzoną wskaźnikami oceniającymi proces wyborczy, pluralizm polityczny i partycypację, funkcjonowanie rządu, wolność słowa i przekonań, prawa stowarzyszania się i organizowania, rządy prawa oraz autonomię osobistą i prawa jednostki.
+
+W projekcie wykorzystałem publicznie dostępne dane z dwóch źródeł:
+
+1. Dane dotyczące religijności pochodzą ze strony projektu <a href="https://correlatesofwar.org/">Correlates of War</a>. Zbiór danych jest dostępny pod <a href="https://correlatesofwar.org/data-sets/world-religion-data/wrp-global-data/at_download/file/WRP_national.csv">następującym linkiem</a>. 
+
+2. Dane o wolności pochodzą ze strony projektu <a href="https://freedomhouse.org/report/freedom-world">Freedom House</a>. Zbiór danych jest dostępny pod <a href="https://freedomhouse.org/sites/default/files/2022-02/Aggregate_Category_and_Subcategory_Scores_FIW_2003-2022.xlsx">następującym linkiem</a>. 
+
+```{r libraries, include=FALSE}
+# Libraries
+library(tidyverse)
+library(magrittr)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(data.table)
+library(eurostat)
+library(tibbletime)
+library(plyr)
+library(readxl)
+library(data.table)
+
+```
+
+```{r download, include=FALSE}
+# Import religion data
+# Source: https://correlatesofwar.org/data-sets/world-religion-data
+# Direct original URL: https://correlatesofwar.org/data-sets/world-religion-data/wrp-national-data-1/@@download/file/WRP_national.csv
+# Codebook and explanations: https://correlatesofwar.org/data-sets/world-religion-data/wrp-codebook/at_download/file
+url_religion = 'https://correlatesofwar.org/data-sets/world-religion-data/wrp-national-data-1/@@download/file/WRP_national.csv'
+download.file(url_religion, 'WRP_national.csv')
+Religion = read_csv('WRP_national.csv')
+write.csv(Religion, "WRP_national.csv")
+
+# Import democracy data
+# Source: https://freedomhouse.org/report/freedom-world
+# Direct original URL: https://freedomhouse.org/sites/default/files/2022-02/Aggregate_Category_and_Subcategory_Scores_FIW_2003-2022.xlsx
+url_democracy = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQGO3rY5a3v7ecCiDe9HXYLCKdQgDE_zipk5zz9OrqsfE4Yf1vYwT-WkNVKdrZGYIVf982I_Mcvmbj1/pub?output=csv'
+download.file(url_democracy, 'Aggregate_Category_and_Subcategory_Scores_FIW_2003-2022.csv')
+Democracy = read_csv('Aggregate_Category_and_Subcategory_Scores_FIW_2003-2022.csv')
+write.csv(Democracy, 'Aggregate_Category_and_Subcategory_Scores_FIW_2003-2022.csv')
+```
+
+```{r transform, include=FALSE}
+
+# Aggregate religion data
+reqd <- as.vector(c("chrstgen", "judgen", "islmgen", "budgen", "zorogen", "hindgen", "sikhgen", "shntgen", "bahgen", "taogen", "jaingen", "confgen", "syncgen", "nonrelig", "othrgen"))
+religion_aggregated_data <- Religion[,reqd]
+religion_aggregated_data <- religion_aggregated_data %>% mutate(dom_relig = names(.)[max.col(.)])
+
+reqd <- as.vector(c("year", "name", "pop", "nonreligpct", "othrgenpct", "sumreligpct", "total"))
+religion_aggregated_names <- Religion[,reqd]
+religion_aggregated <- cbind(religion_aggregated_names, "dom_relig" = religion_aggregated_data$dom_relig)
+
+# Remove redundant data
+rm(religion_aggregated_data, religion_aggregated_names)
+
+# Aggregate and order democracy data
+democracy_aggregated <- Democracy
+colnames(democracy_aggregated)[3] = 'name'
+colnames(democracy_aggregated)[5] = 'year'
+
+# Combine democracy and religion data into one table
+religion_by_democracy_data <- merge(religion_aggregated, democracy_aggregated)
+religion_by_democracy_data$nonreligious <- (religion_by_democracy_data$sumreligpct-religion_by_democracy_data$nonreligpct)
+
+
+
+# Plot scatterplot on religion vs. democracy index
+religion_democracy_freedom <- ggplot(religion_by_democracy_data, aes(x = PR, y = nonreligious, color = dom_relig, shape = Region)) + geom_point(stat = 'identity')
+```
+
+## Analizy zależności między wolnością a religijnością populacji państw
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(religion_democracy_freedom)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

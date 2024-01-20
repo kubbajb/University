@@ -1,0 +1,15 @@
+C:\Users\413472\source\repos\CwiczeniaPierwsze\CwiczeniaPierwsze\obj\Debug\net6.0\CwiczeniaPierwsze.csproj.AssemblyReference.cache
+C:\Users\413472\source\repos\CwiczeniaPierwsze\CwiczeniaPierwsze\obj\Debug\net6.0\CwiczeniaPierwsze.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\413472\source\repos\CwiczeniaPierwsze\CwiczeniaPierwsze\obj\Debug\net6.0\CwiczeniaPierwsze.AssemblyInfoInputs.cache
+C:\Users\413472\source\repos\CwiczeniaPierwsze\CwiczeniaPierwsze\obj\Debug\net6.0\CwiczeniaPierwsze.AssemblyInfo.cs
+C:\Users\413472\source\repos\CwiczeniaPierwsze\CwiczeniaPierwsze\obj\Debug\net6.0\CwiczeniaPierwsze.csproj.CoreCompileInputs.cache
+C:\Users\413472\source\repos\CwiczeniaPierwsze\CwiczeniaPierwsze\bin\Debug\net6.0\CwiczeniaPierwsze.exe
+C:\Users\413472\source\repos\CwiczeniaPierwsze\CwiczeniaPierwsze\bin\Debug\net6.0\CwiczeniaPierwsze.deps.json
+C:\Users\413472\source\repos\CwiczeniaPierwsze\CwiczeniaPierwsze\bin\Debug\net6.0\CwiczeniaPierwsze.runtimeconfig.json
+C:\Users\413472\source\repos\CwiczeniaPierwsze\CwiczeniaPierwsze\bin\Debug\net6.0\CwiczeniaPierwsze.dll
+C:\Users\413472\source\repos\CwiczeniaPierwsze\CwiczeniaPierwsze\bin\Debug\net6.0\CwiczeniaPierwsze.pdb
+C:\Users\413472\source\repos\CwiczeniaPierwsze\CwiczeniaPierwsze\obj\Debug\net6.0\CwiczeniaPierwsze.dll
+C:\Users\413472\source\repos\CwiczeniaPierwsze\CwiczeniaPierwsze\obj\Debug\net6.0\refint\CwiczeniaPierwsze.dll
+C:\Users\413472\source\repos\CwiczeniaPierwsze\CwiczeniaPierwsze\obj\Debug\net6.0\CwiczeniaPierwsze.pdb
+C:\Users\413472\source\repos\CwiczeniaPierwsze\CwiczeniaPierwsze\obj\Debug\net6.0\CwiczeniaPierwsze.genruntimeconfig.cache
+C:\Users\413472\source\repos\CwiczeniaPierwsze\CwiczeniaPierwsze\obj\Debug\net6.0\ref\CwiczeniaPierwsze.dll

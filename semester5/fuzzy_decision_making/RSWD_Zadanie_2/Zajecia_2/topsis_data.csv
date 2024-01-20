@@ -1,0 +1,13 @@
+DecisionMaker,Kandydat,KritA,KritB,KritC
+DecisionMaker1,Kandydat1,Average,Very High,High
+DecisionMaker1,Kandydat2,High,Very High,Average
+DecisionMaker1,Kandydat3,Very High,Average,Low
+DecisionMaker1,Kandydat4,Low,Average,Very Low
+DecisionMaker2,Kandydat1,High,Very High,High
+DecisionMaker2,Kandydat2,High,High,Average
+DecisionMaker2,Kandydat3,Very High,Average,Very Low
+DecisionMaker2,Kandydat4,Low,Average,Very Low
+DecisionMaker3,Kandydat1,Average,High,High
+DecisionMaker3,Kandydat2,High,Average,Average
+DecisionMaker3,Kandydat3,High,Average,Low
+DecisionMaker3,Kandydat4,Very Low,Low,Very Low

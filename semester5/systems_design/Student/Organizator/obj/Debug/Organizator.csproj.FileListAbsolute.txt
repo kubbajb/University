@@ -1,0 +1,51 @@
+D:/Analiza i projektowanie/Student/Lab13/Organizator/Organizator/obj/Debug/ResolveAssemblyReference.cache
+D:/Analiza i projektowanie/Student/Lab13/Organizator/Organizator/bin/Debug/Organizator.exe
+D:/Analiza i projektowanie/Student/Lab13/Organizator/Organizator/bin/Debug/Organizator.pdb
+D:/Analiza i projektowanie/Student/Lab13/Organizator/Organizator/obj/Debug/Organizator.exe
+D:/Analiza i projektowanie/Student/Lab13/Organizator/Organizator/obj/Debug/Organizator.pdb
+D:/Analiza i projektowanie/Student/Lab13/Rozwiazane/Organizator/Organizator/obj/Debug/Organizator.exe
+D:/Analiza i projektowanie/Student/Lab13/Rozwiazane/Organizator/Organizator/obj/Debug/Organizator.pdb
+D:/Analiza i projektowanie/Student/Lab13/Rozwiazane/Organizator/Organizator/bin/Debug/Organizator.exe
+D:/Analiza i projektowanie/Student/Lab13/Rozwiazane/Organizator/Organizator/bin/Debug/Organizator.pdb
+D:/Analiza i projektowanie/Student/Lab13/Rozwiazane/Organizator/Organizator/obj/Debug/ResolveAssemblyReference.cache
+D:/Analiza i projektowanie/Student/Lab13/Projekt/Rozwiazane/Organizator/Organizator/obj/Debug/Organizator.exe
+D:/Analiza i projektowanie/Student/Lab13/Projekt/Rozwiazane/Organizator/Organizator/obj/Debug/Organizator.pdb
+D:/Analiza i projektowanie/Student/Lab13/Projekt/Rozwiazane/Organizator/Organizator/obj/Debug/ResolveAssemblyReference.cache
+D:/Analiza i projektowanie/Student/Lab13/Projekt/Rozwiazane/Organizator/Organizator/bin/Debug/Organizator.exe
+D:/Analiza i projektowanie/Student/Lab13/Projekt/Rozwiazane/Organizator/Organizator/bin/Debug/Organizator.pdb
+D:/Student/Analiza i projektowanie/Laboratorium/5 - Implementacja/Projekt/Rozwiazane/Organizator/Organizator/obj/Debug/Organizator.exe
+D:/Student/Analiza i projektowanie/Laboratorium/5 - Implementacja/Projekt/Rozwiazane/Organizator/Organizator/obj/Debug/Organizator.pdb
+D:/Student/Analiza i projektowanie/Laboratorium/5 - Implementacja/Projekt/Rozwiazane/Organizator/Organizator/bin/Debug/Organizator.exe
+D:/Student/Analiza i projektowanie/Laboratorium/5 - Implementacja/Projekt/Rozwiazane/Organizator/Organizator/bin/Debug/Organizator.pdb
+D:/Student/Analiza i projektowanie/Laboratorium/5 - Implementacja/Projekt/Rozwiazane/Organizator/Organizator/obj/Debug/Organizator.csprojResolveAssemblyReference.cache
+D:/Student/Analiza i projektowanie/Laboratorium/5 - Implementacja/Projekt/Student/Organizator/obj/Debug/Organizator.exe
+D:/Student/Analiza i projektowanie/Laboratorium/5 - Implementacja/Projekt/Student/Organizator/obj/Debug/Organizator.pdb
+D:/Student/Analiza i projektowanie/Laboratorium/5 - Implementacja/Projekt/Student/Organizator/bin/Debug/Organizator.exe
+D:/Student/Analiza i projektowanie/Laboratorium/5 - Implementacja/Projekt/Student/Organizator/bin/Debug/Organizator.pdb
+D:/Student/Analiza i projektowanie/Laboratorium/5 - Implementacja/Projekt/Student/Organizator/obj/Debug/Organizator.csprojResolveAssemblyReference.cache
+D:/Student/Analiza i projektowanie/Laboratorium/5 - Implementacja/Organizer/Student/Organizator/obj/Debug/Organizator.exe
+D:/Student/Analiza i projektowanie/Laboratorium/5 - Implementacja/Organizer/Student/Organizator/obj/Debug/Organizator.pdb
+D:/Student/Analiza i projektowanie/Laboratorium/5 - Implementacja/Organizer_CSharp/Student/Organizator/obj/Debug/Organizator.exe
+D:/Student/Analiza i projektowanie/Laboratorium/5 - Implementacja/Organizer_CSharp/Student/Organizator/obj/Debug/Organizator.pdb
+c:/Andrzej/dydaktyka2020/AiPISZ/Laboratoria/T5_Implementacja/Organizer_CSharp/Student/Organizator/obj/Debug/Organizator.exe
+c:/Andrzej/dydaktyka2020/AiPISZ/Laboratoria/T5_Implementacja/Organizer_CSharp/Student/Organizator/obj/Debug/Organizator.pdb
+c:/Andrzej/dydaktyka2020/AiPISZ/Laboratoria/T5_Implementacja/Organizer_CSharp/Student/Organizator/bin/Debug/Organizator.exe
+c:/Andrzej/dydaktyka2020/AiPISZ/Laboratoria/T5_Implementacja/Organizer_CSharp/Student/Organizator/bin/Debug/Organizator.pdb
+c:/Andrzej/dydaktyka2020/AiPISZ/Laboratoria/T5_Implementacja/Organizer_CSharp/Student/Organizator/obj/Debug/Organizator.csprojResolveAssemblyReference.cache
+c:/Andrzej/Dydaktyka2021/AiPSIZ_S/Projekt19_11/NowaWersja/Student/Organizator/obj/Debug/Organizator.exe
+c:/Andrzej/Dydaktyka2021/AiPSIZ_S/Projekt19_11/NowaWersja/Student/Organizator/obj/Debug/Organizator.pdb
+c:/Andrzej/Dydaktyka2021/AiPSIZ_S/Projekt19_11/NowaWersja/Student/Organizator/bin/Debug/Organizator.exe
+c:/Andrzej/Dydaktyka2021/AiPSIZ_S/Projekt19_11/NowaWersja/Student/Organizator/bin/Debug/Organizator.pdb
+c:/Andrzej/Dydaktyka2021/AiPSIZ_S/Projekt19_11/NowaWersja/Student/Organizator/obj/Debug/Organizator.csprojResolveAssemblyReference.cache
+C:/Andrzej/Dydaktyka2022zima/AiPISZ/Implementacja/Student/Organizator/bin/Debug/Organizator.exe
+C:/Andrzej/Dydaktyka2022zima/AiPISZ/Implementacja/Student/Organizator/bin/Debug/Organizator.pdb
+C:/Andrzej/Dydaktyka2022zima/AiPISZ/Implementacja/Student/Organizator/obj/Debug/Organizator.csprojAssemblyReference.cache
+C:/Andrzej/Dydaktyka2022zima/AiPISZ/Implementacja/Student/Organizator/obj/Debug/Organizator.csproj.CoreCompileInputs.cache
+C:/Andrzej/Dydaktyka2022zima/AiPISZ/Implementacja/Student/Organizator/obj/Debug/Organizator.exe
+C:/Andrzej/Dydaktyka2022zima/AiPISZ/Implementacja/Student/Organizator/obj/Debug/Organizator.pdb
+/Users/bartoszsermak/Downloads/Student/Organizator/bin/Debug/Organizator.exe
+/Users/bartoszsermak/Downloads/Student/Organizator/bin/Debug/Organizator.pdb
+/Users/bartoszsermak/Downloads/Student/Organizator/obj/Debug/Organizator.csproj.AssemblyReference.cache
+/Users/bartoszsermak/Downloads/Student/Organizator/obj/Debug/Organizator.csproj.CoreCompileInputs.cache
+/Users/bartoszsermak/Downloads/Student/Organizator/obj/Debug/Organizator.exe
+/Users/bartoszsermak/Downloads/Student/Organizator/obj/Debug/Organizator.pdb

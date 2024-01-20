@@ -1,0 +1,179 @@
+---
+title: "Zadanie 11"
+author: "Jakub Anczyk"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r lib, include=FALSE}
+library(ggplot2)
+library(nortest)
+library(stats)
+library(tseries)
+```
+
+## Polecenie
+
+Za pomocą odpowiednich symulacji zbadać moc testów: Jarque-Bera, Shapiro-Wilka i Lillieforsa w przypadku, gdy dane pochodzą z rozkładu 𝑡-Studenta. Uzyskane wyniki należy przedstawić na odpowiednich wykresach ilustrujących moce testów z uwzględnieniem:
+
+- liczby danych,
+
+- liczby stopni swobody generowanego rozkładu t-Studenta
+
+## Funkcje mierzące moc testów
+
+```{r funkcje}
+
+# Function to generate samples from Student's t-distribution
+generate_samples <- function(n, df) {
+  return(rt(n, df))
+}
+
+# Function to perform the Jarque-Bera test and calculate the power
+calculate_jb_power <- function(n, df) {
+  num_trials <- 1000
+  num_rejections <- 0
+  
+  for (i in 1:num_trials) {
+    # Generate samples from the t-distribution
+    samples <- generate_samples(n, df)
+    
+    # Perform the Jarque-Bera test
+    jb_test <- jarque.bera.test(samples)
+    
+    # Check if the null hypothesis is rejected
+    if (jb_test$p.value < 0.05) {
+      num_rejections <- num_rejections + 1
+    }
+  }
+  
+  power <- num_rejections / num_trials * 100
+  return(power)
+}
+
+# Function to perform the Shapiro-Wilk test and calculate the power
+calculate_sw_power <- function(n, df) {
+  num_trials <- 1000
+  num_rejections <- 0
+  
+  for (i in 1:num_trials) {
+    # Generate samples from the t-distribution
+    samples <- generate_samples(n, df)
+    
+    # Perform the Shapiro-Wilk test
+    sw_test <- shapiro.test(samples)
+    
+    # Check if the null hypothesis is rejected
+    if (sw_test$p.value < 0.05) {
+      num_rejections <- num_rejections + 1
+    }
+  }
+  
+  power <- num_rejections / num_trials * 100
+  return(power)
+}
+
+# Function to perform the Lilliefors test and calculate the power
+calculate_lilliefors_power <- function(n, df) {
+  num_trials <- 1000
+  num_rejections <- 0
+  
+  for (i in 1:num_trials) {
+    # Generate samples from the t-distribution
+    samples <- generate_samples(n, df)
+    
+    # Perform the Lilliefors test
+    lilliefors_test <- lillie.test(samples)
+    
+    # Check if the null hypothesis is rejected
+    if (lilliefors_test$p.value < 0.05) {
+      num_rejections <- num_rejections + 1
+    }
+  }
+  
+  power <- num_rejections / num_trials * 100
+  return(power)
+}
+
+```
+
+## Stworzenie danych dla testów
+
+```{r dane}
+# Sample sizes to consider
+sample_sizes <- c(50, 100, 200, 500, 1000)
+
+# Degrees of freedom to consider
+df_values <- c(5, 10, 20, 30, 50)
+
+# Initialize result matrices
+jb_results <- matrix(0, nrow = length(df_values), ncol = length(sample_sizes))
+sw_results <- matrix(0, nrow = length(df_values), ncol = length(sample_sizes))
+lilliefors_results <- matrix(0, nrow = length(df_values), ncol = length(sample_sizes))
+colnames(jb_results) <- sample_sizes
+colnames(sw_results) <- sample_sizes
+colnames(lilliefors_results) <- sample_sizes
+rownames(jb_results) <- df_values
+rownames(sw_results) <- df_values
+rownames(lilliefors_results) <- df_values
+
+```
+
+## Zastosowanie funkcji do danych
+
+```{r power, warning=FALSE}
+
+# Perform simulations for each sample size and degrees of freedom
+for (i in 1:length(df_values)) {
+  for (j in 1:length(sample_sizes)) {
+    df <- df_values[i]
+    n <- sample_sizes[j]
+    jb_results[i, j] <- calculate_jb_power(n, df)
+    sw_results[i, j] <- calculate_sw_power(n, df)
+    lilliefors_results[i, j] <- calculate_lilliefors_power(n, df)
+  }
+}
+
+```
+
+## Stworzenie wykresów do wygenerowanych danych
+
+```{r charts}
+
+# Plotting the results
+par(mfrow = c(3, 1), mar = c(4, 4, 2, 1))
+df_labels <- c("df=5", "df=10", "df=20", "df=30", "df=50")
+
+for (i in 1:length(df_values)) {
+  plot(
+    sample_sizes, jb_results[i, ],
+    type = "b", pch = 16, ylim = c(0, 100),
+    xlab = "Próbka", ylab = "Power",
+    main = paste("Jarque-Bera Test\n", df_labels[i])
+  )
+}
+
+for (i in 1:length(df_values)) {
+  plot(
+    sample_sizes, sw_results[i, ],
+    type = "b", pch = 16, ylim = c(0, 100),
+    xlab = "Próbka", ylab = "Power",
+    main = paste("Shapiro-Wilk Test\n", df_labels[i])
+  )
+}
+
+for (i in 1:length(df_values)) {
+  plot(
+    sample_sizes, lilliefors_results[i, ],
+    type = "b", pch = 16, ylim = c(0, 100),
+    xlab = "Próbka", ylab = "Power",
+    main = paste("Lilliefors Test\n", df_labels[i])
+  )
+}
+
+
+```

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <title>Zadanie 5 - JavaScript</title>
+    <style>
+      .button {
+        display: inline-block;
+        margin: 0 20px;
+        width: 100px;
+        height: 20px;
+        border: black solid 1px;
+        text-align: center;
+      }
+      .button:hover {
+        background-color: grey;
+        font-weight: bold;
+      }
+    </style>
+    <script>
+      const lista = ['jablko', 'gruszka', 'ananas', 'porzeczka', 'schabowy'];
+      var num = 0;
+      function first(){
+        for (let element of lista){
+          console.log(element);
+        }
+      }
+      function second(){
+        for (let i = 0; i < lista.length; i++){
+          console.log(lista[i]);
+        }
+      }
+      function random() {
+        let item = lista[~~(lista.length * Math.random())];
+        console.log(item);
+      }
+    </script>
+  </head>
+  <body>
+    <script>
+    </script>
+    <div class="button" onclick="first()">For each</div>
+    <div class="button" onclick="second()">For</div>
+    <div class="button" onclick="random()">Random</div>
+  </body>
+</html>

@@ -1,0 +1,197 @@
+/* Ogólne style */
+
+body {
+  font-family: Arial;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+/* Styl nagłówka */
+header {
+  background-color: #333;
+  padding: 10px;
+}
+
+header nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+header nav ul li {
+  display: inline;
+}
+
+header nav ul li a {
+  color: #fff;
+  text-decoration: none;
+  margin-right: 10px;
+}
+
+.side-menu a:link {
+  color: #042243;
+  text-decoration: none;
+}
+
+.side-menu a:visited {
+  color: #042243;
+  text-decoration: none;
+}
+
+.side-menu a:hover {
+  color: darkgreen;
+  font-weight: normal;
+  text-decoration:none;
+}
+
+
+.top-menu a:link {
+  color: white;
+  text-decoration: none;
+}
+
+.top-menu a:visited {
+  color: white;
+  text-decoration: none;
+}
+
+.top-menu a:hover {
+  color: #0097b2;
+  font-weight: normal;
+  text-decoration:none;
+}
+
+.landing h2 p * {
+  width: 500vh;
+}
+
+
+/* Styl menu bocznego */
+aside {
+  background-color: #0097b2;
+  padding: 10px;
+  width: 20%;
+}
+
+aside ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 5px;
+}
+
+aside ul li {
+  margin-bottom: 5px;
+  background-color: #f1f1f1;
+  padding: 10px;
+}
+
+
+aside li a:hover {
+  color: #0097b2;
+}
+
+aside ul li a {
+  color: #333;
+  text-decoration: none;
+}
+
+
+/* Styl głównego obszaru treści */
+main {
+  padding-left: 20%;
+  margin-top: 4%;
+  width: 60%;
+}
+
+/* Styl Landing Page */
+#landing {
+  text-align: left;
+  width: 1000px;
+}
+
+
+/* Styl sekcji Mapa */
+#mapa {
+  text-align: left;
+  align-items: left;
+}
+
+#map-container {
+  width: 400px;
+  height: 300px;
+  margin: 0 auto;
+  background-color: #ccc;
+  align-items: left;
+}
+
+/* Styl sekcji Kontakt */
+#kontakt form {
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+}
+
+#kontakt form label {
+  margin-bottom: 10px;
+}
+
+#kontakt form input,
+#kontakt form textarea {
+  width: 300px;
+  padding: 5px;
+  margin-bottom: 10px;
+}
+
+#kontakt form input[type="submit"] {
+  background-color: #333;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+}
+
+/* Media queries */
+@media (max-width: 768px) {
+  /* Dostosowanie do małych ekranów */
+  aside {
+    display: none;
+  }
+
+  main {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+}
+
+@media (min-width: 769px) {
+  /* Dostosowanie do większych ekranów */
+  header {
+    margin-left: 20%;
+    padding-left: 5%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+
+  aside {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+  }
+
+  main {
+    margin-left: 220px;
+  }
+}
+
+#zegar {
+  display: flex;
+  flex-direction: flex-end;
+  padding: 10px;
+  margin-bottom: 5px;
+  background-color: #d4d4d4;
+  padding: 10px;
+}

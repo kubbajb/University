@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Park Leśny</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="scripts.js"></script>
+</head>
+<body>
+
+  <header>
+    <nav>
+      <ul class="top-menu">
+        <li><a href="#">Strona główna</a></li>   
+        <li><a href="https://www.lasy.gov.pl">Lasy Państwowe</a></li>
+        <li><a href="https://www.lasy.gov.pl/pl/nasze-lasy/bank-danych-o-lasach">Bank Danych o Lasach</a></li>
+        <li><a href="mapa.html">Mapa</a></li>
+        <li><a href="kontakt.html">Kontakt</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <aside>
+    <img width=340px src="logo.png" alt="Logo Parku Leśnego" class="logo">
+    <ul class="side-menu">
+      <li><a href="#">Ogólne informacje</a></li>
+      <li><a href="#">Atrakcje</a></li>
+      <li><a href="#">Zwiedzanie</a></li>
+      <li id="zegar">
+        <script type="text/javascript">
+          document.write(time());
+        </script>
+      </li>
+    </ul>
+  </aside>
+
+
+
+  <main>
+    <section id="landing">
+
+      <h1>Witaj w Parku Leśnym</h1>
+
+      <p>Park Leśny w Lublińcu jest jednym z najstarszych parków w Polsce. Został założony w 1934 roku i od tego czasu stanowi prawdziwą perłę miasta. Park rozciąga się na obszarze około 30 hektarów, oferując odwiedzającym wiele możliwości relaksu, rekreacji i kontaktu z naturą.</p>
+
+      <p>Park Leśny w Lublińcu słynie ze swojego bogatego drzewostanu, który składa się z różnorodnych gatunków drzew. Na terenie parku można znaleźć stuletnie dęby, buki, jesiony, świerki i wiele innych, tworzących malownicze aleje i cienie na spacerujących ścieżkach.</p>
+
+      <img width=750px src="wieza.jpg" alt="Wieża w Parku" class="logo">
+
+      <p>Jednym z najważniejszych punktów parku jest staw, który stanowi oazę spokoju i piękna. Staw jest domem dla wielu gatunków ptaków, które przyciągają pasjonatów ornitologii. Można tu również spotkać kaczki i łabędzie, które dodatkowo wzbogacają atmosferę tego miejsca.</p>
+
+      <p>Park Leśny w Lublińcu oferuje liczne atrakcje dla osób w różnym wieku. Dla dzieci przygotowano plac zabaw z huśtawkami, zjeżdżalniami i piaskownicą. Jest to idealne miejsce dla rodzin, które chcą spędzić czas na świeżym powietrzu w przyjaznym i bezpiecznym otoczeniu.</p>
+
+      <p>Dla osób aktywnych fizycznie park oferuje wiele możliwości. Można spacerować po malowniczych ścieżkach, biegać, jeździć na rowerze czy też korzystać z siłowni plenerowej. Park Leśny jest doskonałym miejscem do aktywnego wypoczynku i dbania o kondycję.</p>
+
+      <img width=750px src="laka.jpg" alt="Łąka w Parku" class="logo">
+
+      <p>W parku znajduje się również mała kawiarnia, gdzie można odpocząć i delektować się aromatyczną kawą lub przekąską. To doskonałe miejsce na spotkanie ze znajomymi lub relaksującą przerwę po intensywnym spacerze.</p>
+
+      <p>Park Leśny w Lublińcu to idealne miejsce na wycieczki rodzinne, romantyczne spacery czy spotkania ze znajomymi. Przyjazna atmosfera, piękno przyrody i liczne atrakcje sprawiają, że park jest jednym z najbardziej popularnych miejsc w Lublińcu. Niezależnie od pory roku, zawsze można tu znaleźć spokój i odprężenie w otoczeniu zieleni i śpiewu ptaków.</p>
+
+    </section>
+
+    <br>
+
+    <section id="mapa">
+      <h2>Mapa Parku Leśnego</h2>
+      <div id="map-container" style="overflow:hidden;max-width:100%;width:1000px;height:750px;"><div id="google-maps-display" style="height:100%; width:100%;max-width:100%;"><iframe style="height:100%;width:100%;border:0;" frameborder="0" src="https://www.google.com/maps/embed/v1/place?q=park+lubliniecki&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"></iframe></div><a class="embed-ded-maphtml" href="https://www.bootstrapskins.com/themes" id="auth-map-data">premium bootstrap themes</a><style>#google-maps-display img.text-marker{max-width:none!important;background:none!important;}img{max-width:none}</style>
+    </div>
+    </section>
+
+    <br>
+
+    <section id="kontakt">
+      <h2>Kontakt</h2>
+      <form>
+        <label for="name">Imię:</label>
+        <input type="text" id="name" name="name">
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email">
+
+        <label for="message">Wiadomość:</label>
+        <textarea id="message" name="message"></textarea>
+
+        <input type="submit" value="Wyślij">
+      </form>
+    </section>
+  </main>
+</body>
+</html>

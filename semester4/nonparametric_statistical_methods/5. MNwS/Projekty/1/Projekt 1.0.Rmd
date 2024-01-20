@@ -1,0 +1,239 @@
+---
+title: "Projekt 1.0"
+author: " "
+date: "10 marca 2018"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###Wprowadznie
+Tematem projektu jest zbadanie mocy testów normalnoœci rozk³adu w przypadku, gdy dane pochodz¹ z rozk³adu t-Studenta.
+Analiza bêdzie polega³a na wyznaczeniu ramek danych zawieraj¹cych wartoœci mocy testów
+dla poszczególnych przypadków uwzglêdniaj¹cych zmiane:  
+- d³ugoœci próby,  
+- iloœci stopni swobody w rozk³adzie t,  
+- poziomu istotnoœci  
+oraz przedstawienie wyników na wykresach.
+
+W analizie wykorzystane zostan¹ 3 testy: Shapiro-Wilka, Ko³mogorowa-Smirnowa i Jarque-Bera.
+
+Test Shapiro-Wilka: ___shapiro.test(x)___
+Jeden z najbardziej popularnych testów standardowych, wykorzystywany do testowania normalnoœci danych. Analiza porównawcza przy u¿yciu metod Monte-Carlo wykaza³a, ¿e test Shapiro-Wilka ma najwiêksza moc spoœród testów badaj¹cych normalnoœæ. Hipotez¹ zerowymi w tym teœcie jest stwierdzenie, ¿e próba pochodzi z rozk³adu normalnego
+
+Test Ko³mogorowa-Smirnowa: ___ks.test(x, y)___
+Test zgodnoœci dla rozk³adów ci¹g³ych. Pozwala na badanie zgodnoœci rozk³adu cechy 'x' z wybranym rozk³adem teoretycznym 'y', (w tym przypadku jest to rozk³ad normalny - pnorm) lub te¿ na badanie równoœci rozk³adów dwóch cech. W teœcie Ko³mogorowa hipotez¹ zerow¹ jest stwierdzenie, ¿e dwie porównywane pórby maj¹ takis am rozk³ad.
+
+Test Jarque-Bera: ___jarque.bera.test(x)___
+Testuje wartoœæ normalnoœci dla 'x' przy u¿yciu statystyki Jarque-Bera. Test ten jest statystyk¹ wspóln¹ wykorzystuj¹c¹ wspó³czynniki skoœnoœci i kurtozy. Zwykle wykorzystywany jest do du¿ych zastawów danych, gdy¿ inne testy normalnoœci nie s¹ wiarygodne przy testowaniu wiêkszych prób (np. Shapiro-Wilka dla iloœci danych powy¿ej 2000). Hipotez¹ zerow¹ w tym teœcie jest stwierdzenie, ¿e próba pochodzi z rozk³adu normalnego.
+
+W projekcie u¿yte zostan¹ 3 wektory - d³ugoœci próby (lenght), iloœci stopni swobody (df) oraz pozimu istotnoœci (alpha). D³ugoœæ próby bêdzie mia³a zakres od 12 do 22 i bêdzie zwiêkszana o 2, stopnie swobody bêd¹ z zakresu od 1 do 11, natomiast do poziomu istotnoœci zostan¹ przypisane typowe wartoœci u¿ywane przy analizie normalnoœci - (0.02, 0.05, 0.1, 0.2).  
+
+Obliczenie wykonane w poni¿ej analizy bêd¹ mia³y na celu stwierdzneie prawid³owoœci nastêpuj¹cych hipotez: 
+
+___W zale¿noœci od zmiany d³ugoœci próby:___  
+H0: wraz ze zwiêkszaniem d³ugoœci próby roœnie moc testu  
+H1: wraz ze zwiêkszaniem d³ugoœci próby maleje moc testu  
+
+___W zale¿noœci od zmiany iloœci stopni swobody:___  
+H0: wraz ze zwiêkszaniem ilosci stopni swobody maleje moc testu  
+H1: wraz ze zwiêkszaniem iloœci stopni swobody roœnie moc testu  
+
+___W zale¿nosci od zmiany poziomu istotnoœci:___  
+H0: wraz ze zwiekszaniem poziomu istotnoœci roœnie moc testu  
+H1: wraz ze zwiekszaniem poziomu istotnoœci maleje moc testu  
+
+We wszystich przypadkach prawid³owym wynikiem powinien byæ brak podstaw do odrzucenia hipotez zerowych.
+
+###Wizualizacja
+
+```{r message=FALSE}
+#za³adowanie bibliotek
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(tseries)
+```
+
+Wprowadzenie wartoœci do poszczególnych zmiennych 
+```{r}
+#iloœæ symulacji
+N <- 1000
+#stopnie swobody
+dfs <- seq(1, 11, by = 1)
+#poziomy istotnoœci
+alphas <- c(.02, .05, .1, .2)
+#d³ugoœæ próby
+lengths <- seq(12, 22, by = 2)
+```
+
+Nastêpnie za pomoca funkcji __expand.grid__ tworzê ramkê danych wszystkich kombinacji o nazwie 'params' z ka¿d¹ mo¿liw¹ trójk¹ z tych wartoœci.
+```{r}
+params <- expand.grid(df = dfs, alpha = alphas, length = lengths)
+```
+
+Dla ka¿dej trójki danych z pomoc¹ odpowiedniej funkcji (shapiro.test, ks.test lub jarque.bera.test) obliczana jest moc testów i za pomoc¹ funkcji ___sapply___ do³¹czana do wektora ___powers___ Najpierw dla testu Shapiro-Wilka.
+```{r}
+set.seed(20)
+powers <- sapply(1:nrow(params),
+                 function(i){
+                   df <- params[i, 1]
+                   alpha <- params[i, 2]
+                   n <- params[i, 3]
+                   p_vector <- sapply(rep(df, N), function(x){
+                     my_sample <- rt(n, df)
+                     shapiro.test(my_sample)$p.value
+                   })
+                   mean(p_vector < alpha)
+                 })
+
+```
+
+Tworzenie ramki danych dla wyników testu Shapiro-Wilka:
+```{r}
+shapiro_df <- bind_cols(params, power = powers)
+```
+
+Tworzenie 4 wykresów dla ka¿dego z podanych na pocz¹tku przedzia³ów istotnoœci (alpha). Na osi poziomej X znajduje siê iloœæ stopni swobody (df), a na osi pionowej Y moc testu (power). Poszczególne d³ugoœci próby (length) zosta³y zilustrowane za pomoc¹ kolorowych linii.
+
+```{r, echo=FALSE}
+shapiro_df %>%
+  ggplot(aes(x = df, y = power, color = factor(length))) +
+  labs(title = "Test Shapiro-Wilka") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_line() + 
+  facet_wrap(~ alpha, nrow = 2)
+```
+
+Powtarzam 3 ostatnie operacje dla pozosta³ych 2 testów.
+```{r, echo=FALSE}
+#Ko³mogorowa
+set.seed(20)
+powers <- sapply(1:nrow(params),
+                 function(i){
+                   df <- params[i, 1]
+                   alpha <- params[i, 2]
+                   n <- params[i, 3]
+                   p_vector <- sapply(rep(df, N), function(x){
+                     my_sample <- rt(n, df)
+                     ks.test(my_sample, pnorm)$p.value
+                   })
+                   mean(p_vector < alpha)
+                 })
+kolmogorow_df <- bind_cols(params, power = powers)
+
+kolmogorow_df %>%
+  ggplot(aes(x = df, y = power, color = factor(length))) +
+  labs(title = "Test Ko³mogorowa-Smirnowa") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_line() + 
+  facet_wrap(~ alpha, nrow = 2)
+
+#Jarque-Bera
+set.seed(20) 
+powers <- sapply(1:nrow(params),
+                 function(i){
+                   df <- params[i, 1]
+                   alpha <- params[i, 2]
+                   n <- params[i, 3]
+                   p_vector <- sapply(rep(df, N), function(x){
+                     my_sample <- rt(n, df)
+                     jarque.bera.test(my_sample)$p.value
+                   })
+                   mean(p_vector < alpha)
+                 })
+jarque_df <- bind_cols(params, power = powers)
+
+jarque_df %>%
+  ggplot(aes(x = df, y = power, color = factor(length))) +
+  labs(title = "Test Jarque-Bera") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_line() + 
+  facet_wrap(~ alpha, nrow = 2)
+
+```
+
+Wykres pokazuj¹cy jak zmieniaj¹ siê moce testów w zale¿noœci od iloœci stopni swobody, dla poziomu istotnoœci równego 5% i d³ugoœci próby równej 16.
+```{r, echo=FALSE}
+shapiro_wide <-
+  shapiro_df %>%
+  spread(length, power)
+kolmogorow_wide <-
+  kolmogorow_df %>%
+  spread(length, power)
+jarque_wide <-
+  jarque_df %>%
+  spread(length, power)
+
+shapiro_wide <- shapiro_wide[which(shapiro_wide[,2] == .05), c(1,2,5)]
+shapiro_wide$name <- "Shapiro-Wilka"
+colnames(shapiro_wide)[3] = "power"
+kolmogorow_wide <- kolmogorow_wide[which(kolmogorow_wide[,2] == .05), c(1,2,5)]
+kolmogorow_wide$name <- "Kolmogorowa"
+colnames(kolmogorow_wide)[3] = "power"
+jarque_wide <- jarque_wide[which(jarque_wide[,2] == .05), c(1,2,5)]
+jarque_wide$name <- "Jarque-Bera" 
+colnames(jarque_wide)[3] = "power"
+
+all_wide <- data.frame(shapiro_wide)
+all_wide <- rbind(all_wide, kolmogorow_wide, jarque_wide)
+
+all_wide %>%
+  ggplot(aes(x = df, y = power, color = factor(name))) +
+  labs(title = "Zestawienie dla alpha = 5% i length = 16") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_line()
+```
+
+Wykres pokazuj¹cy jak zmieniaj¹ siê moce testów w zale¿noœci od iloœci stopni swobody, dla poziomu istotnoœci równego 10% i d³ugoœci próby równej 18.
+```{r, echo=FALSE}
+shapiro_wide <-
+  shapiro_df %>%
+  spread(length, power)
+kolmogorow_wide <-
+  kolmogorow_df %>%
+  spread(length, power)
+jarque_wide <-
+  jarque_df %>%
+  spread(length, power)
+
+shapiro_wide <- shapiro_wide[which(shapiro_wide[,2] == .1), c(1,2,6)]
+shapiro_wide$name <- "Shapiro-Wilka"
+colnames(shapiro_wide)[3] = "power"
+kolmogorow_wide <- kolmogorow_wide[which(kolmogorow_wide[,2] == .1), c(1,2,6)]
+kolmogorow_wide$name <- "Kolmogorowa"
+colnames(kolmogorow_wide)[3] = "power"
+jarque_wide <- jarque_wide[which(jarque_wide[,2] == .1), c(1,2,6)]
+jarque_wide$name <- "Jarque-Bera" 
+colnames(jarque_wide)[3] = "power"
+
+all_wide <- data.frame(shapiro_wide)
+colnames(all_wide)[3] = "power"
+all_wide <- rbind(all_wide, kolmogorow_wide, jarque_wide)
+
+all_wide %>%
+  ggplot(aes(x = df, y = power, color = factor(name))) +
+  labs(title = "Zestawienie dla alpha = 10% i length = 18") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_line()
+```
+
+
+###Interpretacja
+
+Po przeprowadzaniu powy¿szych wizualizacji mo¿na zauwa¿yæ, ¿e we wszystkich trzech rozwa¿anych przypadkach nie ma podstaw do odrzucenia hipotez zerowych.  
+Oznacza to, ¿e d³ugoœæ próby (length) istotnie wp³ywa na moc testu i wraz z jej wzrostem roœnie moc testu. Iloœæ stopni swobody (df) ma równie¿ istotny wp³yw na moc testu i wraz z ich zwiêszaniem moc znacznie spada. Moc testu zwiêksza siê wraz ze zwiêkszaniem poziomu istotnoœci (alpha).  
+Testy Shapiro-Wilka i Jarque-Bera lepiej interpretuj¹ zmianê mocy testu w zale¿noœci od d³ugoœci próby. W teœcie Ko³mogorowa-Smirnowa linie mocno siê na siebie nak³adaj¹. Dla wszystskich z czterech podanych wartoœci alpha moc testu szybko spada wraz ze wzrostem iloœci stopni swobody.  
+We wszystkich trzech testach dla poziomu istotnoœci 2% i  dla 10 stopni swobody moc przyjmuje ju¿ wartoœæ bliska 0%.
+
+Na ostatnich dwóch wykresach wyraŸnie widaæ, ¿e test Shapiro-Wilka ma najwiêksz¹ moc spoœród badanych testów co pokrywa siê z wynikami analizy porównawczej przy u¿yciu metod Monte-Carlo. Natomiast najmniejszym wskaŸnikiem mocy cechuje siê test Ko³mogorowa-Smirnowa.
+
+Na analizê mog¹ mieæ wp³yw nastêpuj¹ce uproszczenia:  
+- ma³e d³ugoœci badanych prób,  
+- liczba symulacji - 1000 wydajê siê za ma³a, ale zwiêkszenie jej wi¹¿e siê ze znacznym wyd³u¿eniem oczekiwania na wyniki,  
+- uproszczone porównanie ze sob¹ mocy trzech testów mo¿e wp³yn¹æ na wiarygodnoœæ.  

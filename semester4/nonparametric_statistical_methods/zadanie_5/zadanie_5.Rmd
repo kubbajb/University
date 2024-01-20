@@ -1,0 +1,156 @@
+---
+title: "Zadanie 2"
+author: "Jakub Anczyk"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r lib, include=FALSE}
+library(ggplot2)
+library(nortest)
+library(stats)
+```
+
+## Polecenie
+
+Za pomocą odpowiednich symulacji zbadać odsetek odrzuceń prawdziwej hipotezy głównej w teście Kołmogorowa-Smirnowa w przypadku, gdy rozważane próbki pochodzą z tego samego rozkładu. Rozważyć dwa różne rozkłady asymetryczne. W badaniu uwzględnić różną liczebność próbek. Uzyskane wyniki należy przedstawić na odpowiednich wykresach ilustrujących wyniki z uwzględnieniem:
+
+- liczby danych (można rozważać różne liczebności w każdej z próbek),
+
+- parametrów rozważanych rozkładów
+
+## Funkcje mierzące moc testów
+
+```{r funkcje}
+
+set.seed(1997)
+
+chisq_p_val <- function(n_data, df, cuts){
+  
+  # min,max and bin calculation
+  lowest <- min(data)
+  largest <- max(data)
+  cut_points <- seq(lowest, largest, length.out = cuts)
+  
+  # binning
+  observed <- as.vector(table(cut(data, breaks = cut_points)))
+
+  # cut distribution to obtain theoretical probabilities
+  for (i in 1:(cuts-1)){
+    probability[i] <- pt(cut_points[i+1], df) - pt(cut_points[i], df)
+  }
+  
+  # multiply probabilities by n to obtain expected frequencies
+  expected <- vector("numeric", cuts)
+  expected <- round(probability * n_data, 0)
+
+  return(chisq.test(x = observed, y = expected)$p.value)
+}
+
+# Function to perform the tests and calculate rejection percentage
+perform_tests <- function(df, n_data, n_simulations, cuts) {
+  rejection_kolmogorov_classical <- vector("numeric", n_simulations)
+  rejection_kolmogorov_pit <- vector("numeric", n_simulations)
+  rejection_chi2_classical <- vector("numeric", n_simulations)
+  rejection_chi2_pit <- vector("numeric", n_simulations)
+  
+  for (i in 1:n_simulations) {
+    # Generate data from t-Student distribution
+    data <- rt(n_data, df)
+    
+    # Perform Kolmogorov test (classical)
+    ks_test_classical <- ks.test(data, "pt", df)
+    rejection_kolmogorov_classical[i] <- as.integer(ks_test_classical$p.value < 0.05)
+    
+    # Perform Kolmogorov test (PIT)
+    ks_test_pit <- ks.test(pnorm(data), "pt", df)
+    rejection_kolmogorov_pit[i] <- as.integer(ks_test_pit < 0.05)
+    
+    # Perform chi-square test (classical)
+    rejection_chi2_classical[i] <- as.integer(chisq_p_val(n_data, df, cuts) < 0.05)
+    
+    # Perform chi-square test (PIT)
+    rejection_chi2_pit[i] <- as.integer(chisq_p_val(n_data, df, cuts) < 0.05)
+
+  }
+  
+  # Calculate rejection percentages
+  rejection_percentages <- data.frame(
+    Degrees_of_Freedom = df,
+    Number_of_Data = n_data,
+    Kolmogorov_Classical = sum(rejection_kolmogorov_classical) / n_simulations * 100,
+    Kolmogorov_PIT = sum(rejection_kolmogorov_pit) / n_simulations * 100,
+    Chi2_Classical = sum(rejection_chi2_classical) / n_simulations * 100,
+    Chi2_PIT = sum(rejection_chi2_pit) / n_simulations * 100
+  )
+  
+  return(rejection_percentages)
+}
+
+```
+
+## Stworzenie danych dla testów
+
+```{r dane}
+
+# Set parameters
+n_data <-  c(50, 100, 500)  # Number of data
+df <-  c(3, 5, 10, 30)  # Degrees of freedom
+cuts <- c(3, 5, 10, 20)  # Cuts in the Chi Squared Test
+n_simulations <- 1000     # Number of simulations
+
+```
+
+## Zastosowanie funkcji do danych
+
+```{r power, warning=FALSE}
+
+# Perform tests and calculate rejection percentages
+results <- data.frame()
+for (n in n_data) {
+  for (d in df) {
+    res <- perform_tests(d, n, n_simulations)
+    results <- rbind(results, res)
+  }
+}
+```
+
+## Stworzenie wykresów do wygenerowanych danych
+
+```{r charts}
+
+# Plot the results
+ggplot(results, aes(x = Degrees_of_Freedom, y = Kolmogorov_Classical, color = as.factor(Number_of_Data))) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Degrees of Freedom", y = "Rejection Percentage (%)", color = "Number of Data") +
+  ggtitle("Kolmogorov Test (Classical)") +
+  theme_minimal()
+
+ggplot(results, aes(x = Degrees_of_Freedom, y = Kolmogorov_PIT, color = as.factor(Number_of_Data))) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Degrees of Freedom", y = "Rejection Percentage (%)", color = "Number of Data") +
+  ggtitle("Kolmogorov Test (PIT)") +
+  theme_minimal()
+
+ggplot(results, aes(x = Degrees_of_Freedom, y = Chi2_Classical, color = as.factor(Number_of_Data))) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Degrees of Freedom", y = "Rejection Percentage (%)", color = "Number of Data") +
+  ggtitle("Chi-square Test (Classical)") +
+  theme_minimal()
+
+ggplot(results, aes(x = Degrees_of_Freedom, y = Chi2_PIT, color = as.factor(Number_of_Data))) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Degrees of Freedom", y = "Rejection Percentage (%)", color = "Number of Data") +
+  ggtitle("Chi-square Test (PIT)") +
+  theme_minimal()
+
+
+```

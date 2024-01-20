@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <title>Zadanie 5 - JavaScript</title>
+    <style>
+      .button {
+        display: inline-block;
+        margin: 0 20px;
+        width: 100px;
+        height: 20px;
+        border: black solid 1px;
+        text-align: center;
+      }
+      .button:hover {
+        background-color: grey;
+        font-weight: bold;
+      }
+    </style>
+    <script>
+      const lista = ['jablko', 'gruszka', 'ananas', 'porzeczka', 'schabowy'];
+      var num = 0;
+      function first(){
+        for (let element of lista){
+          console.log(element);
+        }
+      }
+      function second(){
+        for (let i = 0; i < lista.length; i++){
+          console.log(lista[i]);
+        }
+      }
+      function random(){
+        var i = [1, 2, 3, 4, 5];
+        var x = 0;
+        while (x < 5){
+          let rndm = Math.floor(Math.random() * (5 - 1 + 1) ) + 1;
+          console.log("rndm = " + rndm)
+          if (i.includes(rndm) == true){
+            console.log(lista[rndm]);
+            i[rndm] = 0;
+            x = x + 1
+          }
+        }          
+      }
+    </script>
+  </head>
+  <body>
+    <script>
+    </script>
+    <div class="button" onclick="first()">For each</div>
+    <div class="button" onclick="second()">For</div>
+    <div class="button" onclick="random()">Random</div>
+  </body>
+</html>

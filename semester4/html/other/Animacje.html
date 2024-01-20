@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pl-pl">
+  <head>
+    <title>Przykładowe animacje</title>
+    <script></script>
+    <style>
+      .kolo {
+        border-radius: 50%;
+        background-color: lightblue;
+        width: 100px;
+        height: 100px;
+      }
+      .centrum {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .logo {
+        display: flex;
+        justify-content: start;
+        align-items: center;
+        padding: 2vw, wvh;
+        background: lightgrey;
+      }
+      .logoo:hover {
+        animation: logohopsia;
+        animation-duration: 2s;
+        animation-iteration-count: infinite;
+      }
+      .kolo:hover {
+        animation: kolokolor;
+        animation-duration: 4s;
+        background-color: green;
+        animation-iteration-count: infinite;
+      }
+      @keyframes logohopsia {
+        0%   {transform: rotate(0deg);}
+        50% {transform: rotate(180deg);}
+        100% {transform: rotate(360deg);}
+      }
+      @keyframes kolokolor {
+        0%   {background: lightblue;}
+        50% {background: lightgreen;}
+        100% {background: lightblue;}
+      }
+      #kwadrat {
+        width: 100px;
+        height: 100px;
+        background-image: linear-gradient(45deg, lightblue, lightgreen);
+      }
+      #kwadrat {
+        animation: kwadratkiwanie 2s infinite, kwadratpowiekszanie 6s infinite;
+      }
+      @keyframes kwadratkiwanie {
+        0%   {transform: rotate(0deg);}
+        25% {transform: rotate(-20deg);}
+        50% {transform: rotate(0);}
+        75% {transform: rotate(20deg);}
+        100% {transform: rotate(0deg);}
+      }
+      @keyframes kwadratpowiekszanie {
+        0%   {width: 100px; height: 100px;}
+        50%   {width: 150px; height: 150px;}
+        100%   {width: 100px; height: 100px;}
+      }
+    </style>
+  </head>
+  <body>
+    <hr />
+    <br />
+    <div class="centrum">
+      <!--
+        Dodaj animację do elementy klasy kolo
+        która sprawi, że po najechaniu myszką:
+        - kolor w przeciągu 2 sekund zmieni się do zielonego a następnie
+          z powrotem do jasnoniebieskiego
+        - animacja ma powtarzać się tak długo jak użytkonik najeżdża
+          myszką na obiekt      
+      -->
+      <div class="kolo"></div>
+    </div>
+    <br />
+    <hr />
+    <br />
+    <!--
+      Dodaj animację do elementu o id kwadrat
+      która sprawi, że obiekt:
+      -  stale będzie się obracał w prawo i lewo (coś jak drgania) od -20 do 20 stopni w ciągu 2 sekund
+      - animacja ma powtarzać w nieskończoność
+      - animacja ma trwać 6 sekund i być płynna
+      - kwadrat ma zwiekszyć swoją wielkość do 150px (w środku trwania animacji) i na powrót wrócić do 100px
+    -->
+    <div class="centrum">
+      <div id="kwadrat"></div>
+    </div>
+    <hr margin=0 height=250px padding=2 background-color=lightgrey />
+    <br />
+      <div class="logo">
+        <div class="logoo">
+          <p style="text-align:left"><img height=200px src="https://www.agh.edu.pl/home/ckim/multimedia/znak_graficzny/znak_bez_nazwy/agh_znk_pzt_rgb_150ppi.jpg">
+          </p>
+        </div>
+      </div>
+    <br />
+    <hr />
+  </body>
+  <script></script>
+</html>

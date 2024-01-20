@@ -1,0 +1,113 @@
+---
+title: "Zadanie 12"
+author: "Jakub Anczyk"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r lib, include=FALSE}
+library(ggplot2)
+library(nortest)
+library(stats)
+```
+
+## Polecenie
+
+Za pomocą odpowiednich symulacji zbadać moc testu Kołmogorowa-Smirnowa w przypadku, gdy rozważane próbki danych pochodzą w rozkładów normalnych o tym samym odchyleniu standardowym, ale różniących się wartościami oczekiwanymi. Rozważyć różne wartości odchyleń standardowych. Uzyskane wyniki należy przedstawić na odpowiednich wykresach ilustrujących moce
+testów z uwzględnieniem:
+
+- liczby danych (można rozważać różne liczebności w każdej z próbek),
+
+- wartości oczekiwanych.
+
+## Funkcje mierzące moc testów
+
+```{r funkcje}
+
+# Function to generate samples from normal distributions
+generate_samples <- function(n, mean, sd) {
+  return(rnorm(n, mean = mean, sd = sd))
+}
+
+# Function to perform the Kolmogorov-Smirnov test and calculate the power
+calculate_power <- function(n1, n2, mean1, mean2, sd) {
+  num_trials <- 1000
+  num_rejections <- 0
+  
+  for (i in 1:num_trials) {
+    # Generate samples from the two normal distributions
+    sample1 <- generate_samples(n1, mean = mean1, sd = sd)
+    sample2 <- generate_samples(n2, mean = mean2, sd = sd)
+    
+    # Perform the Kolmogorov-Smirnov test
+    ks_test <- ks.test(sample1, sample2)
+    
+    # Check if the null hypothesis is rejected
+    if (ks_test$p.value < 0.05) {
+      num_rejections <- num_rejections + 1
+    }
+  }
+  
+  power <- num_rejections / num_trials * 100
+  return(power)
+}
+
+```
+
+## Stworzenie danych dla testów
+
+```{r dane}
+
+# Standard deviation and expected values to consider
+sd_values <- c(1, 2, 3)  # Standard deviation values
+mean_values <- c(0, 1, 2)  # Expected value (mean) values
+
+# Sample sizes to consider
+sample_sizes <- c(50, 100, 200, 500, 1000)
+
+# Initialize result matrices
+results <- matrix(0, nrow = length(sd_values), ncol = length(mean_values))
+colnames(results) <- mean_values
+rownames(results) <- sd_values
+```
+
+## Zastosowanie funkcji do danych
+
+```{r power, warning=FALSE}
+
+# Perform simulations for each standard deviation and expected value
+for (i in 1:length(sd_values)) {
+  for (j in 1:length(mean_values)) {
+    sd <- sd_values[i]
+    mean1 <- 0
+    mean2 <- mean_values[j]
+    results[i, j] <- calculate_power(sample_sizes[1], sample_sizes[2], mean1, mean2, sd)
+  }
+}
+
+```
+
+## Stworzenie wykresów do wygenerowanych danych
+
+```{r charts}
+
+# Plotting the results
+par(mfrow = c(1, 3), mar = c(4, 4, 2, 1))
+colors <- c("red", "green", "blue")
+sd_labels <- c("SD=1", "SD=2", "SD=3")
+
+for (i in 1:length(sd_values)) {
+  plot(
+    mean_values, results[i, ],
+    type = "b", pch = 16, ylim = c(0, 100),
+    xlab = "Średnia różnica", ylab = "Power",
+    main = paste("Odchylenie standardowe:", sd_labels[i]), col = colors[i]
+  )
+  legend("topright", legend = c("SD=1", "SD=2", "SD=3"), col = colors, pch = 16)
+}
+
+```

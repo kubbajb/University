@@ -1,0 +1,478 @@
+---
+title: "Projekt - Porządkowanie Liniowe & Analiza Skupień"
+author: "Jakub Anczyk"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(summarytools)
+library(dplyr)
+library(summarytools)
+library(psych)
+library(factoextra)
+library(ggplot2)
+
+```
+
+# Wstęp
+
+W tej pracy spróbuję znaleźć optymalny produkt pod względem kaloryczności, zawartości białka, tłuszczu, tłuszczy nasyconych, błonnika i węglowodanów oraz dokonam analizy różnych produktów pod kątem wzajemnego podobieństwa. W analizy wykorzystam poznane techniki porządkowania liniowego oraz analizy skupień. Celem tej pracy będzie wyznaczenie produktu, który najlepiej nadaje się na podstawowy (główny) element składowy codziennej diety.
+
+Ważne: **Dane pochodzą z gotowego zbioru danych zawierającego produkty dostępne na rynku amerykańskim, więc wyniki nie są doskonałe i nie należy się nimi sugerować w kształtowaniu własnych nawyków żywieniowych.**
+
+# Część pierwsza: Porządkowanie liniowe
+
+## Dane
+
+Do projektu wybrałem zestaw danych dotyczący zawartości wartości odżywczych w różnego rodzaju produktach spożywczych, znaleziony na stronie [Kaggle](https://www.kaggle.com/code/niharika41298/food-nutrition-analysis-eda/input).
+
+```{r data1}
+
+data <- read.csv('nutrition.csv')
+str(data)
+
+```
+
+## Przygotowanie danych
+
+W celu przygotowania danych czyszczę je z elementów, które nie są liczbami, jak na przykład losowe litery lub symbole w komórkach. W zestawie zastosowano także literę "t" tam, gdzie wartości odżywcze w danym produkcie są śladowe (ang. "trace amounts") - w tym przypadku zamieniam je wszystkie na zero.
+
+Ograniczam też zestaw wyłącznie do produktów pochodzenia zwierzęcego, tj. mięsa, ryb i owoców morza aby łatwiej je było kategoryzować oraz dlatego, że pozostałe rodzaje produktów nie nadają się jako główny element diety, którego w tej analizie szukamy.
+
+Ponieważ dane zostały przedstawione dla bardzo rozmaitych jednostek miary, obliczam je ponownie dla 100 gram każdego produktu i usuwam zbędne dane.
+
+```{r data2}
+
+columns_to_replace <- c('Grams','Calories','Protein','Fat','Sat.Fat','Fiber','Carbs')
+
+data <- data %>%
+  mutate_at(vars(all_of(columns_to_replace)), ~as.numeric(gsub("[^0-9.]", "", .))) %>%
+  mutate_at(vars(all_of(columns_to_replace)), list(~coalesce(., 0))) %>%
+  filter(Category == 'Fish, Seafood' | Category == 'Meat, Poultry') %>%
+  select(-c('Measure', 'Category')) %>%
+  distinct()
+
+data <- data %>%
+  mutate(Calories = Calories/Grams*100,
+         Protein = Protein/Grams*100,
+         Fat = Fat/Grams*100,
+         Sat.Fat = Sat.Fat/Grams*100,
+         Fiber = Fiber/Grams*100,
+         Carbs = Carbs/Grams*100,
+         Grams = 100) %>%
+  select(-c('Grams'))
+
+rownames(data) <- data[,1]
+data <- data[,-1]
+head(data)
+
+```
+
+## Podstawowe statystyki
+
+W celu dokonania podstawowej analizy statystyk danych w zestawie korzystam z funkcji descr() z biblioteki summarytools.
+
+Jak widzimy wszystkie dane w zestawie po wyczyszczeniu są prawidłowe (nie ma wartości NA, NaN oraz null).
+
+```{r stats}
+
+(round(data, digits=2))
+
+descr(data)
+
+```
+
+### Kalorie
+
+Produkty z wybranych kategorii zawierają średnio 256.70 kcal przy medianie 217.65 kcal, co oznacza, że w zestawie znajdują się wartości skrajne, silnie wpływające na wartość średniej. Potwierdza to wartość statystyki Max na poziomie 783.33 kcal / 100 g.
+
+Z kolei wartość kurtozy na poziomie 3.35 wskazuje na w miarę równomierny rozkład (brak silnej koncentracji wokół jednej wartości) w porównaniu do rozkładu normalnego.
+
+```{r stats_calories}
+
+hist(data$Calories, n=20)
+
+```
+
+### Węglowodany
+
+Węglowodany w tej kategorii produktów są na niskim poziomie, co nie jest zaskoczeniem, bowiem zgodnie z tradycyjną wiedzą mięso, ryby i owoce morza to w głównej mierze białka i tłuszcze, raczej ubogie w węglowodany, które znajdują się głównie w produktach pochodzenia roślinnego.
+
+Przykładem wartości skrajnej jest w tym przypadku tzw. "Pot-pie", które jest w istocie rodzajem ciasta, choć rzeczywiście zawiera także mięso - poziom węglowodanów wynosi w tym przypadku 14.1 g / 100g. Umieszczenie tej potrawy w wybranych kategoriach może być dyskusyjne.
+
+```{r stats_carbs}
+
+hist(data$Carbs, n=20)
+
+```
+
+### Tłuszcze
+
+Z kolei wartości tłuszczy rozmieszczone są wokół wartości 17.10g / 100g z nieco wyższą wartością kurtozy niż w przypadku kalorii. Wartością mocno odstającą jest "salt-pork", czyli rodzaj wieprzowiny peklowanej solą, z zawartością tłuszczu na poziomie 91.67%.
+
+Tłuszcze nasycone charakteryzuje równomierny wykres i właściwie brak produktów zawierających między 30% a 40% tłuszczów nasyconych, z maksimum na poziomie 43.75g na 100g w przypadku bekonu.
+
+Znaczna większość produktów charakteryzuje jednak zawartość tłuszczy nasyconych w okolicach 0% z medianą na poziomie 8.24%.
+
+```{r stats_fats}
+
+hist(data$Fat, n=20)
+hist(data$Sat.Fat, n=20)
+
+```
+
+### Błonnik
+
+Błonnik, którego w mięsach jest zazwyczaj niewiele, wynosi dla każdej pozycji 0 lub t (śladowe ilości). W związku z tym usuwam tę zmienną z zestawu danych.
+
+```{r stats_fiber}
+
+sum(data$Fiber)
+data <- data[,-5]
+
+```
+
+### Białko
+
+Najbardziej interesującym składnikiem w pożywieniu jest jednak białko. Tutaj kurtoza wynosi jedynie 0.13, a więc rozkład zawartości białka jest zbliżony do rozkładu normalnego.
+
+Zdecydowanie najwięcej białka, bo aż 33.93 zawiera suszona wołowina. Wynika to prawdopodobnie z faktu, że ususzona zawiera mniej wody, która najbardziej zwiększa wagę produktu. Pozwala to na duże zwiększenie procentowej zawartości białka w produkcie - niestety podobnie jest w przypadku kaloryczności.
+
+Kolejne miejsca przypadają mięsu z kurczaka, tradycyjnej wołowinie i szynce.
+
+```{r stats_protein}
+
+hist(data$Protein, n=20)
+
+```
+
+## Klasyfikacja danych
+
+Następnie klasyfikuję dane na stymulanty, nominanty i destymulanty oraz zamieniam je na stymulanty dla dalszej analizy.
+
+Jako stymulantę klasyfikuję białko, ponieważ jest to kluczowy w mojej diecie element, którego nie sposób przedawkować i najlepiej zażywać go w dużych ilościach w połączeniu z wysiłkiem fizycznym.
+
+Jako destymulanty oceniam tłuszcze nasycone, kalorie i węglowodany, ponieważ zażywanie pierwszej pozycji jest uznane za niezdrowe a kolejne dwie mogą być dostarczone organizmowi z powodzeniem innym produktem, takim jak ryż lub ziemniaki.
+
+Nominanta w zestawie jest jedna: są nią tłuszcze i określam ich optymalną wartość na 20g (lub na 20%). Wynika to z faktu, że tłuszcze obok białka są jednym z ważniejszych dla zdrowia składników odżywczych, szczególnie w przypadku osób aktywnych fizycznie - mają kluczowe znaczenie w regeneracji stawów i stabilizacji gospodarki hormonalnej.
+
+```{r classification}
+
+st <- c('Protein')
+dst <- c('Calories','Sat.Fat', 'Carbs')
+nom <- c('Fat')
+
+edit_data <- data
+
+for(i in 1:nrow(edit_data)){
+  if(edit_data[i, nom] == 20){edit_data[i, nom] = 1}
+  else if(edit_data[i, nom] < 20){edit_data[i, nom] = -1/(edit_data[i, nom]-20-1)}
+  else{edit_data[i, nom] = 1/(edit_data[i, nom]-20+1)}
+}
+
+edit_data$Calories <- -1*edit_data$Calories
+edit_data$Sat.Fat <- -1*edit_data$Sat.Fat
+edit_data$Carbs <- -1*edit_data$Carbs
+
+(round(edit_data, digits=2))
+
+```
+
+## Standaryzacja
+
+W kolejnym kroku dokonuję standaryzacji danych...
+
+```{r standarisation}
+
+data_st <- as.data.frame(scale(edit_data))
+(round(data_st, digits=2))
+
+```
+
+## Model
+
+...oraz tworzę wzorzec (model) w oparciu o maksymalne wartości standaryzowanych wartości dla każdej kolumny.
+
+```{r model}
+
+model <- c(max(data_st[,"Calories"]),
+           max(data_st[,"Protein"]),
+           max(data_st[,"Fat"]),
+           max(data_st[,"Sat.Fat"]),
+           max(data_st[,"Carbs"]))
+
+```
+
+## Odległość od modelu
+
+W celu przystąpienia do finalnych kroków analizy obliczam odległość każdej wartości w zestawie od odpowiadającego jej wzorca.
+
+```{r distance}
+
+distance <- data_st
+
+for(i in 1:nrow(data_st)){
+  distance[i,] <- (data_st[i,]-model)^2
+}
+
+distance$distsum <- rowSums(distance)
+distance$distsum <- sqrt(distance$distsum)
+
+```
+
+## Miara Hellwiga
+
+W ostatnim kroku wyznaczam miarę Hellwiga dla każdej pozycji w zestawie danych.
+
+```{r HELLWIG}
+
+d0 <- mean(distance$distsum) + 2 * sd(distance$distsum)
+
+HELLWIG <- data.frame(food = rownames(data_st),
+                      measure = 1-distance$distsum/d0)
+
+```
+
+## Podsumowanie i wyniki porządkowania liniowego
+
+Według posortowanych wartości miary Hellwiga, optymalnym wyborem pod kątem wartości odżywczych i zawartości białka jest (bez większego zaskoczenia) pieczony kurczak!
+
+```{r summary}
+
+HELLWIG[order(HELLWIG$measure, decreasing = TRUE), ]
+
+data[16,]
+
+```
+
+Jeśli przyjrzymy się temu produktowi bliżej, zobaczymy, że cechuje go dobra ilość kalorii (250 kcal na 100 g), bardzo duża ilość białka (aż 25% jego masy), oczekiwaną zgodnie ze wcześniejszymi ustaleniami zawartość tłuszczu (dokładnie 20g) oraz nieco podwyższoną ilości tłuszczy nasyconych.
+
+Widzimy zatem wyraźnie, ze algorytm poszedł na pewien kompromis, i wybrał produkt o możliwie najlepszym składzie, choć jedna ze zmiennych leży poza zakresem, który nazwalibyśmy idealnym.
+
+Jeżeli jest to dla nas nie do przyjęcia, to na pewno ucieszy nas fakt, że na drugim miejscu znalazła się pozycja o nazwie "hamburger":
+
+```{r summary2}
+
+data[4,]
+
+```
+
+Przyjęcie oczekiwanego poziomu tłuszczu na poziomie 20g na 100g danego produktu jest niewątpliwie czynnikiem, który najbardziej zaważył na ostatecznych wynikach analizy.
+
+Gdyby przyjąć, że zmienna "Fat" jest destymulantą, wśród preferowanych produktów prawdopodobnie znajdą się ryby lub owoce morza.
+
+Możemy to szybko sprawdzić, powtarzając analizę w ten sposób:
+
+```{r no_fat}
+
+st <- c('Protein')
+dst <- c('Calories','Sat.Fat', 'Carbs', 'Fat')
+
+edit_data_2 <- data
+
+edit_data_2$Fat <- -1*edit_data_2$Fat
+edit_data_2$Calories <- -1*edit_data_2$Calories
+edit_data_2$Sat.Fat <- -1*edit_data_2$Sat.Fat
+edit_data_2$Carbs <- -1*edit_data_2$Carbs
+
+data_st_2 <- as.data.frame(scale(edit_data_2))
+
+model_2 <- c(max(data_st_2[,"Calories"]),
+           max(data_st_2[,"Protein"]),
+           max(data_st_2[,"Fat"]),
+           max(data_st_2[,"Sat.Fat"]),
+           max(data_st_2[,"Carbs"]))
+
+
+distance_2 <- data_st_2
+
+for(i in 1:nrow(data_st_2)){
+  distance_2[i,] <- (data_st_2[i,]-model_2)^2
+}
+
+distance_2$distsum <- rowSums(distance_2)
+distance_2$distsum <- sqrt(distance_2$distsum)
+
+d0 <- mean(distance_2$distsum) + 2 * sd(distance_2$distsum)
+
+HELLWIG_2 <- data.frame(food = rownames(data_st_2),
+                      measure = 1-distance_2$distsum/d0)
+
+HELLWIG_2[order(HELLWIG_2$measure, decreasing = TRUE), ]
+
+
+
+```
+
+I rzeczywiście jedną z najzdrowszych alternatyw dla pieczonego kurczaka, przy założeniu, że im mniejsza zawartość tłuszczy, tym lepiej, są krewetki z bardzo niewielką ilością kalorii (tylko 129.4g na 100g produktu), bardzo wysoką zawartością kalorii (aż 27.05g, czyli nieco więcej niż kurczak) oraz skrajnie niską zawartością tłuszczy, tłuszczy nasyconych i węglowodanów.
+
+```{r shrimp}
+
+data[46,]
+
+```
+
+# Część druga: Analiza skupień
+
+W drugiej części zajmę się analizą skupień. Będę w dalszym ciągu korzystał z zestawu danych, który przygotowałem na potrzeby pierwszej części projektu.
+
+```{r data3}
+
+data <- read.csv('nutrition_cleaned.csv',row.names = 1)
+str(data)
+
+```
+
+## Analiza współczynników zmienności
+
+Analiza współczynników zmienności wskazuje na niewielką zmienność w przypadku kalorii i białka, średnią w przypadku tłuszczy (w tym nasyconych), dużą w przypadku węglowodanów i bardzo dużą w przypadku błonnika.
+
+Wszystkie atrybuty wykazują pożądaną zmienność na poziomie większym niż 10% (najmniejsza zmienność na poziomie 28.82% występuje w przypadku białka).
+
+```{r coeff_variation}
+
+data.frame(variable = colnames(data),
+           coeff_var = c(sd(data$Calories)/mean(data$Calories),
+                         sd(data$Protein)/mean(data$Protein),
+                         sd(data$Fat)/mean(data$Fat),
+                         sd(data$Sat.Fat)/mean(data$Sat.Fat),
+                         sd(data$Carbs)/mean(data$Carbs)))
+
+```
+
+## Analiza korelacji
+
+Po przeanalizowaniu macierzy wzajemnych współczynników korelacji widzimy, że zmienna Fat przekracza umowną wartość 90% współczynnika korelacji. Przy tak skrajnej wartości lepiej będzie tę zmienną usunąć, żeby nie zaburzała algorytmu klastrowania.
+
+```{r correlation}
+
+data <- data[,-1]
+round(cor(data),3)
+
+```
+
+Po dokonaniu tej modyfikacji widzimy, że wzajemne korelacje między zmiennymi są na prawidłowym poziomie.
+
+## Standaryzacja
+
+Przed dalszą analizą dokonuję szybkiej standaryzacji danych.
+
+```{r stadarization}
+
+data_st <- as.data.frame(scale(data))
+(round(head(data_st), 2))
+
+```
+
+## Grupowanie przedziałowe metodą k-średnich
+
+W kolejnym kroku dokonuję podzielenia na 2 grupy i klastrowania. Podstawowe statystyki opisowe pokazują znaczną różnicę między obiema grupami, np. wartości wszystkich statystyk w przypadku kalorii są w drugiej grupie zawsze większe od grupy pierwszej.
+
+```{r k_means}
+
+gr2 <- kmeans(x = data_st, centers=2, nstart=20)
+gr2$cluster  
+data$gr2 <- as.factor(gr2$cluster)
+describeBy(data[,-5], group = data$gr2)
+
+```
+
+Na wykresie widzimy wyraźnie, że algorytm poprawnie zidentyfikował dwie główne grupy zbiorze danych.
+
+```{r plot}
+
+fviz_cluster(gr2, data[,1:4], geom = "text")
+
+```
+
+Poniżej znajdują się przykładowe wykresy dla więcej niż 2 klastrów.
+
+```{r more_plots}
+
+gr3 <- kmeans(x = data_st, centers=3, nstart=20)
+data$gr3 <- as.factor(gr3$cluster)
+fviz_cluster(gr3, data[,1:4], geom = "text")
+
+gr4 <- kmeans(x = data_st, centers=4, nstart=20)
+data$gr4 <- as.factor(gr4$cluster)
+fviz_cluster(gr4, data[,1:4], geom = "text")
+
+gr5 <- kmeans(x = data_st, centers=5, nstart=20)
+data$gr5 <- as.factor(gr5$cluster)
+fviz_cluster(gr5, data[,1:4], geom = "text")
+
+gr6 <- kmeans(x = data_st, centers=6, nstart=20)
+data$gr6 <- as.factor(gr6$cluster)
+fviz_cluster(gr6, data[,1:4], geom = "text")
+
+```
+
+Możemy zauważyć, że już przy czterech klastrach klasyfikacja przestaje być poprawna. Powstaje bowiem klaster złożony wyłącznie z jednej obserwacji, czego przyczyną jest znaczne oddalenie wartości tłuszczy dla tej jednej obserwacji od reszty obserwacji w klastrze pierwszym.
+
+Jest to względnie największa różnica na tym etapie, zatem "salt pork" zostaje oddzielnie zaklasyfikowana we własnym klastrze. Pozostałe różnice, które powodują na późniejszym etapie powstanie klastru czwartego i piątego, są mniejsze niż ta wartość (średnia tłuszczy w klastrze drugim to 91.67, natomiast w klastrze czwartym to już tylko 13.76).
+
+```{r cluster4}
+
+describeBy(data[,1:4], group = data$gr4)
+
+```
+
+Aby dokonać wyboru optymalnej liczby klastrów przy zastosowaniu "metody łokcia" wykorzystuję funkcję fviz_nbclust(). Z wykresu wynika, że istnieją min. 2 optymalne rozwiązania, tj. 3 i 5 klastrów, z której ostatecznie preferuję liczbę **3 klastrów**, ponieważ pomija sztuczny podział z jednoelementowym zbiorem
+
+```{r elbow}
+
+fviz_nbclust(data_st, kmeans, method = "wss")
+fviz_cluster(gr3, data[,1:4], geom = "text")
+
+```
+
+## Grupowanie hierarchiczne metodą Warda
+
+W celu pogrupowania obserwacji wyznaczam w pierwszym kroku macierz wzajemnych odległości (metodą euklidesową), następnie grupuję je metodą Warda i generuję wizualizację w formie dendrogramu:
+
+```{r ward}
+
+dist_euclidean <- dist(data_st, method="euclidean")
+ward_euclidean <- hclust(dist_euclidean, method="ward.D2")
+plot(ward_euclidean, main="Dendrogram (Odl. euklidesowa, metoda Warda)")
+
+```
+
+Bazując na wykresie kolejnych odległości euklidesowej, widzimy także, że podział w miejscu trzech klastrów wydaje się być najbardziej optymalnym - odległości euklidesowe między pozostałymi ilościami klastrów są raczej zbliżone do siebie.
+
+```{r ward_plot}
+
+plot(x=1:47, y= ward_euclidean$height, type="S", 
+     xlab="Krok", ylab="Odległość",
+     main = "Wykres odległości wiązania względem etapów wiązania")
+     
+```
+
+## Podsumowanie
+
+Przy optymalnej ilości trzech klastrów dane zostają podzielone na trzy konkretne grupy:
+
+**Grupa 1**: Zawiera przede wszystkim mięso wieprzowe, wołowinę i baraninę, ale ale także wysoko przetworzone rodzaje mięsa sprzedawane w puszkach.
+
+Grupa ta charakteryzuje się wysoką kalorycznością, średnią zawartością białka i największą ilością tłuszczy nasyconych. Wszystkie pozostałe składniki są na bardzo niskim poziomie, ze średnią oscylującą w okolicach zera.
+
+**Grupa 2**: Zawiera wiele rodzajów ryb i częściowo owoców morza, lecz także różne rodzaje mięsa suszonego. Charakteryzuje się średnią kalorycznością przy największej zawartości białka spośród zidentyfikowanych grup.
+
+Obecność mięs suszonych tłumaczy fakt, że ich suszenie nie zmienia ilości zawartego w nich białka, ale zmniejsza ich wagę, co wpływa pozytywnie na procentową zawartość białka.
+
+**Grupa 3**: Ostatnia grupa zawiera kilka rodzajów mięsa pochodzącego z owoców morza, ale także zdające się nie pasować do tej grupy potrawy takie jak zidentyfikowany wcześniej jako wartość skrajną "pot-pie" oraz "corned beef hash stew" czyli gulasz z peklowanej wołowiny.
+
+Powodem tak dziwacznej kombinacji jest niewielka kaloryczność wszystkich tak zaklasyfikowanych potraw połączona z niewielką ilością białka oraz względnie wysokim poziomem węglowodanów.
+
+```{r summary3}
+
+describeBy(data[,1:6], group = data$gr3)
+fviz_cluster(gr3, data[,1:4], geom = "text")
+
+```

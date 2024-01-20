@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <title>Zadanie 4 - JavaScript</title>
+    <style>
+      .button {
+        display: inline-block;
+        margin: 0 20px;
+        width: 100px;
+        height: 20px;
+        border: black solid 1px;
+        text-align: center;
+      }
+      .button:hover {
+        background-color: grey;
+        font-weight: bold;
+      }
+      span,
+      input {
+        display: inline-block;
+        width: 100px;
+        margin: 0 20px;
+      }
+    </style>
+    <script type="text/javascript">
+      function download() {
+        var var_name = document.getElementById("name").value;
+        var var_surname = document.getElementById("surname").value;
+        alert(var_name + " " + var_surname);
+      }
+      function clear() {
+        document.getElementById("name").value = '';
+        document.getElementById("surname").value = '';
+      }
+    </script>
+  </head>
+  <body>
+    <span>Imię:</span>
+    <input type="text" id="name" name="imie" size="9" />
+    <br />
+    <br />
+    <span>Nazwisko:</span>
+    <input
+      type="text"
+      id="surname"
+      name="nazwisko"
+      minlength="1"
+      maxlength="30"
+      size="9"
+    />
+    <br />
+    <br />
+    <div class="button" onclick="download()">Pobierz</div>
+    <div class="button" onclick="document.getElementById('surname').value = ''; 
+                                 document.getElementById('name').value = ''">Wyczyść</div>
+    <script></script>
+  </body>
+</html>

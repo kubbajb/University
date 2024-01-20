@@ -1,0 +1,2 @@
+D:\Studia\Semestr_5\Analiza i Projektowanie Systemów Informatycznych\Zadanie2\Student\Organizator\obj\Debug\Organizator.exe
+D:\Studia\Semestr_5\Analiza i Projektowanie Systemów Informatycznych\Zadanie2\Student\Organizator\obj\Debug\Organizator.pdb

@@ -1,0 +1,196 @@
+---
+title: "Projekt RPiSM - Eurobiznes"
+author: "Jakub Anczyk"
+date: "2022-12-20"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(matrixStats)
+options(scipen = 1, digits = 2)
+```
+
+## Projekt RPiSM, zadanie nr 2
+
+Do projektu wybrałem zadanie 2, które wydało mi się najciekawsze. Badane zdarzenie polegało na postawieniu pionka zarówno na elektrowni jak i sieci wodociągów, ale ominięciu każdej kolei.
+
+Postanowiłem zinterpretować zadanie w ten sposób, że w trakcie 7 rzutów kostką suma oczek w dowolnym momencie musi wynieść zarówno 12 jak i 28 (odpowiednio elektrownia i sieć wodociągów), ale nie może wynieść 5, 15, 25 oraz 35 (pola odpowiadające kolejom).
+
+```{r wstepne_obliczenia}
+omega <- 6^7
+omega2 <- 6^6
+pola_wymagane <- c(12, 28)
+pola_zakazane <- c(5, 15, 25, 35)
+```
+
+### Wstępne obliczenia
+
+Przy ograniczeniu do 7 rzutów kostką, przestrzeń zdarzeń elementarnych omega będzie równa $6^7$, a więc **`r toString(omega)`**.
+
+Do analizy możliwych kombinacji wybrałem metodę polegającą na wykorzystaniu funkcji expand.grid(), która umożliwia szybkie wygenerowanie ramki danych zawierającej wszystkie kombinacje wskazanych wektorów.
+
+Po zweryfikowaniu ilość wierszy wynosi rzeczywiście **`r toString(omega)`**, czyli pokrywa się z przewidzianą liczbą kombinacji. 
+
+
+```{r tabela_kombinacji}
+eurobiznes <- expand.grid(r1 = 1:6, r2 = 1:6, r3 = 1:6, r4 = 1:6, r5 = 1:6, r6 = 1:6, r7 = 1:6)
+```
+
+Następnie, aby móc sprawdzić, czy w trakcie ruchu kostką spełniliśmy wszystkie 6 założeń wspomnianych na wstępie, musimy wygenerować kolejne sumy rzutów dla wszystkich kombinacji. W tym celu użyłem funkcji mutate z pakietu dplyr. 
+
+
+```{r kolejne_sumy}
+eurobiznes <- eurobiznes %>%
+  mutate(r0 = 1:omega,
+         s1 = r1,
+         s2 = s1 + r2,
+         s3 = s2 + r3,
+         s4 = s3 + r4,
+         s5 = s4 + r5,
+         s6 = s5 + r6,
+         s7 = s6 + r7)
+
+```
+
+W kolejnym kroku dokonałem sprawdzenia, czy kolejne sumy danego wiersza spełniają wszystkie 6 założeń. Kod generuje wartość "1" jeżeli wyrzucone do danego momentu gry oczka sumują się do 12 i 28, lecz nie do 5, 15, 25 oraz 35. W przeciwnym razie kod generuje wartość "0".
+
+```{r spełnienie_założeń}
+eurobiznes$x1 <- eurobiznes$x <- ifelse((eurobiznes[,9] %in% pola_wymagane) == 2 & (eurobiznes[,9] %in% pola_zakazane) == 0, 1, 0)
+eurobiznes$x2 <- eurobiznes$x <- ifelse(rowSums(sapply(eurobiznes[,9:10], `%in%`, pola_wymagane)) == 2 & rowSums(sapply(eurobiznes[,9:10], `%in%`, pola_zakazane)) == 0, 1, 0)
+eurobiznes$x3 <- eurobiznes$x <- ifelse(rowSums(sapply(eurobiznes[,9:11], `%in%`, pola_wymagane)) == 2 & rowSums(sapply(eurobiznes[,9:11], `%in%`, pola_zakazane)) == 0, 1, 0)
+eurobiznes$x4 <- eurobiznes$x <- ifelse(rowSums(sapply(eurobiznes[,9:12], `%in%`, pola_wymagane)) == 2 & rowSums(sapply(eurobiznes[,9:12], `%in%`, pola_zakazane)) == 0, 1, 0)
+eurobiznes$x5 <- eurobiznes$x <- ifelse(rowSums(sapply(eurobiznes[,9:13], `%in%`, pola_wymagane)) == 2 & rowSums(sapply(eurobiznes[,9:13], `%in%`, pola_zakazane)) == 0, 1, 0)
+eurobiznes$x6 <- eurobiznes$x <- ifelse(rowSums(sapply(eurobiznes[,9:14], `%in%`, pola_wymagane)) == 2 & rowSums(sapply(eurobiznes[,9:14], `%in%`, pola_zakazane)) == 0, 1, 0)
+eurobiznes$x7 <- eurobiznes$x <- ifelse(rowSums(sapply(eurobiznes[,9:15], `%in%`, pola_wymagane)) == 2 & rowSums(sapply(eurobiznes[,9:15], `%in%`, pola_zakazane)) == 0, 1, 0)
+```
+
+### Zadanie 1
+
+Żeby wykonać zadanie pierwsze, zsumowałem wszystkie zdarzenia, wktórych po siódmym rzucie wszystkie sześć założeń było spełnione. Ostatecznie zdarzeń tych było **`r toString(sum(eurobiznes$x7))`**. Porównując tę wartość do liczby zdarzeń elementarnych, otrzymujemy prawdopodobieństwo równe **`r toString(round((sum(eurobiznes$x7 == 1)/omega)*100, 2))`%**.
+
+```{r zadanie_1}
+zadanie1 <- ((sum(eurobiznes$x7 == 1)/omega)*100)
+
+```
+
+### Zadanie 2
+
+Do wykonania zadanie drugiego wystarczyło wyfiltrować wszystkie zdarzenia, w których pierwszą cyfrą było "3" i przyrównać do sumy zdarzeń elementarnych która będzie równa $6^6$ czyli **`r toString(omega2)`**. Zdarzeń tych było **`r toString(sum(eurobiznes$x7 == 1 & eurobiznes$r1 == 3))`**, co daje nam odpowiednio prawdopodobieństwo rzędu **`r toString(round(((sum(eurobiznes$x7 == 1 & eurobiznes$r1 == 3))/(omega2))*100, 2))`%**.
+
+```{r zadanie_2}
+zadanie2 <- ((sum(eurobiznes$x7 == 1 & eurobiznes$r1 == 3)/(omega2))*100)
+
+suma_zdarzen <- eurobiznes %>%
+  select(x1:x7) %>%
+  summarise(across(x1:x7, sum))
+```
+
+### Zadanie 3
+
+Wykonanie zadanie trzeciego polegało na sprawdzeniu, w którym rzucie kostką, spełnienie wszystkich sześciu założeń było najbardziej prawdopodobne. W tym celu zsumowałem ilość zdarzeń, w których warunki zostały spełnione i przypisałem zmiennej K wartość odpowiadającą pozycji tej kolumny. W tym przypadku to kolumna o numerze **`r toString(max.col(suma_zdarzen))`**.
+
+Zatem spełnienie wszystkich warunków zadania było najbardziej prawdopodobne w rzucie o numerze **`r toString(max.col(suma_zdarzen))`**.
+
+```{r zadanie_3}
+zadanie3 <- max.col(suma_zdarzen)
+K <- zadanie3
+```
+
+
+### Zadanie 4
+
+W celu wygenerowania wykresów dystrybuanty i gęstości, posłużyłem się pakietem ggplot i wygenerowałem wykresy typu geon_histogram() oraz stat_ecdf() dla ostatniego rzutu kostką.
+
+```{r zadanie_4}
+zadanie4a <- hist(eurobiznes$s7)
+zadanie4b <- ggplot(eurobiznes, aes(x=s7)) + stat_ecdf(geom = "step", color="black")
+
+zadanie4a
+zadanie4b
+```
+
+### Zadanie 5
+
+Do zadanie piątego i testu centralnego twierdzenia granicznego posłużyłem się pętlą for() i funkcją sample() aby wygenerować n (1000) sum siedmiokrotnych losowych rzutów kostką.  
+
+```{r zadanie_5a}
+sample5 <- c()
+n = 1000
+
+for (i in 1:n){
+  sample5[i] = mean(sample(eurobiznes$s7, 1, replace=TRUE))
+}
+
+zadanie5b <- hist(sample5, col ='steelblue', xlab='Suma rzutów kostką', main='Sample size = 7')
+
+zadanie5b
+```
+
+Na tak wygenerowanych danych przeprowadziłem test przy pomocy funkcji shapiro.test().
+
+```{r zadanie_5b}
+zadanie5test <- shapiro.test(sample5)
+zadanie5test
+```
+
+Wartości testu Shapiro-Wilka wskazują, że dane nie odbiegają znacząco od rozkładu normalnego. Przemawia za tym fakt, że statystyka W jest bliska 1, a wartość p jest większa od 0,05.
+
+Przyjmuje się zatem hipotezę zerową i przyjmuje, że dane mają rozkład normalny.
+
+### Zadanie 6
+
+Zadanie szóste wymagało innego podejścia niż pierwsza część, ponieważ wygenerowanie macierzy zdarzeń dla K (7) rzutów kostką i 50 próbek wymagałoby wielu GB pamięci. 
+
+Zamiast tego zdefiniowałem w pamięci określone kostki jako wektory i dla każdej z kostek zdefiniowałem po jednej tablicy dla wyników rzutów kostką. 
+
+Następnie, przy pomocy dwóch pętli for, jednej powtarzanej od 1 do 15, a drugiej od 1 do K (7) powtórzeń, stworzyłem losową tablicę 50 K-krotnych losowań dla każdej kostki. 
+
+```{r zadanie_6a}
+kostka1 <- c(1, 2, 6, 7)
+kostka2 <- c(3, 4, 5, 8)
+
+sample6a <- tibble()
+sample6b <- tibble()
+
+m = 50
+
+for (i in 1:m){
+  for (j in 1:K){
+    sample6a[i,j] = sample(kostka1, 1, replace=TRUE)
+    sample6b[i,j] = sample(kostka2, 1, replace=TRUE)
+  }
+}
+```
+
+Następnie dla każdego wiersza obliczyłem sumę oraz wariancję wylosowanych wartości.
+
+```{r zadanie_6b}
+sample6a$sum <- rowSums(sample6a[,1:K])
+sample6b$sum <- rowSums(sample6b[,1:K])
+
+sample6a$var <- rowVars(as.matrix(sample6a[,c(1:K)]))
+sample6b$var <- rowVars(as.matrix(sample6b[,c(1:K)]))
+```
+
+Na koniec wykonałem testy t.test() oraz var.test() dla odpowiednich kolumn sum i wariancji. 
+
+```{r zadanir_6c}
+zadanie6test1 <- t.test(sample6a$sum, sample6b$sum, var.equal=FALSE)
+zadanie6test1
+
+zadanie6test2 <- var.test(sample6a$var, sample6a$var)
+zadanie6test2
+```
+
+Test dwóch próbek Welcha dla średnich sugeruje, że istnieje statystycznie istotna różnica między wartościami sum wierszy obu grup. Wartość p jest mniejsza niż 0,05, co wskazuje, że różnica między dwiema próbami jest mało prawdopodobna, aby wynikała z przypadku. Sugeruje to, że obie próby mają różne średnie i że różnica ta jest statystycznie istotna.
+
+Wynik testu F z kolei wskazuje na to, że nie ma istotnej różnicy pomiędzy dwoma porównywanymi grupami dla wariancji wierszy obu grup.

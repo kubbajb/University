@@ -1,0 +1,122 @@
+---
+title: "Zadanie 10"
+author: "Jakub Anczyk"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r lib, include=FALSE}
+library(ggplot2)
+library(nortest)
+library(stats)
+library(tseries)
+```
+
+## Polecenie
+
+Za pomocą odpowiednich symulacji zbadać moc testów: Jarque-Bera, Shapiro-Wilka i Lillieforsa w przypadku, gdy dane pochodzą z rozkładu 𝑡-Studenta. Uzyskane wyniki należy przedstawić na odpowiednich wykresach ilustrujących moce testów z uwzględnieniem:
+
+- liczby danych,
+
+- liczby stopni swobody generowanego rozkładu t-Studenta
+
+## Funkcje mierzące moc testów
+
+```{r funkcje}
+
+# Function to generate samples from t-Student distribution
+generate_samples <- function(n, df) {
+  return(rt(n, df))
+}
+
+# Function to perform the Chi-square test and calculate the percentage of rejections
+calculate_rejection_percentage <- function(n, k, num_classes) {
+  num_trials <- 1000
+  num_rejections <- 0
+  
+  for (i in 1:num_trials) {
+    # Generate samples from the t-Student distribution
+    samples <- generate_samples(n, k)
+    
+    # Divide the samples into classes
+    class_intervals <- quantile(samples, probs = seq(0, 1, length.out = num_classes + 1))
+    observed_frequencies <- table(cut(samples, breaks = class_intervals))
+    
+    # Calculate the expected frequencies assuming a t-Student distribution with k degrees of freedom
+    expected_frequencies <- rep(n / num_classes, num_classes)
+    
+    # Perform the Chi-square test
+    chi_square_test <- chisq.test(observed_frequencies, p = expected_frequencies, rescale.p = TRUE)
+    
+    # Check if the null hypothesis is rejected
+    if (chi_square_test$p.value < 0.05) {
+      num_rejections <- num_rejections + 1
+    }
+  }
+  
+  rejection_percentage <- num_rejections / num_trials * 100
+  return(rejection_percentage)
+}
+
+```
+
+## Stworzenie danych dla testów
+
+```{r dane}
+
+# Sample sizes to consider
+sample_sizes <- c(50, 100, 200, 500, 1000)
+
+# Degrees of freedom to consider
+df_values <- c(5, 10, 20, 30, 50)
+
+# Number of classes to consider
+num_classes <- c(5, 10, 15, 20)
+
+# Initialize result matrix
+results <- matrix(0, nrow = length(df_values), ncol = length(num_classes))
+colnames(results) <- num_classes
+rownames(results) <- df_values
+
+```
+
+## Zastosowanie funkcji do danych
+
+```{r power, warning=FALSE}
+
+# Perform simulations for each degree of freedom and number of classes
+for (i in 1:length(df_values)) {
+  for (j in 1:length(num_classes)) {
+    df <- df_values[i]
+    rejection_percentage <- calculate_rejection_percentage(sample_sizes[1], df, num_classes[j])
+    results[i, j] <- rejection_percentage
+  }
+}
+
+```
+
+## Stworzenie wykresów do wygenerowanych danych
+
+```{r charts}
+
+
+# Plotting the results
+par(mfrow = c(1, length(df_values)), mar = c(4, 4, 2, 1))
+df_labels <- c("df=5", "df=10", "df=20", "df=30", "df=50")
+
+for (i in 1:length(df_values)) {
+  plot(
+    num_classes, results[i, ],
+    type = "b", pch = 16, ylim = c(0, 10),
+    xlab = "Number of Classes", ylab = "Percentage of Rejections",
+    main = paste("Degrees of Freedom:", df_labels[i])
+  )
+  cat("\n")
+}
+
+
+```

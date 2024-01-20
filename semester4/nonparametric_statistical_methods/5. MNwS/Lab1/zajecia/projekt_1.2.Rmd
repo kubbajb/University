@@ -1,0 +1,72 @@
+---
+title: "projekt 1.2"
+author: "A. M. Machno"
+date: "2 marca 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Wprowadzenie
+
+Badamy moc testu t jednej œredniej w zale¿noœci od wartoœci oczekiwanej prawdziwego rozk³adu. 
+Hipoteza: wraz ze wzrostem odleg³oœci miêdzy prawdziw¹ wartoœcia oczekiwan¹, a zerem, roœnie moc testu.
+
+### Wizualizacja
+
+```{r, message=FALSE}
+#wczytuje biblioteki
+library(dplyr)
+library(ggplot2)
+```
+
+Tworzê ramkê danych z _p-value_ i wartoœci¹ oczekiwan¹ dla 1000 orób i wartoœci oczekiwanych z przedzia³u [0.1, 2].
+
+```{r}
+#d³ugoœæ próby
+sample_l <- 20
+#poziom istotnoœci
+alpha <- 0.05
+#wartoœæ oczekiwana
+mu <- seq(.1, 2, by = .1)
+#iloœæ symulacji
+N <- 1000
+
+sample_df <- tibble(p = 1, mu = 0)
+set.seed(9)
+for(x in mu){
+  p_vector <- sapply(rep(x, N), function(x){
+    my_sample <- rnorm(sample_l, x)
+    t.test(my_sample)$p.value
+  })
+  tmp_df <- tibble(p = p_vector, mu = x)
+  sample_df <- bind_rows(sample_df, tmp_df)
+}
+sample_df <- sample_df %>% filter(mu > 0)
+
+glimpse(sample_df)
+```
+
+Obliczam moce testów dla ka¿dej wartoœci oczekiwanej.
+
+```{r}
+power_df <- sample_df %>%
+  group_by(mu) %>%
+  summarise(power = mean(p < 0.05))
+
+power_df
+```
+
+Tworzê wykres zale¿noœci mocy testu od wartoœci oczekiwanej
+
+```{r, echo=FALSE}
+power_df %>%
+  ggplot(aes(x = mu, y = power)) +
+  geom_line()
+```
+
+### Wnioski
+
+Dla $\alpha = 5 \%$ i d³ugoœci próby równej 20, moc testu szybko roœnie wraz ze wzrostem wartoœci oczekiwanej. Dla wartoœci ok. 1 przyjmuje ju¿ wartoœæ blisk¹ 100%. 

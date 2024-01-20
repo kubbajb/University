@@ -1,0 +1,69 @@
+---
+title: "projekt 1.1"
+author: "A. M. Machno"
+date: "2 marca 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Wprowadzenie
+
+Badam czy wraz ze wzrostem d³ugoœci próby zmienia siê moc testu t jednej œredniej.
+Zak³adam rozk³ad normalny z wartoœci¹ oczekiwan¹ 1 i odchyleniem standardowym 1 oraz poziom istotnoœci 5%.
+
+### Wizualizacja
+
+```{r, message=FALSE}
+# ³adujê biblioteki
+library(dplyr)
+library(ggplot2)
+```
+
+Tworzê ramkê daych z wartoœciami __p__ dla 1000 prób d³ugoœci od 5 do 20.
+
+```{r}
+set.seed(966)
+#d³ugoœæ próby
+sample_l <- 5:20
+#poziom istotnoœci
+alpha <- 0.1
+#wartoœæ oczekiwana
+mu = 1
+#liczba symulacji
+N <- 1000
+
+#JAK D£UGOŒÆ PRÓBY WP£YWA NA MOC? 
+p_samples <- tibble(p = 1, n = 1)
+for(n in sample_l){
+  p_sim <-sapply(rep(mu, N), function(x){
+    my_sample <- rnorm(n, mu)
+    t.test(my_sample)$p.value
+  })
+  samples <- tibble(p = p_sim, n = n)
+  p_samples <- bind_rows(p_samples, samples)
+}
+p_samples <- p_samples %>% filter(n > 1)
+```
+Teraz obliczam moc testu dla ka¿dej d³ugoœci próby.
+
+```{r}
+powers <- p_samples %>%
+  group_by(n) %>%
+  summarise(power = sum(p < alpha) / n())
+powers
+```
+
+Tworzê wykres zale¿noœci mocy testu od d³ugoœci próby.
+
+```{r, echo=FALSE}
+powers %>% ggplot(aes(x = n, y = power)) + 
+  geom_line()
+```
+
+### Wnioski
+
+D³ugoœæ próby istotnie wp³ywa na moc testu, wraz ze wzrostem d³ugoœci roœnie moc testu. Liczba symulacji 1000 wydaje siê za ma³a. 
+

@@ -1,0 +1,245 @@
+---
+title: "Projekt - Skalowanie Wielowymiarowe"
+author: "Jakub Anczyk"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(summarytools)
+library(dplyr)
+library(summarytools)
+library(psych)
+library(factoextra)
+library(ggplot2)
+library(stats) # funkcja cmdscale()
+library(MASS) # funkcje sammon(), isoMDS()
+library(graphics) # funkcje plot(), text()
+library(rgl) # funkcje plot3d(), text3d()
+library(rgl)
+
+options(rgl.useNULL=TRUE)
+
+```
+
+# Skalowanie Wielowymiarowe
+
+## Wstęp
+
+W niniejszej pracy zastosuję dwa przykłady skalowania wielowymiarowego na danych wykorzystanych w analizie dotyczącej porządkowania liniowego i analizy skupień. Celem pracy jest bliższe poznanie różnych technik skalowania wielowymiarowego oraz dokłada analiza zestawu danych dotyczącego zawartości związków odżywczych w różnego rodzaju produktach.
+
+Ważne: **Dane pochodzą z gotowego zbioru danych zawierającego produkty dostępne na rynku amerykańskim, więc wyniki nie są doskonałe i nie należy się nimi sugerować w kształtowaniu własnych nawyków żywieniowych.**
+
+## Dane
+
+Do projektu wybrałem zestaw danych dotyczący zawartości wartości odżywczych w różnego rodzaju produktach spożywczych, znaleziony na stronie [Kaggle](https://www.kaggle.com/code/niharika41298/food-nutrition-analysis-eda/input). Dane zastosowane w tej części projektu zostały uprzednio wyczyszczone i skrócone w pierwszej jego części.
+
+```{r data}
+
+data <- read.csv("nutrition_cleaned.csv",row.names = 1)
+
+```
+
+## Analiza podstawowych statystyk
+
+Za pomocą funkcji descr() z biblioteki summarytools dokonuję szybkiej analizy wybranych danych.
+
+Kalorie: Średnia zawartość kalorii wynosi 256,70, przy znacznym odchyleniu standardowym wynoszącym 134,60. Zakres jest znaczny, od minimum 78,72 do maksimum 783,33, co wskazuje na zróżnicowany zakres produktów spożywczych.
+
+### Węglowodany:
+
+Dane pokazują niską zmienność zawartości węglowodanów, ze średnią 1.37 i odchyleniem standardowym 3.11. Rozkład jest dodatnio skośny (skośność = 2.37), co wskazuje, że większość produktów ma bardzo niską zawartość węglowodanów, ale niektóre mają wyższe wartości.
+
+### Tłuszcz:
+
+Średnia zawartość tłuszczu wynosi 17.10, a dane są dodatnio skośne (skośność = 2.51), co sugeruje rozkład prawoskośny z kilkoma pozycjami o wysokiej zawartości tłuszczu. Wartość kurtozy wynosząca 8.51 wskazuje na rozkład leptokurtyczny, tj. ciężkie ogony i potencjalne wartości odstające.
+
+### Białko:
+
+Średnia zawartość białka w zbiorze danych wynosi 21.71, przy stosunkowo niskim odchyleniu standardowym wynoszącym 6.26. Rozkład jest ujemnie skośny (skośność = -0.68), co sugeruje, że jest więcej produktów o wyższej zawartości białka.
+
+### Tłuszcz nasycony:
+
+Zawartość tłuszczów nasyconych ma średnią 10,89, a dane są dodatnio skośne (skośność = 1.08), co oznacza rozkład prawoskośny. Zakres międzykwartylowy (IQR) jest stosunkowo szeroki, co wskazuje na zmienność poziomów tłuszczów nasyconych wśród produktów spożywczych.
+
+### Zgodność danych
+
+Odsetek prawidłowych danych wynosi 100% dla wszystkich atrybutów, co wskazuje na kompletny zbiór danych bez brakujących wartości.
+
+```{r summary}
+
+descr(data)
+
+```
+
+## Analiza wartości współczynników zmienności
+
+Współczynnik zmienności (CV) jest niski dla kalorii i tłuszczu, co wskazuje na stosunkowo niską względną zmienność. Węglowodany i tłuszcze nasycone mają jednak wyższą względną zmienność. Wartości kurtozy dla tłuszczu i węglowodanów są szczególnie wysokie, co sugeruje potencjalne wartości odstające i rozkład z ciężkimi ogonami.
+
+## Standaryzacja
+
+Przed przystąpieniem do kolejnych kroków standaryzuję dane i tworzę macierz odległości.
+
+```{r stand}
+
+data_st <- as.data.frame(scale(data))
+odl <- dist(data_st)
+
+```
+
+## Klasyczne skalowanie wielowymiarowe
+
+W poniższym kodzie przeprowadzam klasyczne skalowanie wielowymiarowe dla dwóch wymiarów i obliczam położenie marginesów wykresu.
+
+```{r classic}
+
+sww2 <- cmdscale(odl, k=2)
+sww2
+
+xmarg <- c(min(sww2[,1])-1, max(sww2[,1])+1)
+ymarg <- c(min(sww2[,2])-1, max(sww2[,2])+1)
+
+```
+
+Przy zredukowaniu zestawu danych do dwóch wymiarów współczynnik STRESS wynosi 0.15175.
+
+```{r 2dim}
+
+plot(sww2, xlab = "wymiar 1", ylab = "wymiar 2", xlim = xmarg, ylim = ymarg)
+text(sww2, labels = rownames(data), pos = 2, cex = 0.6, srt = 15)
+
+odl2 <- dist(sww2)
+
+stress <- function(d1, d2){
+  sqrt(sum((d1-d2)^2)/sum(d1^2))
+}
+
+stress(odl,odl2)
+
+```
+
+Zredukowanie danych do trzech wymiarów pozwala zaobserwować, że redukcja tylko do dwóch istotnie ogranicza możliwości interpretacji danych i skutkuje utratą ważnego kontekstu.
+
+Dane wszystkich obserwacji wyraźnie skupiają się wokół pewnego centrum. To tutaj znajduje się największe skupisko obserwacji. W każdym z trzech wymiarów znajdują się jednak outlierzy.
+
+[Poniższy wykres jest interaktywny i pozwala na przybliżanie i oddalanie widoku.]{.underline}
+
+```{r 3dim}
+
+sww3 <- cmdscale(odl, k=3)
+sww3
+
+plot3d(sww3, xlab = "wymiar 1", ylab = "wymiar 2", zlab = "wymiar 3")
+text3d(sww3, texts=rownames(data), cex = 0.6, srt = 15)
+rglwidget()
+
+odl3 <- dist(sww3)
+stress(odl,odl3)
+
+```
+
+### 1 Wymiar
+
+Na trójwymiarowym wykresie najbardziej skrajną obserwacją w 1 wymiarze jest "salt pork", która znajduje się na samym skraju wartości negatywnych (około -5). Pozostałe obserwacje,z nielicznymi wyjątkami, skupiają się wokół wartości od 0 do 1. Na wykresie dwuwymiarowym możemy zaobserwować podobne zachowanie się tej obserwacji.
+
+Na tak skrajny wynik tej potrawy składają się bardzo skrajne pomiary zmiennych Calories, Protein, Fat oraz Sat.Fat:
+
+```{r 3d1dim}
+data["Salt pork",]
+```
+
+### 2 Wymiar
+
+W drugim wymiarze trójwymiarowego wykresu sytuacja jest niemal identyczna, z tą jednak różnicą, ze wartością skrajną jest "pot-pie", które osiąga największą wartość (4), podczas gdy pozostałe obserwacje koncentrują się wokół wartości od 0 do -1. Na wykresie dwuwymiarowym możemy zaobserwować w zasadzie identyczne rozłożenie zmiennych.
+
+Położenie "pot-pie" bezpośrednio wynika ze skrajności pomiarów zmiennych Protein i Carbs.
+
+```{r 3d2dim}
+data["Pot-pie",]
+```
+
+### 3 Wymiar
+
+Wymiar trzeci, którego brakuje na dwuwymiarowym wykresie, pozwala zaobserwować pewną bardzo ważną rzecz. Mianowicie w trzecim wymiarze "salt-pork" i "bacon" znajdują się po przeciwległych krańcach wykresu a różnica między nimi wynosi aż 6 jednostek. Niestety wykres dwuwymiarowy zupełnie nie oddaje tej odległości i przedstawia te zmienne jako bardzo (a nawet najbardziej w całym zestawie) do siebie zbliżone.
+
+### Różnice pomiędzy "Salt porK" oraz "Bacon"
+
+Odróżnienie tych dwóch obserwacji jest istotne, ponieważ wyraźnie różnią się one pomiarem zmiennych Protein (5g dla "Salt porK" vs. 25g dla "Bacon"), Fat (91.7g dla "Salt pork" vs. 50g dla "Bacon"), Sat.Fat (0.0g dla "Salt pork" vs. 43.75g dla "Bacon") oraz Carbs (0.0g dla "Salt pork" vs. 6.25g dla "Bacon").
+
+Powodem bliskiego ich umiejscowienia na wykresie dwuwymiarowym może być fakt, że obie te obserwacje osiągają dwie najwyższe (choć znacznie oddalone od siebie) wartości dla zmiennych Calories (783.3g dla "Salt pork" vs. 593.75g dla "Bacon") oraz Fat (91.67g dla "Salt pork" vs. 50g dla "Bacon").
+
+Te znaczące różnice doskonale obrazuje współczynnik STRESS dla obu wersji wykresów. Bazując na tym wskaźniku, możemy uznać, że utrata informacji przy redukcji liczby wymiarów o tylko jeden skutkuje utratą informacji aż o 260%.
+
+```{r stress}
+
+stress(odl,odl2)
+stress(odl,odl3)
+
+((stress(odl,odl2)/stress(odl,odl3))*100)
+
+```
+
+## Metoda Sammona
+
+W tej części przeprowadzę skalowanie metodą Sammona z wykorzystaniem funkcji Sammon() z pakietu MASS.
+
+```{r sammon2d}
+
+sammon2 <- sammon(odl, k=2)
+sammon2$points
+sammon2$stress
+```
+
+Po wygenerowaniu wykresu widzimy natychmiast wyraźną różnicę w rozmieszczeniu "salt pork" i "bacon", których znaczne różnice są na wykresie dwuwymiarowym skalowania metodą Sammona dużo wyraźniejsze, niż w przypadku klasycznej metody.
+
+Pozostałe obserwacje również zmieniły umiejscowienie na wykresie, choć nieznacznie.
+
+```{r sammonplot}
+
+xmargsmn <- c(min(sammon2$points[,1])-1, max(sammon2$points[,1])+1)
+ymargsmn <- c(min(sammon2$points[,2])-1, max(sammon2$points[,2])+1)
+
+plot(sammon2$points, xlab = "wymiar 1", ylab = "wymiar 2", xlim = xmargsmn, ylim = ymargsmn)
+text(sammon2$points, labels = rownames(data), pos = 2, cex = 0.6, srt = 15)
+
+```
+
+Z kolei w trzech wymiarach zarówno umiejscowienie pojedynczych obserwacji jak wnioski pozostają niemal tożsame z wnioskami z analizy metody klasycznej.
+
+[Poniższy wykres jest interaktywny i pozwala na przybliżanie i oddalanie widoku.]{.underline}
+
+```{r sammon3d}
+
+sammon3 <- sammon(odl,k=3)
+sammon3$points
+sammon3$stress
+
+plot3d(sammon3$points, xlab = "wymiar 1", ylab = "wymiar 2", zlab = "wymiar 3")
+text3d(sammon3$points, texts= rownames(data), pos = 2, cex = 0.6, srt = 15)
+rglwidget()
+
+```
+
+Wbudowana w pakiet MASS funkcja pozwalająca obliczyć wartość STRESS wskazuje na dużą utratę informacji przy redukcji z trzech do dwóch wymiarów metodą Sammona (949.55).
+
+```{r stress_sammon}
+
+((sammon2$stress/sammon3$stress)*100)
+
+```
+
+Po zastosowaniu standardowego wzoru do obliczenia współczynnika STRESS uzyskujemy już jednak wartość bardziej zbliżoną do tej uzyskanej metodą klasyczną (286.00 dla metody Sammona vs 260.04 dla metody klasycznej), co może świadczyć o dużym podobieństwie obu metod w tym konkretnym przykładzie.
+
+```{r stress_sammon2}
+
+((stress(odl, dist(sammon2$points))/stress(odl, dist(sammon3$points)))*100)
+```
+
+## Podsumowanie
+
+Obie zastosowane metody dają bardzo podobne rezultaty, jednak metoda Sammona w (na tym konkretnym przykładzie) jest dokładniejsza w przypadku redukcji wymiarów wartości, które są zarówno bardzo skrajne w porównaniu do pozostałych obserwacji, ale także znacznie się między sobą różnią.
+
+Na podstawie analizy współczynnika STRESS można przypuścić, że dzieje się to kosztem dokładności redukcji wymiarów obserwacji, które są do siebie bardziej podobne.

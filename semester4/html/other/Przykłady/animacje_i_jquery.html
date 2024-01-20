@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <title>Kilka przykładów animacji i wykrozystania jQuery</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Tomasz Wieroński" />
+    <meta name="keywords" content="AGH CSS jQuery" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      /*Dodanie efektu animacja po najechaniu*/
+      body div:first-of-type:hover {
+        animation: przykladowaAnimacja 2s ease-in-out 100ms;
+        animation-iteration-count: infinite;
+        transition: 2s;
+      }
+      /*Animacja*/
+      @keyframes przykladowaAnimacja {
+        0% {
+          border-radius: 0%;
+          color: white;
+          -webkit-transform: rotate(0deg);
+        }
+        25% {
+          color: grey;
+          -webkit-transform: rotate(-5deg);
+        }
+        50% {
+          border-radius: 50%;
+          color: black;
+          -webkit-transform: rotate(5deg);
+        }
+        75% {
+          color: grey;
+          -webkit-transform: rotate(-5deg);
+        }
+        100% {
+          border-radius: 0%;
+          color: white;
+          -webkit-transform: rotate(0deg);
+        }
+      }
+    </style>
+    <!--Wczytanie jquery-->
+    <!--Dlaczego tylko niektóre z poniższych funkcji działają?-->
+    <script src="./skrypty.js"></script>
+  </head>
+  <body>
+    <div><p>Najedź na mnie</p></div>
+    <br /><br /><br />
+    <div class="test"></div>
+    <div class="test2"></div>
+    <div style="display: flex; flex-direction: row">
+      <a id="zamien">Dodaj/usuń klasę</a>
+      <a id="ukryj">Ukryj element</a>
+      <a id="pokaz">Pokaż element</a>
+    </div>
+    <div id="przyczajony" class="pokolorowany">Element do ukrycia</div>
+    <h2>Lorem ipsum dolor sit amet.</h2>
+    <h2>Lorem ipsum dolor sit amet.</h2>
+    <h2>Lorem ipsum dolor sit amet.</h2>
+    <h2>Lorem ipsum dolor sit amet.</h2>
+    <h2>Lorem ipsum dolor sit amet.</h2>
+    <h2>Lorem ipsum dolor sit amet.</h2>
+  </body>
+</html>

@@ -1,0 +1,135 @@
+---
+title: "Zadanie 8"
+author: "Jakub Anczyk"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r lib, include=FALSE}
+library(ggplot2)
+library(nortest)
+library(stats)
+library(tseries)
+```
+
+## Polecenie
+
+Za pomocą odpowiednich symulacji zbadać moc testu Kołmogorowa i testu Kołmogorowa z wykorzystaniem PIT (probability integral transform), z hipotezą główną, że cecha ma rozkład normalny w przypadku, gdy dane pochodzą z rozkładu 𝑡-Studenta lub z rozkładu 𝜒2 (uwaga: żeby wyniki były porównywalne trzeba pamiętać o standaryzacji danych). Uzyskane wyniki należy przedstawić na odpowiednich wykresach ilustrujących moce testów z uwzględnieniem:
+
+- liczby danych,
+
+- liczby stopni swobody generowanego rozkładu t-Studenta, 𝜒2
+
+## Funkcje mierzące moc testów
+
+```{r funkcje}
+
+# Function to compute the power of the Kolmogorov test
+compute_power <- function(data, n_simulations, alpha) {
+  power <- rep(0, n_simulations)
+  
+  for (i in 1:n_simulations) {
+    # Generate random samples from the hypothesized distribution
+    simulated_data <- data()
+    
+    # Perform the Kolmogorov test
+    ks_test <- ks.test(simulated_data, "pnorm")
+    
+    # Check if the null hypothesis is rejected
+    if (ks_test$p.value < alpha) {
+      power[i] <- 1
+    }
+  }
+  
+  return(mean(power))
+}
+
+# Function to generate data from t-Student distribution
+generate_t_data <- function(n, df) {
+  standardized_data <- rt(n, df)
+  standardized_data <- (standardized_data - mean(standardized_data)) / sd(standardized_data)
+  
+  return(standardized_data)
+}
+
+# Function to generate data from chi-square distribution
+generate_chi2_data <- function(n, df) {
+  standardized_data <- rchisq(n, df)
+  standardized_data <- (standardized_data - mean(standardized_data)) / sd(standardized_data)
+  
+  return(standardized_data)
+}
+
+```
+
+## Stworzenie danych dla testów
+
+```{r dane}
+
+
+# Parameters
+n_data <- c(50, 100, 200)  # Number of data
+df_t <- c(3, 5, 10)  # Degrees of freedom for t-distribution
+df_chi2 <- c(3, 5, 10)  # Degrees of freedom for chi-square distribution
+n_simulations <- 1000  # Number of simulations
+alpha <- 0.05  # Significance level
+
+```
+
+## Zastosowanie funkcji do danych
+
+```{r power, warning=FALSE}
+
+# Perform simulations for different settings
+results <- matrix(0, nrow = length(n_data), ncol = length(df_t) + length(df_chi2))
+colnames(results) <- c(paste0("t_", df_t), paste0("chi2_", df_chi2))
+
+for (i in 1:length(n_data)) {
+  n <- n_data[i]
+  
+  for (j in 1:length(df_t)) {
+    df <- df_t[j]
+    data_func <- function() generate_t_data(n, df)
+    power <- compute_power(data_func, n_simulations, alpha)
+    results[i, j] <- power
+  }
+  
+  for (j in 1:length(df_chi2)) {
+    df <- df_chi2[j]
+    data_func <- function() generate_chi2_data(n, df)
+    power <- compute_power(data_func, n_simulations, alpha)
+    results[i, j + length(df_t)] <- power
+  }
+}
+
+```
+
+## Stworzenie wykresów do wygenerowanych danych
+
+```{r charts}
+
+# Plot the results
+plot(n_data, results[, 1], type = "o", ylim = c(0, 1), xlab = "Number of data",
+     ylab = "Power", main = "Power of Kolmogorov test - t-Student Distribution")
+
+lines(n_data, results[, 2], type = "o", col = "blue")
+lines(n_data, results[, 3], type = "o", col = "green")
+
+legend("topright", legend = c("df = 3", "df = 5", "df = 10"),
+       col = c("black", "blue", "green"), lty = 1, pch = 1)
+
+plot(n_data, results[, 4], type = "o", ylim = c(0, 1), xlab = "Number of data",
+     ylab = "Power", main = "Power of Kolmogorov test - Chi-square Distribution")
+
+lines(n_data, results[, 5], type = "o", col = "blue")
+lines(n_data, results[, 6], type = "o", col = "green")
+
+legend("topright", legend = c("df = 3", "df = 5", "df = 10"),
+       col = c("black", "blue", "green"), lty = 1, pch = 1)
+
+
+```

@@ -1,0 +1,49 @@
+.lista1 ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 200px;
+    background-color: lightgrey;
+}
+
+.lista1 li {
+    display: block;
+    color: #000;
+    padding: 8px 16px;
+    font: 15px Verdana, bold;
+    text-decoration: none;
+    text-align: center;
+}
+
+.lista1 li:hover {
+    background-color: darkred;
+    color: white;
+}
+
+
+
+
+.lista2 ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 450px;
+    overflow: hidden;
+    background-color: grey;
+}
+
+.lista2 li{
+	float: left;
+  	display: block;
+	color: white;
+	padding: 8px 16px;
+	font: 15px Verdana, bold;
+	text-decoration: none;
+	text-align: center;
+	text-decoration-color: white;
+}
+
+.lista2 li:hover {
+    background-color: darkcyan;
+    color: white;
+}

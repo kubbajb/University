@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <title>Zadanie 2 - JavaScript</title>
+    <style>
+      .button {
+        width: 100px;
+        height: 20px;
+        border: black solid 1px;
+        text-align: center;
+      }
+      .button:hover {
+        background-color: grey;
+        font-weight: bold;
+      }
+      #content {
+        width: 300px;
+        height: 20px;
+      }
+    </style>
+    <script type="text/javascript">
+    var count = 0;
+      function klik() {
+        count = count + 1;
+        if (count == 10) {
+          alert("Przestań już tyle klikać!");
+        }
+        document.getElementById("content").innerHTML = count;
+      }
+    </script>
+  </head>
+  <body>
+    <div id="content">
+      <script type="text/javascript">
+        document.write(count);
+      </script>
+    </div>
+    <div id="adder" class="button" onclick="klik()">Naciśnij</div>
+    <script></script>
+  </body>
+</html>

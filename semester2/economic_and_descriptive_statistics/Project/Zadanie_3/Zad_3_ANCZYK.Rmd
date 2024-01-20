@@ -1,0 +1,285 @@
+---
+title: 'Zadanie 3: '
+author: "Jakub Anczyk"
+date: '2022-05-31'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, echo = TRUE)
+packages <- c("quantmod", "tidyquant", "grid", "gridExtra", "ggplot2", "data.table", "patchwork", "dplyr", "knitr")
+
+installed_packages <- packages %in% rownames(installed.packages())
+if (any(installed_packages == FALSE)) {
+  install.packages(packages[!installed_packages])
+}
+
+invisible(lapply(packages, library, character.only = TRUE))
+
+```
+
+#### Analiza dziennych stóp zwrotu i wolumenu transakcyjnego spółek
+
+W tym zadaniu postanowiłem zbadać dzienne stopy zwrotu i wolumen transakcyjny spółek **British Petroleum** (BP), **Cameco** (CCJ) oraz **Northrop Grumman Corporation** (NOC) na Nowojorskiej Giełdzie Papierów Wartościowych. W tym celu wykorzystałem dane z Yahoo Finance za pośrednictwem biblioteki tidyquant. 
+
+Wybrałem te trzy spółki, ponieważ reprezentują trzy różne sposoby, w jakie wojna na Ukrainie wpływa na rynek papierów wartościowych. 
+
+British Petroleum jest brytyjską spółką z siedzibą w Londynie i trzecim co do wielkości przedsiębiorstwem petrochemicznym na świecie z przychodami na poziomie 246 miliardów dolarów (2021).
+
+Cameco (CCJ) z kolei jest największą na świecie spółką uranową notowaną na giełdzie, posiadającą kopalnie w Kanadzie, Stanach Zjednoczonych i Kazachstanie. W 2015 roku była drugim co do wielkości producentem uranu, odpowiadając za 18% światowej produkcji. Przychoy tej spółki sięgają 2,9 miliardów dolarów (2021).
+
+Northrop Grumman Corporation (NOC) to amerykańską międzynarodowym koncernem z branży lotniczej i kosmonautycznej oraz technologii obronnych. Przychoy tej spółki sięgają 43,5 miliardów dolarów (2021). Jest jednym z największych na świecie producentów broni i dostawców technologii wojskowych.
+
+W celu obliczenia dziennych stóp zwrotu skorzystałem z definicji "overnight return" dla wartości procentowej i walutowej poszczególnych kursów. 
+Zachowanie kursu akcji spółek badałem w okresie poprzedzającym inwazję między dniem 2022-01-24 a 2022-02-23, oraz bezpośrednio po inwazji, między 2022-02-25 a 2022-03-24, z wyłączeniem dnia inwazji przypadającego na 2022-02-24. 
+
+```{r download, include=FALSE}
+
+# Download stock price data - set price
+options("getSymbols.warning4.0"=FALSE)
+options("getSymbols.yahoo.warning"=FALSE)
+
+tickers <- c("NOC", "BP", "CCJ")
+first.date <- "2022-1-24"
+last.date <- "2022-3-24"
+freq.data <- "daily"
+
+# Downloading Apple price using quantmod
+prices <- tq_get(tickers,
+                 from = first.date, 
+                 to = last.date, 
+                 get = 'stock.prices')
+
+```
+
+```{r data, include=FALSE}
+
+# Daily & Cumulative return
+trading_data <- prices %>%
+  group_by(symbol) %>%
+  mutate(d_ret_dol = ifelse(is.na(adjusted - shift(adjusted)), 0, adjusted - shift(adjusted))) %>%
+  mutate(d_ret_pct = ifelse(is.na((adjusted / shift(adjusted) - 1)), 0, (adjusted / shift(adjusted) - 1))) %>%
+  mutate(cum_d_ret_dol = cumsum(ifelse(is.na(d_ret_dol), 0, d_ret_dol))) %>%
+  mutate(time = ifelse(date > "2022-02-24", "AFTER", ifelse(date < "2022-02-24", "BEFORE", "x")))
+
+
+trading_data_stat <- trading_data %>%
+  group_by(symbol, time) %>%
+  summarise(
+    mean_adjusted_dol = mean(adjusted),
+    var_adjusted_dol = var(adjusted),
+    kurt_adjusted_dol = kurtosis(adjusted),
+    sd_adjusted_dol = sd(adjusted),
+    mean_ret_dol = mean(d_ret_dol),
+    var_ret_dol = var(d_ret_dol),
+    kurt_ret_dol = kurtosis(d_ret_dol),
+    sd_ret_dol = sd(d_ret_dol),
+    mean_ret_pct = mean(d_ret_pct),
+    var_ret_pct = var(d_ret_pct),
+    kurt_ret_pct = kurtosis(d_ret_pct),
+    sd_ret_pct = sd(d_ret_pct),
+    l_cum_dret_dol = last(cum_d_ret_dol),
+  ) 
+
+
+trading_data_stat <- na.omit(trading_data_stat)
+
+
+trading_data_stat <- trading_data_stat %>%
+  mutate(
+    mean_adjusted_dol = format(round(mean_adjusted_dol, 2), nsmall = 2),
+    var_adjusted_dol = format(round(var_adjusted_dol, 2), nsmall = 2),
+    kurt_adjusted_dol = format(round(kurt_adjusted_dol, 2), nsmall = 2),
+    sd_adjusted_dol = format(round(sd_adjusted_dol, 2), nsmall = 2),
+    mean_ret_dol = format(round(mean_ret_dol, 2), nsmall = 2),
+    var_ret_dol = format(round(var_ret_dol, 2), nsmall = 2),
+    kurt_ret_dol = format(round(kurt_ret_dol, 2), nsmall = 2),
+    sd_ret_dol = format(round(sd_ret_dol, 2), nsmall = 2),
+    mean_ret_pct = format(round(mean_ret_pct, 2), nsmall = 2),
+    var_ret_pct = format(round(var_ret_pct, 2), nsmall = 2),
+    kurt_ret_pct = format(round(kurt_ret_pct, 2), nsmall = 2),
+    sd_ret_pct = format(round(sd_ret_pct, 2), nsmall = 2),
+    l_cum_dret_dol = format(round(l_cum_dret_dol, 2), nsmall = 2),
+  )
+
+```
+
+```{r plots, include=FALSE}
+# Price box plot
+prices_box_plot <- trading_data %>%
+  ggplot(aes(y = adjusted, color = symbol)) +
+  geom_boxplot() +
+  facet_wrap(~symbol,scales = 'free_y') +
+  theme_classic() +
+  labs(y = "Spread and center",
+       title = "Boxplot") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+# Normal price plot
+prices_plot <- trading_data %>%
+  ggplot(aes(x = date, y = adjusted, color = symbol)) +
+  geom_line() +
+  facet_wrap(~symbol,scales = 'free_y') +
+  theme_classic() +
+  labs(x = 'Date',
+       y = "Adjusted Price",
+       title = "Price Chart") +
+  scale_x_date(date_breaks = "month",
+               date_labels = "%b\n%y") +
+  geom_vline(xintercept = as.numeric(ymd("2022-2-24")), 
+             linetype="dashed", 
+             color = "red", size=0.3)
+
+# Volume plot
+volume_plot <- trading_data %>%
+  ggplot(aes(x = date, y = volume, color = symbol)) +
+  geom_line() +
+  facet_wrap(~symbol,scales = 'free_y') +
+  theme_classic() +
+  labs(x = 'Date',
+       y = "Daily Transaction Volume",
+       title = "Volume Chart") +
+  scale_x_date(date_breaks = "month",
+               date_labels = "%b\n%y") +
+  geom_vline(xintercept = as.numeric(ymd("2022-2-24")), 
+             linetype="dashed", 
+             color = "red", size=0.3)
+
+# Daily Return $
+daily_return_plot_dol <- trading_data[which(trading_data$d_ret_dol>0),] %>% 
+  ggplot(aes(x = date, y = d_ret_dol, z = volume, color = symbol)) +
+  geom_line() +
+  facet_wrap(~symbol,scales = 'free_y') +
+  theme_classic() +
+  labs(x = 'Date',
+       y = "$ Return",
+       title = "Daily $ Return") +
+  scale_x_date(date_breaks = "month",
+               date_labels = "%b\n%y") +
+  geom_vline(xintercept = as.numeric(ymd("2022-2-24")), 
+             linetype="dashed", 
+                           color = "red", size=0.3)
+
+# Daily Return %
+daily_return_plot_pct <- trading_data[which(trading_data$d_ret_pct>0),] %>% 
+  ggplot(aes(x = date, y = d_ret_pct, color = symbol)) +
+  geom_line() +
+  facet_wrap(~symbol,scales = 'free_y') +
+  theme_classic() +
+  labs(x = 'Date',
+       y = "% Return",
+       title = "Daily % Return") +
+  scale_x_date(date_breaks = "month",
+               date_labels = "%b\n%y") +
+  geom_vline(xintercept = as.numeric(ymd("2022-2-24")), 
+             linetype="dashed", 
+             color = "red", size=0.3)
+
+# Daily Cumulative Return $
+cum_daily_return_plot_dol <- trading_data %>% 
+  ggplot(aes(x = date, y = cum_d_ret_dol, color = symbol)) +
+  geom_line() +
+  facet_wrap(~symbol,scales = 'free_y') +
+  theme_classic() +
+  labs(x = 'Date',
+       y = "$ Return",
+       title = "Cumulative Daily $ Return") +
+  scale_x_date(date_breaks = "month",
+               date_labels = "%b\n%y") +
+  geom_vline(xintercept = as.numeric(ymd("2022-2-24")), 
+             linetype="dashed", 
+             color = "red", size=0.3)
+
+```
+
+```{r graphics, include=FALSE}
+
+png("prices_box_plot.png", width = 1000, height = 300, bg = "white")
+plot(prices_box_plot)
+dev.off()
+
+png("prices_plot.png", width = 1000, height = 300, bg = "white")
+plot(prices_plot)
+dev.off()
+
+png("volume_plot.png", width = 1000, height = 300, bg = "white")
+plot(volume_plot)
+dev.off()
+
+png("daily_return_plot_dol.png", width = 1000, height = 300, bg = "white")
+plot(daily_return_plot_dol)
+dev.off()
+
+png("daily_return_plot_pct.png", width = 1000, height = 300, bg = "white")
+plot(daily_return_plot_pct)
+dev.off()
+
+png("cum_daily_return_plot_dol.png", width = 1000, height = 300, bg = "white")
+plot(cum_daily_return_plot_dol)
+dev.off()
+
+```
+
+#### Analiza statystyk opisowych 
+
+Poniższa tabela zawiera proste, logarytmiczne oraz procentowe dzienne stopy zwrotu oraz skorygowaną cenę akcji i obliczone dla tych wartości średnią, wariancję, kurtozę i odchylenie standardowe dla okresu przed i po inwazji. Na końcu tabeli znajduje się także skumulowana stopa zwrotu w dolarach.
+
+```{r table, echo=FALSE}
+
+symbols <- c("British Petroleum", "British Petroleum", "Northrop Grumman Corp", "Northrop Grumman Corp", "Cameco Corp", "Cameco Corp")
+labels <- c("Symbol", "Date 2022-02-24", "Mean of Price (Adj.) $", "Variance of Price (Adj.) $", "Kurtosis of Price (Adj.) $", "Standard Deviation of Price (Adj.) $", "Mean of Daily Return $", "Variance of Daily Return $", "Kurtosis of Daily Return $", "Standard Deviation of Daily Return $", "Mean of Daily Return %", "Variance of Daily Return %", "Kurtosis of Daily Return %", "Standard Deviation of Daily Return %","Cumulative Daily Return Sum $")
+
+t_trading_data_stat <- transpose(trading_data_stat)
+colnames(t_trading_data_stat) <- symbols
+rownames(t_trading_data_stat) <- labels
+t_trading_data_stat <- t_trading_data_stat[-1,]
+
+kable(t_trading_data_stat)
+```
+
+Poniższe zestawienie ukazuje poszczególne rodzaje wykresów analizujące zachowanie kursu akcji badanych spółek:
+
+#### Wykres pudełkowy kursu akcji
+
+Największe wahania wartości kursu zaobserwowano u Cameco zarówno w okresie poprzedzającym jak i następujacym po inwazji. Odchylenie standardowe dziennej stopy zwrotu wyniosło dla tej spółki wzrosło z 8.85 \$ do 14.32 \$ (+5.47 \$). Na drugim miejscu w zestawieniu znalazło się Brithish Petroleum ze wzrostem z 0.51 \$ do	0.94 \$ (+ 0.43 /$). Najmniejsze odchylenie standardowe kursu akcji miało Northrop Grumman Corp ze wzrostem z 0.82	\$ do 1.05 \$ (+0.23 \$).
+
+![](prices_box_plot.png)
+
+##### Wykres kursu akcji
+
+Wykresy kursu akcji wskazują na wyraźne różnice w dynamice kursu w obu badanych okresach. Odd wybuchu wojny 24 lutego 2022 sółki Northrop Grumman Corporation oraz Cameco zanotowały gwałtowny wzrost, natomiast Brithish Petroleum wyraźny spadek.
+
+Średni kurs pierwszych dwóch wyniósł odpowiednio 31.39 \$ przed i 25.97 \$ po 24 lutego dla Northrop Grumman Corporation (+5.42 \$) oraz 382.15 \$ przed i 442.97 \$ po dla Cameco (+60.82 \$). British Petroleum z kolei zanotowało wyraźny spadek z 31.39	\$ do 28.76 \$ (-2.68 \$). 
+
+![](prices_plot.png)
+
+#### Wykres wolumenu transakcyjnego
+
+Poniższy wykres wskazuje na znaczny wzrost dynamiki wolumenu transakcyjnego począwszy od 24 lutego 2022, który to w przypadku wszystkich trzech spółek zdaje się hamować, utrzymując się jednak wyraźnie ponad historycznymi danymi poprzedniego okresu. 
+
+![](volume_plot.png)
+
+#### Wykres dziennej stopy zwrotu (w dolarach)
+
+Dzienna stopa zwrotu liczona w dolarach zwiększyła się w przypadku wszystkich trzech badanych spółek bezpośrednio po 24 lutego 2022 i utrzymywała się na wyższym poziomie do iej więcej połowy kolejnego badanego okresu.
+
+![](daily_return_plot_dol.png)
+
+#### Wykres kumulowanej dziennej stopy zwrotu (w dolarach)
+
+Wykresy dziennej stopy zwrotu wskazują na spadek w przypadku Brithish Petroleum i znaczący zwrost u pozostałych spółek. Kumulowana dzienna stopa zwrotu tej pierwszej spadła z 1.44 \$ do 1.07 \$ (-0.37 \$). W przypadku Northrop Grumman Corporation nastąpił wwzrost z 0.48 \$ do 8.99 \$ (+8.51 \$). Podobnie w przypadku Cameco nastąpił prawdopodobnie najbardziej spektakularny wzrost z -16.85 \$ przed inwazją w porównaniu do 45.29 \$ po inwazji (+62.14 \$).
+
+![](cum_daily_return_plot_dol.png)
+
+#### Wnioski
+
+Wzrost wartości akcji Northrop Grumman Corporation oraz Cameco związany jest ze wzrostem wartości oferty obu spółek i stosunkowo niewielkim ryzykem inwestycji z perspektywy inwestorów. Innym kluczowym czynnikiem jest brak  potrzeby dostosowania się lub  zmiany sposobu funkcjonowania tychże spółek w obliczu nowej sytuacji politycznej. 
+
+Northrop Grumman Corporation, jako spółka współpracująca z rządem federalnym USA, uważana jest za rozsądną inwestycję. W przypadku długotrwałej wojny w Ukrainie przeznaczanie dużych środków z budżetu federalnego na zapasy broni dla Ukraińców są pewne, a to oznacza stały przychód dla tej spółki. 
+
+Dodatkowo, wojna wywołała fundamentalną zmianę postrzegania kwestii bezpieczeńsywa i skutkuje już odczuwalną rewizją polityki obronnej Zachodu, przejawiającą się przede wszytkich znacznym zwiększeniem budżetu obronnego większości krajów zachodnich. Wszystkie te elementy czynią z Northrop Grumman Corporation obiecującą inwestycję.
+
+Cameco od dłuższego czasu osiąga rekordowe zysku z uwagi na napiętą podaż w następstwie pandemii, co doprowadziło do najwyższych od 9 lat  cen uranu. Ponadto, sytuacja w Ukrainie skłoniła przywódców całego świata do poszukiwania alternatywnych źródeł energii, co napędza popyt na uran i sprawia, że akcje Cameco wydają się być dobrą inwestycją. 
+
+W teorii, British Petroleum powinno notować wzrost z uwagi na handel kluczowym towarem, jaki jest ropa naftowa i jej produkty. W związku ze wzrostem cen ropy naftowej, Rosnieft, w którym BO posiada udziały od ponad dekady, okazał się cennym udziałowcem. British Petroleum postanowiło jendak pozbyć się udziałów w Rosniefcie, co oznacza, że przyłączając się do kampanii izolowania rosyjskiej gospodarki, naraziło się na straty finansowe sięgające 25 mld dolarów. Ten element okazał się być kluczowym dla cen akcji i wyników giełdowych tej spółki. 

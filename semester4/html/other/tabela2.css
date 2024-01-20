@@ -1,0 +1,19 @@
+.tabela2{
+  border: 1px solid lightblue;
+  width: 500px;
+  border-spacing: 0;
+}
+
+.tabela2 th{
+  background-color: #bfd5e0;
+}
+
+.tabela2 th, td{
+  border: 1px solid lightblue;
+  border-color: lightblue;
+  text-indent: 6px;
+}
+
+.xd{
+  background-color: orange;
+}

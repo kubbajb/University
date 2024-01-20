@@ -1,0 +1,41 @@
+﻿<Properties StartupConfiguration="{D7827931-7F61-4AF3-BEC3-5A9D2C2124ED}|Default">
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Organizator/Services/SerwisUczestnikow.cs">
+    <Files>
+      <File FileName="Organizator/Program.cs" Line="36" Column="41" />
+      <File FileName="Organizator/Services/SerwisPoczty.cs" Line="1" Column="1" />
+      <File FileName="Organizator/Services/SerwisOsob.cs" Line="38" Column="10" />
+      <File FileName="Organizator/Repositories/RepozytoriumOsob.cs" Line="1" Column="1" />
+      <File FileName="Organizator/Domain/Adres.cs" Line="1" Column="1" />
+      <File FileName="Organizator/Services/SerwisWydarzen.cs" Line="52" Column="4" />
+      <File FileName="Organizator/Repositories/RepozytoriumWydarzen.cs" Line="32" Column="10" />
+      <File FileName="Organizator/Services/SerwisUczestnikow.cs" Line="26" Column="8" />
+      <File FileName="Organizator/Domain/Wydarzenie.cs" Line="75" Column="24" />
+      <File FileName="Organizator/Domain/Encja.cs" Line="22" Column="10" />
+      <File FileName="Organizator/Domain/Alarm.cs" Line="19" Column="1" />
+      <File FileName="Organizator/Domain/Uczestnik.cs" Line="13" Column="21" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="Organizator" expanded="True">
+            <Node name="Organizator" expanded="True">
+              <Node name="Domain" expanded="True" />
+              <Node name="Properties" expanded="True" />
+              <Node name="Repositories" expanded="True" />
+              <Node name="Services" expanded="True">
+                <Node name="SerwisUczestnikow.cs" selected="True" />
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.ItemProperties.Organizator PreferredExecutionTarget="MonoDevelop.Default" />
+</Properties>

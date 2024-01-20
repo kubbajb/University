@@ -1,0 +1,241 @@
+---
+title: "Projekt ANOVA - BMI"
+author: "Jakub Anczyk"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(summarytools)
+library(tseries)
+library(stats)
+library(tidyverse)
+library(ggplot2)
+library(car)
+
+```
+
+### Wstęp
+
+Dane wykorzystane w niniejszej analizie pochodzą z platformy
+[Kaggle](https://www.kaggle.com/) ze zbioru [Medical Cost Personal
+Datasets](https://www.kaggle.com/datasets/mirichoi0218/insurance/) i
+złożone są z 1338 obserwacji.
+
+Celem analizy będzie sprawdzenie, czy wiek i lokalizacja ubezpieczonego
+mają wpływ na wskaźnik BMI, co może mieć kluczowe znaczenie dla
+ubezpieczyciela w procesie kształtowania polisy, jej wyceny lub ogólnej
+oceny ryzyka ubezpieczeniowego. W analizie wzięte pod uwagę zostaną
+wyłącznie osoby w przedziale wiekowym 20-30 lat.
+
+```{r data}
+
+data_raw <- read.csv("insurance.csv")
+summary(data_raw)
+
+```
+
+### Dane
+
+Każda z 1338 obserwacji odpowiada jednej osobie ubezpieczonej i zawiera
+następujące informacje:
+
+-   **age**: zmienna liczbowa oznaczjąca wiek głównego beneficjenta,
+
+-   **sex**: zmienna oznaczająca płeć ubezpieczonego (kobieta lub
+    mężczyzna),
+
+-   **bmi**: wskaźnik masy ciała, umożliwiający zrozumienie relacji wagi
+    ciała (w kilogramach) do wzrostu (w metrach). Jest to w miarę
+    obiektywny (choć z pewnością nie idealny) wskaźnik masy ciała
+    obliczany za pomocą następującego wzoru: $BMI = \frac{kg}{m^2}$ ,
+
+-   **children**: liczba dzieci objętych ubezpieczeniem zdrowotnym lub
+    inaczej liczba osób na utrzymaniu,
+
+-   **smoker**: zmienna oznaczająca, czy ubezpieczony jest osobą palącą
+    lub nie,
+
+-   **region**: obszar zamieszkania beneficjenta w USA, północny wschód,
+    południowy wschód, południowy zachód, północny zachód,
+
+-   **charges**: indywidualne koszty medyczne rozliczane przez
+    ubezpieczenie zdrowotne,
+
+W pierwszym kroku przygotowuję dane dla dalszej analizy i zawężam
+obserwacje do interesującego nas zakresu wieku 20-30 lat a następnie
+zamieniam tę zmienną na faktor.
+
+```{r clean_data}
+
+data <- data_raw %>%
+  mutate(charges = as.double(charges)) %>%
+  mutate(sex = as.factor(sex),
+         region = as.factor(region)) %>%
+  filter(age >= 20 & age <= 30) %>%
+  select(-c(children, smoker, sex)) %>%
+  mutate(age = as.factor(age))
+
+summary(data)
+
+```
+
+### Zmienna łączona
+
+Następnie tworzę roboczą zmienną pozwalającą określić wariancję i
+normalność w grupach będących kombinacją każdego występującego wieku i
+regionu.
+
+```{r reg_age}
+
+data$reg_age <- paste(data$region,
+                      data$age,
+                      sep="_")
+
+data$reg_age <- as.factor(data$reg_age)
+
+```
+
+### Analiza interakcji
+
+Interakcje między zmiennymi w modelu ilustruje wykres wykonany za pomocą
+funkcji interaction.plot() z biblioteki Stats.
+
+Z wykresu wynika, że dane rozkładają się w bardzo podobny sposób w
+niemal każdej grupie wiekowej, natomiast wyniki dla poszczególnych
+regionów zdają się silnie od siebie różnić. Jest to dobry wniosek
+roboczy, który następnie zweryfikuję za pomocą analizy wariancji.
+
+```{r interactions}
+
+interaction.plot(data$region, data$age, data$bmi, 
+                 ylab= "BMI", xlab="Region", 
+                 trace.label="Wiek", 
+                 lwd=3)
+
+```
+
+### Analiza normalności
+
+Po wykonaniu tego kroku mogę przystąpić do analizy normalności w
+podgrupach. Jak widzimy, każda podgrupa posiada p-value na poziomie
+minimum 0.05, co dowodzi, że dane spełniają czwarte założenie ANOVA o
+normalności obserwacji w podgrupach.
+
+```{r normality}
+
+tapply(data$bmi, data$region, jarque.bera.test)
+tapply(data$bmi, data$age, jarque.bera.test)
+tapply(data$bmi, data$reg_age, jarque.bera.test)
+
+
+
+```
+
+Normalność rozkładu danych możemy zwizualizować za pomocą histogramów:
+
+```{r histograms}
+
+ggplot(data) + geom_histogram(aes(x = bmi)) + facet_wrap(~age)
+ggplot(data) + geom_histogram(aes(x = bmi)) + facet_wrap(~region)
+
+```
+
+W inny sposób możemy spojrzeć na te same dane za pomocą wykresów
+pudełkowych, których charakterystyczny kształt również wskazuje na
+rozkład normalny podgrup:
+
+```{r boxplots}
+
+ggplot(data, aes(x=age, y=bmi)) +
+  geom_boxplot(aes(fill=age)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplot(data, aes(x=region, y=bmi)) +
+  geom_boxplot(aes(fill=region)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggplot(data, aes(x=reg_age, y=bmi)) +
+  geom_boxplot(aes(fill=reg_age)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(legend.position = "none") +
+  facet_wrap( ~ region, scales="free")
+
+```
+
+### Analiza wariancji
+
+Przed przystąpieniem do samej analizy, należy także sprawdzić równość
+wariancji w podgrupach. Wartość p-value wskazuje na spełnienie piątego
+założenia klasycznej metody ANOVA o homogeniczności wariancji w
+podgrupach.
+
+W przypadku każdej zmiennej test Bartletta zwraca p-value na poziomie
+większym od wartości krytycznej 0.05, a więc możemy przyjąć hipotezę
+zerową o równości wariancji w podgrupach.
+
+```{r summary}
+
+bartlett.test(bmi ~ age, data=data)
+bartlett.test(bmi ~ region, data=data)
+bartlett.test(bmi ~ reg_age, data=data)
+
+```
+
+### ANOVA jednoczynnikowa
+
+W tym kroku możemy już przystąpić do analizy wariancji ANOVA z pomocą
+funkcji aov(). Poniższy kod pozwala na przeprowadzenie analizy
+jednoczynnikowej i jej podsumowanie.
+
+Wynik wskazuje na silny związek średniego BMI w grupach w zależności od
+regionu. Z kolei zmienna określająca wiek z bardzo wysokim p-value okazuje się byc mniej istotna, tak jak zakładaliśmy na poziomie analizy interakcji.
+
+```{r one_way}
+
+one_way <- aov(bmi ~ age + region, data = data)
+summary(one_way)
+
+```
+
+### ANOVA dwuczynnikowa
+
+Analiza dwuczynnikowa potwierdza powyższy wniosek o istotności
+zmiennej określającej region w średniej wartości BMI w podgrupach i jednocześnie niewielką istotność zmiennej określającej wiek.
+
+Okazuje się także, że połączenie obu tych zmiennych nie wpływa w istotny
+sposób na średnie BMI. Oznacza to brak efektu interakcji (łącznego
+wpływu działania zmiennych określających wiek oraz region).
+
+```{r two_way}
+
+two_way <- aov(bmi ~ age * region, data = data)
+summary(two_way)
+
+```
+
+### Analiza post-hoc
+
+Z analizy post-hoc wynika, że poszczególne grupy wiekowe nie różnią się
+znacząco BMI. Najistotniejsza różnica występuje miedzy grupą 23 i
+21-latków, z czego 23 latkowie mają średnio większe MBI o 3.19.
+
+Różnice w BMI pomiędzy regionami są dużo wyraźniejsze, bowiem między
+regionem southwest a northeast występuje różnica aż 5.61 a statystyka
+wskazuje, że jest to różnica istotna. Podobna różnica występuje między
+southeast a northwest, gdzie wynosi 5.14. Widać też wyraźnie, że BMI w
+regionie northeast jest zdecydowanie i istotnie niższe niż w pozostałych
+regionach.
+
+```{r aov}
+
+TukeyHSD(one_way)
+plot(TukeyHSD(one_way), cex.axis = 0.8)
+
+```

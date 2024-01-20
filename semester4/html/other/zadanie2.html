@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <link rel="stylesheet" href="styl1.css">
+    <meta charset="utf-8" />
+  </head>
+
+  <body>
+      <h1>Formularz</h1>
+
+      <form>
+          <fieldset>
+          <legend>Podaj imię</legend>
+          <input type="text" id="fname" name="fname">
+          </fieldset><br>
+
+          <fieldset>
+          <legend>Podaj nazwisko</legend>
+          <input type="text" id="fname" name="fname">
+          </fieldset><br>
+
+          <fieldset label=>
+          <legend>Podaj płeć</legend>
+          <input type="radio" id="m" name="m" value="m"><label for="m">Mężczyzna</label>
+          <input type="radio" id="k" name="k" value="k"><label for="k">Kobieta</label>
+          <input type="radio" id="i" name="i" value="i"><label for="i">Inna</label>
+          <input type="radio" id="n" name="n" value="n"><label for="n">Nie chcę podawać</label>
+          </fieldset><br>
+
+          <fieldset>
+          <legend>Skąd pochodzisz?</legend>
+          <select id="pochodzenie" name="pochodzenie">
+            <option value="miasto">Z miasta</option>
+            <option value="wies">Ze wsi</option>
+            <option value="las">Z lasu</option>
+          </select>
+          </fieldset><br>
+
+          <fieldset>
+          <legend>Wybierz ulubiony kolor</legend>
+          <select id="kolor" name="kolor" size="6" multiple>
+            <option value="czarny">Czarny</option>
+            <option value="bialy">Biały</option>
+            <option value="czerwony">Czerwony</option>
+            <option value="zolty">Żółty</option>
+            <option value="niebieski">Niebieski</option>
+            <option value="fioletowy">Fioletowy</option>
+          </select>
+          </fieldset><br>
+
+          <fieldset>
+          <legend>Wybierz ulubioną literaturę</legend>
+          <input type="checkbox" id="fantasy" name="fantasy" value="fantasy"><label for="fantasy">Fantasy</label><br>
+          <input type="checkbox" id="kryminal" name="kryminal" value="kryminal"><label for="kryminal">Kryminał</label><br>
+          <input type="checkbox" id="horror" name="horror" value="horror"><label for="horror">Horror</label>
+          </fieldset><br>
+          
+
+          <fieldset>
+          <legend>Napisz mi kilka słów o sobie</legend>
+          <textarea name="osobie" rows="10" cols="30">
+          </textarea>
+          </fieldset><br>
+
+          <fieldset>
+          <legend>Podsumowanie</legend>
+          <button type="wyslij" onclick="alert('Wysłano formularz!')">Wyślij formularz</button> 
+          <button type="wyczysc" onclick="alert('Skasowano dane!')">Wyczyść dane</button> 
+          </fieldset><br>
+          
+      </form>
+
+  </body>
+
+</html>

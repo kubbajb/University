@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pl-pl">
+  <head>
+    <title>Rozgrzewka z jQuery</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script>
+      $( document ).ready(function() {
+        alert( "Strona została załadowana!" );
+        $("span").click(function(){
+          $("#paragraf1").hide();
+          $("#paragraf2").hide();
+          $(this).removeClass("nakladka");
+        });
+      });
+    </script>
+    <style>
+      #TenPrzycisk {
+        padding: 1mm 2mm;
+        border-radius: 10%;
+        background: linear-gradient(45deg, #75ffedcc, #e875ffcc);
+        po
+      }
+      .nakladka {
+        background: linear-gradient(45deg, #81ff75cc, #f3e300cc) !important;
+      }
+      #TenPrzycisk:hover {
+        color: white;
+        cursor: pointer;
+      }
+      #paragraf1:hover {
+        font-weight: bold;
+      }
+      #paragraf2:hover {
+        color: lightblue;
+      }
+
+    </style>
+  </head>
+  <body>
+
+    <div id="paragraf1">
+      <p>Tekst, który ma zostać się pogrubiony.</p>
+    </div>
+    <div id="paragraf2">
+      <p>Tekst, który ma stać się jasnoniebieski.</p>
+    </div>
+    <div>
+      <span id="TenPrzycisk" class="nakladka"> Przycisk </span>
+    </div>
+  </body>
+  <script></script>
+</html>

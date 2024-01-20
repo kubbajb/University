@@ -1,0 +1,156 @@
+---
+title: "Zadanie 5 (B)"
+author: "Jakub Anczyk"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r lib, include=FALSE}
+library(ggplot2)
+library(nortest)
+library(stats)
+library(tseries)
+```
+
+## Polecenie
+
+Za pomocą odpowiednich symulacji zbadać odsetek odrzuceń prawdziwej hipotezy głównej (tzn. błądI rodzaju) w teście Kołmogorowa i teście 𝜒2 w przypadku weryfikacji zgodności z rozkładem 𝑡-Studenta o różnych stopniach swobody, tzn. generować dane pochodzące z rozkładu 𝑡-Studenta o 𝑘 stopniach swobody i weryfikować hipotezę, że dane mają rozkład 𝑡-Studenta o 𝑘 st. swobody. Należy porównać wyniki klasycznego sposobu testowania i testowania z wykorzystaniem PIT (probability integral transform). 
+
+Uzyskane wyniki należy przedstawić na odpowiednich wykresach ilustrujących rozmiary testów z uwzględnieniem:
+
+- liczby danych,
+
+- liczby stopni swobody generowanego rozkładu.
+
+
+```{r funkcje}
+
+# Function to perform Kolmogorov-Smirnov test
+ks_test <- function(data, distribution, df) {
+  ks_result <- ks.test(data, distribution,df)
+  return(ks_result$p.value)
+}
+
+# Function to perform Chi-squared test
+chi2_test <- function(data, distribution) {
+  chi2_result <- chisq.test(data, p = distribution)
+  return(chi2_result$p.value)
+}
+
+# Function to perform PIT-based test
+pit_test <- function(data, distribution) {
+  ecdf_data <- ecdf(data)
+  uniform_samples <- runif(length(data))
+  transformed_data <- quantile(distribution, uniform_samples)
+  pit_result <- ks_test(transformed_data, ecdf_data)
+  return(pit_result)
+}
+
+# Function to generate data from t-Student distribution
+generate_t_student <- function(n, df) {
+  return(rt(n, df))
+}
+```
+
+## Zastosowanie funkcji do danych
+
+```{r power, warning=FALSE}
+
+# Set the parameters for the simulation
+n_values <- c(50, 100, 200)  # Number of data points
+df_values <- c(3, 5, 10)     # Degrees of freedom
+num_simulations <- 1000      # Number of simulations
+alpha <- 0.05                # Significance level for hypothesis testing
+
+results <- data.frame()
+
+for (n in n_values) {
+  for (df in df_values) {
+    # Initialize counters
+    ks_reject <- 0
+    chi2_reject <- 0
+    pit_reject <- 0
+    
+    for (i in 1:num_simulations) {
+      # Generate data from t-Student distribution
+      data <- generate_t_student(n, df)
+      
+      print(1)
+      
+      # Perform Kolmogorov-Smirnov test
+      ks_p_value <- ks_test(data, pt, df)
+      if (ks_p_value < alpha) {
+        ks_reject <- ks_reject + 1
+      }
+      
+      print(2)
+
+      
+      # Perform Chi-squared test
+      chi2_p_value <- chi2_test(data, pt)
+      if (chi2_p_value < alpha) {
+        chi2_reject <- chi2_reject + 1
+      }
+      
+      print(3)
+      
+      # Perform PIT-based test
+      pit_p_value <- pit_test(data, pt)
+      if (pit_p_value < alpha) {
+        pit_reject <- pit_reject + 1
+      }
+    }
+    
+    print(4)
+    
+    # Compute rejection percentages
+    ks_reject_percent <- ks_reject / num_simulations * 100
+    chi2_reject_percent <- chi2_reject / num_simulations * 100
+    pit_reject_percent <- pit_reject / num_simulations * 100
+    
+    # Store the results
+    result <- data.frame(
+      N = n,
+      Degrees_of_Freedom = df,
+      Kolmogorov_Test_Reject = ks_reject_percent,
+      ChiSquared_Test_Reject = chi2_reject_percent,
+      PIT_Test_Reject = pit_reject_percent
+    )
+    results <- rbind(results, result)
+  }
+}
+
+
+```
+
+## Stworzenie wykresów do wygenerowanych danych
+
+```{r charts}
+# Plot the results
+ggplot(results, aes(x = Degrees_of_Freedom, y = Kolmogorov_Test_Reject, fill = factor(N))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Percentage of Rejections (Kolmogorov-Smirnov Test)",
+       x = "Degrees of Freedom",
+       y = "Percentage of Rejections") +
+  scale_fill_discrete(name = "Number of Data Points")
+
+ggplot(results, aes(x = Degrees_of_Freedom, y = ChiSquared_Test_Reject, fill = factor(N))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Percentage of Rejections (Chi-squared Test)",
+       x = "Degrees of Freedom",
+       y = "Percentage of Rejections") +
+  scale_fill_discrete(name = "Number of Data Points")
+
+ggplot(results, aes(x = Degrees_of_Freedom, y = PIT_Test_Reject, fill = factor(N))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Percentage of Rejections (PIT-based Test)",
+       x = "Degrees of Freedom",
+       y = "Percentage of Rejections") +
+  scale_fill_discrete(name = "Number of Data Points")
+
+
+```
