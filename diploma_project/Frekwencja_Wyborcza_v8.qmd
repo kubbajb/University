@@ -1,0 +1,2215 @@
+---
+title: "Analiza Czynników Wpływających na Frekwencję Wyborczą w Polsce"
+author: "Jakub Anczyk"
+format:
+  pdf:
+    portrait:
+       fig-width: 5
+       fig-height: 3
+    hyphenate: true
+    lang: pl
+    include-in-header: 
+      text: |
+        \usepackage{typearea}
+        \usepackage[utf8]{inputenc}
+        \usepackage{xurl}
+filters: [Miscellaneous/remove_title.lua]
+biblio-title: "Bibliografia"
+bibliography: Miscellaneous/references.bib
+mainfont: Times New Roman
+monofont: Times New Roman
+sansfont: Times New Roman
+pdf-engine: xelatex
+toc: true
+toc-depth: 5
+toc-title: Spis treści
+number-sections: true
+editor_options: 
+  chunk_output_type: console
+crossref:
+  fig-title: '**Rysunek**'
+  fig-labels: arabic
+  title-delim: "**.**"
+---
+
+```{r libraries}
+#| eval: true
+#| echo: false
+#| output: false
+#| warning: false
+#| error: false
+#| include: false
+
+#csl: elsevier-harvard.csl
+#cite-method: biblatex
+
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+
+PackageNames <- c("olsrr", "stargazer", "httr", "jsonlite", "knitr", "tidyverse", "stringr", "data.table", "plyr", "fuzzySim",  "leaps", "summarytools", "psych", "factoextra", "ggplot2", "Hmisc", "MASS", "glmnet", "FSelector", "ggthemes", "reshape2", "readxl", "zoo", "mgcv", "ggsci", "ggpubr", "gridExtra", "car", "pracma", "pROC", "caret", "car", "visdat", "lmtest", "FWDselect", "gridExtra", "ggpubr", "performance", "olsrr", "car", "broom", "car", "lmtest", "MASS", "dplyr", "stats", "graphics", "boot", "rnaturalearth", "sf", "maps", "ggplot2", "dplyr")
+
+for (i in PackageNames){
+  if(!require(i, character.only = T)){
+    install.packages(i, dependencies = T)
+    require(i, character.only = T)
+  }
+}
+
+setwd("D:/Projekty/MacroeconomicIndicatorsAndElections")
+Sys.setenv(LANG = "en")
+
+count_NAs <- function(df) {
+  sapply(df, function(x) sum(is.na(x)))
+}
+
+```
+
+\newpage
+
+# Wprowadzenie
+
+## Cel i założenia pracy
+
+Frekwencja wyborcza, definiowana jako "stosunek liczby oddanych głosów (ważnych kart do głosowania) do ogólnej liczby osób uprawnionych do głosowania"[^1], stanowi podstawową miarę partycypacji obywateli w życiu politycznym ich kraju i społeczności. Powszechnie przyjmuje się, że wysoka frekwencja wyborcza jest niezbędna dla prawidłowego funkcjonowania procesu demokratycznego. Wynikiem zbyt niskiej frekwencji wyborczej mogą być "nierówność reprezentacji i wpływów \[które\] nie są losowo rozłożone, ale systematycznie stronnicze na korzyść bardziej uprzywilejowanych obywateli - tych o wyższych dochodach, większym bogactwie i lepszym wykształceniu - oraz przeciwko mniej uprzywilejowanym obywatelom" [@Lijphart97].
+
+[^1]: Ustawa z dnia 5 stycznia 2011 r. - Kodeks wyborczy (Dz. U. z 2020 r. poz. 1319).
+
+Jak twierdzi International Institute for Democracy and Electoral Assistance, "wyższa frekwencja wyborcza jest w większości przypadków oznaką witalności demokracji, podczas gdy niższa frekwencja jest zwykle związana z apatią wyborców i nieufnością do procesu politycznego" [@Idea16], co prowadzi do powstania rządu niereprezentatywnego, niskiej legitymizacji władzy i marginalizacji mniejszości społecznych.
+
+Z tej przyczyny zarówno w interesie władzy jak i obywateli leży dążenie do tego, aby frekwencja wyborcza w każdych wyborach była na możliwie najwyższym poziomie. Aby umożliwić działania mające na celu zwiększenie aktywizacji politycznej obywateli, należy jednak w pierwszej kolejności zrozumieć czynniki determinujące lub wpływające na frekwencję wyborczą.
+
+Frekwencja wyborcza jest zjawiskiem intensywnie badanym na Zachodzie, w tym przede wszystkim w Stanach Zjednoczonych, a dostępna literatura proponuje wiele metod jej modelowania. Tymczasem wydaje się, że w Polsce zjawisko to jest badane na znacznie mniejszą skalę w porównaniu do reszty świata zachodniego. Warto jednak zaznaczyć, że ta ocena opiera się głównie na dostępnych publicznie badaniach i nie jest jasne, na ile badania frekwencji są prowadzone na zlecenie partii politycznych lub innych zainteresowanych stron przez ośrodki badań opinii publicznej.
+
+W niniejszej pracy podjęto próbę uzupełnienia tego braku oraz zaproponowano model objaśniający frekwencję na poziomie województw, który może być także wykorzystany do oszacowania frekwencji wyborczej na poziomie krajowym. W tym celu przeanalizowano wpływ rozmaitych czynników na frekwencję wyborczą, począwszy od wskaźników ekonomicznych, społeczno-gospodarczych i demograficznych, a skończywszy na wynikach badań opinii publicznej. W pracy przeanalizowano frekwencję wyborczą na poziomie wojewódzkim, oraz uzupełniająco na poziomie krajowym (Polska) i europejskim, począwszy od 1922 roku aż po rok 2023.
+
+```{r voter_turnout_overview}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: false # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: false # Catch all for preventing any output
+
+# ourworldindata.csv
+global_voter_turnout <- read.csv('Data/voter-turnout-ourworldindata.csv')
+
+poland <- global_voter_turnout |>
+  filter(Code == "POL")
+
+polandnow <- global_voter_turnout |>
+  filter(Code == "POL",
+         Year >= 1989)
+
+polandnowhist <- hist(polandnow$turnout_vdem_owid)
+
+prl_mean <- global_voter_turnout |>
+  filter(Code == "POL",
+         Year >= 1952 & Year <= 1980) |>
+  group_by(Code) |>
+  dplyr::summarize(mean = mean(turnout_vdem_owid), 
+                   min = min(turnout_vdem_owid),
+                   max = max(turnout_vdem_owid))
+
+europe_mean <- global_voter_turnout |>
+  filter(Code %in% c("AUT", "BEL", "LUX", "ITA"),
+         Year >= 1952 & Year <= 1980) |>
+  dplyr::summarize(mean = mean(turnout_vdem_owid), 
+                   min = min(turnout_vdem_owid),
+                   max = max(turnout_vdem_owid))
+
+europe <- global_voter_turnout |>
+  filter(Code %in% c("AUT", "BEL", "LUX", "ITA", "POL"),
+         Year >= 1952 & Year <= 1980)
+
+cmpslry <- global_voter_turnout |>
+  filter(Code %in% c("AUT", "BEL", "LUX", "ITA", "POL"),
+         Year >= 1952 & Year <= 1980) |>
+  dplyr::group_by(Year) |>
+  dplyr::summarize(turnout_vdem_owid = round(mean(turnout_vdem_owid[Code %in% c("AUT", "BEL", "LUX", "ITA")]), 2)) |>
+  mutate(Entity = "Compulsory Voting Mean",
+         Code = "CMPLSRY")
+
+```
+
+\newpage
+
+## Wpływ historii frekwencji wyborczej na wybór przedziału czasowego
+
+Pierwsze w Polsce pięcioprzymiotnikowe (powszechne, równe, bezpośrednie, proporcjonalne i tajne) wybory odbyły się 26 stycznia 1919 roku, w rok po odzyskaniu przez Polskę niepodległości. W okresie międzywojennym poziom frekwencji wyborczej był bardzo zróżnicowany - najwyższy oficjalny wynik na poziomie 79.00% odnotowano w 1930 roku, a najniższy na poziomie 45.00% w 1935 roku. Należy przy tym zaznaczyć, że dane te pochodzą z okresu, w którym wybory nie były w pełni demokratyczne (1930) lub zostały przez znaczną część obywateli zbojkotowane (1935), więc zestawianie ich z danymi pochodzącymi z późniejszych okresów byłoby niezasadne.
+
+```{r hist_voter_turnout}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: true # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: true # Catch all for preventing any output
+#| message: false
+#| label: fig-historic-vtr-trnt
+#| fig-cap: "Historyczna frekwencja wyborcza w Polsce."
+#| fig-align: "center"
+#| fig-width: 4
+#| fig-height: 2.5
+
+ggplot(data = poland, aes(x = Year, y = turnout_vdem_owid)) +
+  geom_line(alpha = 0.5, linewidth = 0.5, color = "#087c3e") +
+  xlab("Rok wyborów") +
+  ylab(paste("Frekwencja wyboarcza \n(oficjalna)")) +
+  theme_light(base_size = 8) +
+  geom_text(aes(label = turnout_vdem_owid), vjust = -0.5, size = 2.5, check_overlap = TRUE) +
+  theme(legend.direction = "horizontal", legend.position = "bottom") +
+  ylim(40, 105)
+
+```
+
+Ponadto, zachowane dane ekonomiczne, społeczno-gospodarcze i demograficzne z okresu między 1919 a 1952 rokiem są szczątkowe lub nie nadają się do przeprowadzenia podobnej do niniejszej analizy (a nawet gdyby dane były idealne, nie sposób porównywać dane z okręgów Królestwa Polskiego do aktualnego podziału terytorialnego Polski).
+
+Z pozoru prostsze wydaje się zestawienie współczesnej frekwencji z frekwencją w Polskiej Rzeczpospolitej Ludowej. Jak widać na rysunku 1, od 1952 roku oficjalna frekwencja wyborcza oscylowała raczej w górnych granicach skali, ze średnią w okolicach 96.66%, osiągając w 1980 roku rekordowy poziom 98.87%. Najniższą frekwencję w tym okresie odnotowano w 1957 roku i wyniosła ona 94.14%. Dla porównania, w tym samym okresie średnia dla państw, w których obowiązywał prawny przymus głosowania (Austria, Belgia, Włochy i Luksemburg) wynosiła jedynie 92.95%, z minimum na poziomie 88.56% i maksimum 97.16%, co ilustruje rysunek 2. Jak podają źródła historyczne [@siedziako2016], osiągnięcie w Polsce tak wysokiego wyniku bez stosowania metod polegających na manipulacjach oraz fałszerstwach wyborczych, było technicznie niemożliwe.
+
+Należy także zaznaczyć, że definicja głosu ważnego znacznie różniła się od współczesnej, bowiem wrzuconą do urny pustą kartę (bez tzw. "skreśleń") traktowano jako głos ważny, a głos domyślnie przydzielano kandydatom znajdującym się na początku listy (tj. z góry ustalonym przez partię). Karty wyborcze zawierały wyłącznie jedną listę, co w praktyce uniemożliwiało oddanie głosu na kandydata niewskazanego pośrednio przez władzę, a jakiekolwiek próby rejestracji list wyborczych przez obywateli kończyły się niepowodzeniem z uwagi na rzekome "przeszkody formalne".
+
+Historycy oceniają, że z pewnością sfałszowano wyniki wyborów w 1952 oraz 1957 roku, co polegało przede wszystkim na sfałszowaniu frekwencji i liczby "skreśleń", przymuszaniu do głosowania, fałszowaniu liczby osób uprawnionych do głosowania i fabrykowaniu protokołów głosowania, czemu towarzyszyła ogólna atmosfera terroru i opresji. Skala fałszerstw kolejnych wyborów nie jest w pełni znana z powodu niedostatecznych badań w tym zakresie, jednak opisane mechanizmy manipulacji i fałszerstw były trwale stosowane w okresie PRL [@siedziako2016].
+
+```{r hist_voter_turnout_eu}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: true # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: true # Catch all for preventing any output
+#| label: fig-historic-vtr-trnt-cmplsry
+#| fig-cap: "Historyczna frekwencja wyborcza w Polsce i krajach z prawnym przymusem głosowania."
+#| fig-align: "center"
+#| fig-width: 4
+#| fig-height: 3
+
+ggplot(data = na.omit(europe), aes(x = Year, y = turnout_vdem_owid, )) +
+  geom_line(alpha = 0.5, linewidth = 0.5, aes(color = Code)) +
+  geom_line(data = subset(europe, Code == "POL"), linewidth = 0.65, color = "#087c3e") + # Custom thickness for Poland
+  xlab("Rok wyborów") +
+  ylab("Frekwencja wyboarcza (oficjalna)") +
+  theme_light(base_size = 8) +
+  scale_color_manual(
+    values = c("AUT" = "#d21619",
+               "BEL" = "#ef9307",
+               "ITA" = "#ecd306",
+               "LUX" = "#034ea1",
+               "POL" = "#087c3e"),
+    name = "Kraj",
+    labels = c("Austria",
+               "Belgia",
+               "Włochy",
+               "Luksemburg",
+               "Polska")
+  ) +
+  theme(legend.direction = "horizontal", legend.position = "bottom") +
+  geom_text(aes(label = ifelse(Entity == "Poland", turnout_vdem_owid, "")), vjust = -0.5, size = 2.5) +
+  geom_text(aes(label = ifelse(Entity != "Poland", turnout_vdem_owid, "")), color = "darkgrey", vjust = -0.5, size = 2.4, check_overlap = TRUE) +
+  ylim(87.5, 100)
+
+
+```
+
+W związku z nierzetelnymi danymi na temat frekwencji z okresu PRL i niedemokratycznym charakterem procesu wyborczego w tym okresie, pierwszy cykl wyborczy, który może zostać poddany analizie, dotyczy wyborów parlamentarnych w 1989 roku. W praktyce jednak najwcześniejsze dostępne dane z obszarów kluczowych dla tej pracy pochodzą z lat znacznie późniejszych.
+
+Dla przykładu, informacje o gęstości zaludnienia i strukturze ludności dostępne przez witrynę Banku Danych Lokalnych sięgają najdalej 1996 roku. O oczekiwanym trwaniu życia w zdrowiu zaczęto raportować dopiero w 2009 roku, a współczynniki skolaryzacji w szkolnictwie podstawowym i gimnazjalnym dostępne są od 2003 do 2022 roku i są w dużej mierze niekompletne. Z kolei dane o Produkcie Narodowym Brutto dostępne są tylko na poziomie krajowym oraz ponadkrajowym za pośrednictwem Eurostatu.
+
+Większość danych niezbędnych dla przeprowadzenia analizy, w szczególności tych udostępnianych przez Główny Urząd Statystyczny za pośrednictwem Banku Danych Lokalnych (BDL) oraz Dziedzinowych Baz Wiedzy (DBW), jest dostępna począwszy od 2002 roku, w związku z czym wybór badanego przedziału czasowego padł na lata 2005 - 2023. Łącznie w tym okresie odbyło się sześć cykli wyborczych w latach 2005, 2007 (przedterminowo), 2011, 2015, 2019 oraz 2023.
+
+\newpage
+
+# Przegląd literatury
+
+Obszerna literatura psefologiczna proponuje liczne modele wyjaśniające frekwencję wyborczą na poziomie krajowym i ponadkrajowym. Badacze koncentrują się jednak w głównej mierze na dużych zachodnich demokracjach o systemie dwupartyjnym - Stanach Zjednoczonych Ameryki [@GomezHansfordKrause07], Wielkiej Brytanii [@Murr18] i Francji, oraz w mniejszym stopniu na pozostałych zachodnich demokracjach europejskich. Przyczyną jest względna łatwość w modelowaniu zarówno frekwencji jak i wyników wyborczych, kiedy liczebność partii na scenie politycznej jest niewielka [@Huber18]. W przypadku tych systemów frekwencja wyborcza może mieć decydujący wpływ na ostateczny wynik wyborczy, a co za tym idzie, znajomość czynników determinujących frekwencję może dostarczyć partiom politycznym kluczowych danych niezbędnych do optymalnej aktywizacji ich elektoratu.
+
+Literatura odnosząca się do pozostałych krajów skupia się raczej na poszukiwaniu czynników mających wpływ na frekwencją wyborczą [@BlaisDobrzynska98], a więc próbuje frekwencję objaśniać, a nie prognozować, lub poszukuje odpowiedzi na pytania "co jest przyczyną niskiej frekwencji wyborczej" oraz "jak podnieść poziom frekwencji wyborczej" skupiając się na pokrewnym, choć odwrotnym do frekwencji zjawisku, którym jest absencja wyborcza [@Sasińska-Klas_2008; @Musiał-Karg_2011].
+
+Przykładem próby wyjaśnienia zjawiska frekwencji jest zaproponowany przez @BlaisDobrzynska98 model objaśniający frekwencję wyborczą w demokracjach elektoralnych, oparty o trzy kategorie czynników, tj. otoczenie socjoekonomiczne, instytucjonalne oraz system partyjny.
+
+Do najważniejszych czynników socjoekonomicznych zaliczono średnią długość życia, gęstość zaludnienia, PNB per capita, wzrost PNB per capita względem roku poprzedniego, wskaźnik analfabetyzmu oraz wielkość populacji. Ponadto, do zmiennych socjoekonomicznych zaliczono szereg zmiennych binarnych, które odzwierciedlają wpływ innych, niemierzonych czynników, specyficznych dla danego obszaru. Zmienne te to odpowiednio Ameryka Północna, Ameryka Południowa, Afryka, Oceania i Szwajcaria, która jest jedynym krajem wśród zmiennych binarnych z uwagi na jej szczególny charakter: średnia frekwencja utrzymuje się w okolicach 46-49% od niemal 50 lat [@Jackman87], co spowodowane jest częstymi referendami oraz złożonością systemu politycznego [@Blais14].
+
+W innych badaniach określa się znaczenie konkretnych czynników, takich jak wiek [@CzesnikZagorski2022], stabilność poparcia dla partii politycznych [@GendzwillEtAl2014] lub cech ordynacji wyborczej i polaryzacji sceny politycznej [@Najbar2017] dla frekwencji wyborczej. W żadnym z nich nie podjęto jednak próby modelowania frekwencji na podstawie ich efektów. @Pierzgalski2012 dokonuje takiej próby, lecz na podstawie zaledwie dwóch zmiennych, jakimi są stopa bezrobocia w powiecie oraz przeciętne miesięczne wynagrodzenie brutto w powiecie w relacji do średniej krajowej. Analiza ta obejmowała wszystkie powiaty w Polsce w latach 2007 i 2011, a statystyka R-kwadrat dla obliczonego modelu wyniosła 0.4951.
+
+Należy także zaznaczyć, że wszystkie wymienione czynniki pojawiają się w metaanalizie autorstwa @Frank2023, dotyczącej predyktorów frekwencji wyborczej, która ukazała się 20 maja 2021 roku w Political Behavior. Ich korelacja z frekwencją jest więc znana i od lat stosowana do jej szacowania.
+
+Poza wyczerpującym modelem zdolnym do szacowania frekwencji ogólnopolskiej, brakuje w dostępnej literaturze także próby wyjaśnienia przyczyn występujących lokalnie różnic we frekwencji wyborczej, tj. między różnymi regionami tego samego kraju. Dotyczy to zarówno wspomnianej wyżej Szwajcarii [@Blais14], ale również Polski, choć pojawiają się pojedyncze analizy dotyczące konkretnych województw a nawet powiatów [@kowalski2016]. Dostępne analizy skupiają się jednak głównie na wynikach krajowych czerpiąc również ze statystyk zebranych na poziomie krajowym. Być może jednak analiza korelatów frekwencji wyborczej na poziomie lokalnym pomoże objaśnić to zjawisko w większym stopniu także na poziomie krajowym.
+
+```{r voter_turnout_PL_after_1989}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: true # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: true # Catch all for preventing any output
+
+# global-voter-turnout.xlsx
+global_voter_turnout_parliment <- read_excel('Data/global_voter_turnout.xlsx')
+
+IIIRPmeam <- global_voter_turnout_parliment |>
+  filter(ISO3 == "POL",
+         year >= 1989) |>
+  mutate(`Voter Turnout` = as.numeric(gsub("%", "", `Voter Turnout`))) |>
+  group_by(ISO3) |>
+  dplyr::summarize(mean = mean(`Voter Turnout`), 
+                   min = min(`Voter Turnout`),
+                   max = max(`Voter Turnout`))
+
+IIIRP <- global_voter_turnout_parliment |>
+  filter(ISO3 == "POL",
+         year >= 1989) |>
+  mutate(`Voter Turnout` = as.numeric(gsub("%", "", `Voter Turnout`)))
+
+# hist <- hist(IIIRP$`Voter Turnout`)
+
+CH <- global_voter_turnout_parliment |>
+  filter(ISO3 == "CHE",
+         year >= 1900) |>
+  mutate(`Voter Turnout` = as.numeric(gsub("%", "", `Voter Turnout`))) |>
+  arrange(year)
+
+CHmeam <- global_voter_turnout_parliment |>
+  filter(ISO3 == "CHE",
+         year >= 1900) |>
+  mutate(`Voter Turnout` = as.numeric(gsub("%", "", `Voter Turnout`))) |>
+  group_by(ISO3) |>
+  dplyr::summarize(mean = mean(`Voter Turnout`), 
+                   min = min(`Voter Turnout`),
+                   max = max(`Voter Turnout`))
+
+```
+
+\newpage
+
+# Metodologia
+
+## Źródła danych
+
+Dane o frekwencji mogą być analizowane na poziomie ogólnopolskim, wojewódzkim, powiatowym, a także na poziomie okręgów. Analiza na poziomie ogólnopolskim nie byłaby jednak spójna z ideą niniejszej pracy, a analiza wyłącznie na poziomie powiatów nie dawałaby pełnego obrazu sytuacji, ponieważ większość zmiennych stosowanych tradycyjnie w modelach objaśniających frekwencję wyborczą nie jest dostępna w podziale na regiony mniejsze od województw. Z kolei poszukiwanie informacji o gospodarce i innych dziedzinach na poziomie okręgów, które znacząco odbiegają od podziału administracyjnego Polski, byłoby w większości przypadków niemożliwe lub skutkowałoby niedokładnymi danymi, a w konsekwencji słabo dopasowanym modelem. Z uwagi na to zadecydowano o przeprowadzeniu niniejszej analizy wyłącznie na poziomie województw.
+
+Dane wykorzystane w analizie pochodzą z następujących źródeł:
+
+1.  Bank Danych Lokalnych (BDL), z którego pobrano podstawowe statystyki dla poszczególnych województw,
+2.  Dziedzinowe Bazy Wiedzy (DBW), z których pobrano dodatkowe, nieujęte w BDL statystyki dla poszczególnych województw,
+3.  Portal Głównego Urzędu Statystycznego, z którego pobrano informacje o powierzchni województw,
+4.  Portal Państwowej Komisji Wyborczej, z którego pobrano informacje o frekwencji wyborczej w poszczególnych województwach,
+5.  Strona "Trendy" Centrum Badania Opinii Społecznej, z której pobrano dane o trendach wybranych wskaźników pochodzące z rozmaitych sondaży realizowanych przez CBOS od lat 90.
+
+Szczegółowy spis zmiennych wraz z ich źródłem, zakresem czasowym i opisem znajduje się załączniku nr. 1 do niniejszej pracy. Zmienne wtórne, które obliczono przy pomocy danych pochodzących z opisanych powyżej źródeł (np. gęstość zaludnienia może zostać obliczona przy pomocy rozmiaru terytorium oraz liczby mieszkańców zamieszkujących owo terytorium) znajdują się w załączniku nr. 2 do niniejszej pracy. Kod źródłowy, który posłużył do ekstrakcji części danych z interfejsów API, obliczeń, analizy i prezentacji wyników, znajduje się załączniku nr. 3 do niniejszej pracy.
+
+W celu stworzenia jednolitego zbioru danych do analizy frekwencji na poziomie wojewódzkim pobrano oficjalne dane wyborcze w rozbiciu na województwa i powiaty w latach 2005, 2007, 2011, 2015, 2019 oraz 2023 z portalu Państwowej Komisji Wyborczej. Szczegółowy opis tego procesu znajduje się w kodzie dostępnym w załączniku nr. 3. Uzyskano w ten sposób zestaw danych zawierający nazwę województwa, rok wyborów oraz frekwencję wyborczą.
+
+Do danych o frekwencji przyłączono tabelę zawierającą powierzchnię każdego z województw, a następnie zestaw 48 zmiennych pochodzący z portali GUS. Zmienne te opóźniono o rok względem danych o frekwencji. Oznacza to, że analizowane w każdym cyklu wyborczym dane pochodzą z roku poprzedzającego, ponieważ w przeciwnym razie dane obejmowałyby także wydarzenia mające miejsce bezpośrednio po wyborach, a tym samym analiza cyklu wyborczego mogłaby zostać wypaczona przez ich wynik. O ile nie powinno to mieć znaczenia dla takich statystyk jak średnia oczekiwana długość życia lub współczynnik skolaryzacji, o tyle może mieć wpływ na takie statystyki jak PKB lub PNB, które mogą zostać zaburzone na skutek reakcji inwestorów (jeżeli, na przykład, wybory wygra opcja liberalna gospodarczo, to inwestorzy mogą chcieć zwiększyć inwestycje w Polską gospodarkę, jeśli jednak wygra opcja konserwatywna, to inwestorzy zagraniczni mogą zacząć wycofywać fundusze z kraju, spodziewając się dodatkowych utrudnień takich jak cła, podatki i niekorzystne obostrzenia regulacyjne).
+
+Do powstałej tabeli przyłączono zestaw 37 zmiennych pochodzących z sondaży realizowanych przez CBOS, który zawiera informację o średnim poziomie badanych wskaźników w 12 miesiącach poprzedzających dany cykl wyborczy. Uzyskany w ten sposób zbiór 88 zmiennych (włącznie z frekwencją, województwem oraz rokiem) poddano dalszej analizie.
+
+Powstały zbiór podzielono na zbiór testowy i treningowy przy użyciu losowego próbkowania oryginalnego zbioru w proporcjach 7:3 (70% obserwacji posłużyło za zbiór treningowy, a 30% za zbiór testowy). Po podzieleniu zbioru na podzbiory zweryfikowano, czy każdy z nich zawiera pełen zestaw 16 województw, niezbędny do prawidłowej diagnostyki modeli. Losowe próbkowanie powtórzono aż do uzyskania zadowalającej dystrybucji województw w obu zbiorach z wartością ziarna generatora liczb losowych wynoszącą 413473.
+
+## Przetwarzanie danych
+
+W pierwszej kolejności podjęto próbę rekonstrukcji modelu objaśniającego frekwencję wyborczą w województwach na podstawie modelu opisanego przez @BlaisDobrzynska98. W niektórych przypadkach niezbędne było zastosowanie pokrewnych zmiennych z uwagi na to, że nie dokonuje się ich pomiaru na poziomie wojewódzkim (np. stopień stopień alfabetyzmu lub PNB per capita). Tak stworzony model poddano analizie statystycznej, w wyniku której zredukowano liczbę zmiennych z sześciu do trzech z powodu braku dowodów na ich istotność. Zredukowany model ponownie poddano analizie uzyskując zadowalający współczynnik R-kwadrat oraz wskaźniki RMSE, MAE, a w wyniku testu Breuscha-Pagana także przesłanki do przyjęcia hipotezy o nierówności wariancji reszt. Podjęto następnie próbę stworzenia udoskonalonych modeli mogących objaśnić frekwencję wyborczą przy pomocy zebranych wcześniej danych.
+
+Wybranie 6 zmiennych spośród 85 jest możliwe na ponad 437 milionów sposobów, a wybranie większej liczby zmiennych powoduje szybki wzrost złożoności obliczeniowej. W celu redukcji liczby kombinacji zmiennych do przetestowania zadecydowano o zastosowaniu metody klastrowania metodą k-średnich. Uzyskany zestaw danych podzielono na 6 klastrów, zawierających zmienne o podobnej wariancji. Analizę przeprowadzono również dla liczby klastrów od 7 do 10, jednak powstałe w ten sposób modele nie charakteryzowały się akceptowalnymi parametrami. Uzyskanych 6 klastrów zawierało kolejno 15, 3, 3, 14, 13 oraz 5 zmiennych, dając 122850 sposobów na ich połączenie w model składający się z sześciu zmiennych objaśniających, po jednej z każdego klastra. Zredukowano w ten sposób liczbę kombinacji z ponad 437 milionów do około 123 tysięcy.
+
+Na każdym z 122850 potencjalnych modeli przeprowadzono zestaw testów statystycznych, mierząc je pod kątem R-kwadrat, maksymalnej istotności zmiennych, współczynnika inflacji wariancji (VIF), p-value testu Shapiro-Wilka na normalność reszt oraz p-value testu Breuscha-Pagana na homoskedastyczność. W wyniku tego procesu powstała tabela zawierająca wszystkie kombinacje zmiennych oraz wartości wymienionych statystyk dla każdej z kombinacji.
+
+Spośród zbadanych modeli wybrano te, których statystyki były na najlepszym poziomie, tj. R-kwadrat na poziomie co najmniej 0.93, najwyższe p-value dla testu istotności zmiennych na poziomie poniżej 0.04, współczynnik inflacji wariancji na (VID) poziomie poniżej 4, p-value testu Shapiro-Wilka normalności reszt na poziomie przynajmniej 0.65 oraz p-value testu Breuscha-Pagana na homoskedastyczność na poziomie przynajmniej 0.35. W efekcie uzyskano cztery konkurencyjne modele o bardzo podobnych statystykach i podobnej selekcji zmiennych. Wśród wybranych modeli znalazły się jednak dwa, które zawierały aż po 3 zmienne pochodzące z badań opinii społecznej autorstwa CBOS. Ponieważ zmienne uzyskane z badań CBOS są stałe na poziomie całego kraju, podjęto decyzję o odrzuceniu modeli zawierających więcej niż dwie zmienne ankietowe, finalnie otrzymując dwa modele o numerach kombinacji N95425 oraz N113549, odznaczające się najlepszymi wynikami. Dalsza diagnostyka modeli obejmowała walidację krzyżową, walidację "poza próbą" oraz wykonanie testów na homoskedastyczność i współliniowość.
+
+## Ograniczenia metodologiczne
+
+Wybrana metodologia umożliwiła realizację założeń niniejszej pracy, niemniej należy zwrócić uwagę na pewne ograniczenia i potencjalne źródła stronniczości, które mogą wpływać na interpretację wyników.
+
+### Potencjalnie pominięte zmienne objaśniające
+
+Pierwszym ograniczeniem jest problem potencjalnie pominiętych zmiennych objaśniających. Praca oparta jest głównie na danych statystycznych GUS oraz trendach wskaźników z sondaży CBOS. Pomimo starań, aby wstępny zbiór zmiennych był jak najbardziej reprezentatywny, istnieje ryzyko, że kluczowe zmienne, dostępne zarówno w GUS, CBOS, jak i innych źródłach, mogły zostać pominięte w analizie.
+
+Dodatkowo, w badaniach społecznych, takich jak analiza partycypacji wyborczej, istnieje wiele czynników wpływających na wyniki, które mogą być niedostępne z powodu trudności w ich pomiarze lub wysokich kosztów badań sondażowych. Rozważenie powtórzenia analizy z szerszym zestawem danych i uwzględnienie dodatkowych zmiennych mogłoby pozwolić na bardziej kompleksowe zrozumienie badanego zjawiska.
+
+### Ograniczenia modeli liniowych
+
+Kolejne ograniczenie wynika z zastosowania regresji liniowej, której założenia obejmują liniową zależność między predyktorem a zmienną objaśnianą, homoskedastyczność, brak korelacji reszt, normalność rozkładu reszt oraz niezależność predyktorów. Ograniczenia te mogą uniemożliwić prawidłową budowę modelu, jeśli związek między zmiennymi jest nieliniowy lub jeśli model nie spełnia któregokolwiek z założeń regresji liniowej.
+
+Ponadto, modele liniowe są podatne na nadmierne dopasowanie i charakteryzują się podatnością na wartości odstające, co może prowadzić do zniekształcenia wyników analizy. Z założeń regresji liniowej wynika także problem ekstrapolacji, który pojawia się w momencie przenoszenia uzyskanej zależności na zakres danych, który nie był brany pod uwagę przy tworzeniu modelu. Oznacza to, że uzyskany model może nie działać prawidłowo poza zakresem czasowym, dla którego został stworzony, zwłaszcza gdy charakter którejkolwiek z wykorzystanych zależności okaże się nie być liniowy.
+
+### Ograniczenia badań sondażowych
+
+Ważnym ograniczeniem są również potencjalne wady badań sondażowych CBOS. Należy zwrócić uwagę na błąd próby, który może wynikać z braku reprezentatywności próby względem populacji, na przykład z powodu wykluczenia osób bez dostępu do technologii używanej w badaniu lub osób odmawiających udziału.
+
+Kolejnym ograniczeniem jest błąd pomiaru, który przejawia się w niedokładności lub nieprawidłowości odpowiedzi respondentów. Należy również rozważyć ograniczenia narzędzi badawczych, które mogą nie uwzględniać pełnej złożoności opinii lub prowadzić do problemów z interpretacją pytań ankietowych. Ponadto, efekty samoświadomości i społecznej pożądliwości mogą prowadzić do udzielania niepełnych lub zniekształconych odpowiedzi przez respondentów.
+
+### Możliwości występowania zmian strukturalnych
+
+Istotnym ograniczeniem jest możliwość występowania zmian strukturalnych, takich jak zmiany w strukturze badanych zjawisk, organizacji czy społeczności, które mogą wpływać na badane zjawisko lub zmienne objaśniające. Takie zmiany mogą wpłynąć na replikację analizy, zniekształcić jej wyniki lub wymagać ponownego obliczenia modeli, a w najgorszym przypadku mogą uniemożliwić zastosowanie modeli liniowych w przyszłości.
+
+### Pozostałe ograniczenia i uwagi
+
+W niniejszej pracy wielokrotnie zastosowano generatory liczb losowych, w tym w kontekście klastrowania metodą k-średnich oraz podziału zbioru danych na zbiory treningowy i testowy. Z powodu ograniczeń technicznych, proces losowania liczb losowych był powtarzany tylko do momentu uzyskania pierwszej wartości ziarna, która umożliwiała spełnienie podstawowych założeń zastosowanej techniki. Istnieje jednak ryzyko, że kształt analizy oraz jej wyniki mogą być uzależnione od losowo wybranych wartości początkowych w tych procesach. W związku z tym, wnioski wyciągnięte z tak przeprowadzonej analizy mogą ulec zmianie w zależności od doboru wartości początkowych.
+
+Dodatkowo, ze względu na niewielką próbkę danych, obejmującą jedynie 6 cykli wyborczych w okresie od 2005 do 2023 roku oraz 16 województw, analiza obejmowała łącznie 96 obserwacji. Aby wnioski z analizy zachowały swoją trafność w przyszłości, zaleca się powtórzenie analizy oraz ponowne dopasowanie modeli wraz z uwzględnieniem kolejnych cykli wyborczych. Taki krok powinien przyczynić się do zwiększenia dokładności prognoz oraz poprawy parametrów modeli.
+
+\newpage
+
+# Budowa i analiza modeli regresyjnych
+
+W niniejszym rozdziale podjęto próbę zbudowania modelu opartego na przeglądzie literatury oraz opisano jego wady. Następnie zaproponowano dwa alternatywne modele, które wykorzystują podobne typy zmiennych oraz dodatkowo zmienne ankietowe. Mają one na celu dokładniejsze wyjaśnienie frekwencji wyborczej w Polsce na poziomie województw, w porównaniu do modelu autorstwa Blais i Dobrzyńskiej.
+
+Warto podkreślić, że model Blais i Dobrzyńskiej nie jest przeznaczony do szacowania frekwencji wyborczej na poziomie jednostek terytorialnych, takich jak województwa. Został on opracowany do badania zróżnicowania frekwencji wyborczej na świecie, jednak wciąż jest jednym z najbardziej znanych modeli stosowanych w tej dziedzinie.
+
+```{r ww_zaladowanie_danych}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: true # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: true # Catch all for preventing any output
+
+# FREKWENCJA -------------------------------------------------------------------
+
+# Załadowanie frekwencji
+vtr_trnt <- read.csv("Data/frekwencja_wyborcza_parlament_2001-2023.csv") |>
+  mutate(wybory = gsub("parlament_", "", wybory),
+         rok = as.numeric(wybory)) |>
+  group_by(wojewodztwo, rok) |>
+  dplyr::reframe(glosy = sum(glosy),
+         uprawnieni = sum(uprawnieni),
+         rok = rok) |>
+  unique() |>
+  mutate(frekwencja = (glosy/uprawnieni)*100) |>
+  dplyr::select(-c(glosy, uprawnieni))
+
+# ZMIENNE ----------------------------------------------------------------------
+
+size_vovoideships <- read_excel('Data/Powierzchnia.xlsx')
+
+# Załadowanie zmiennych
+var_vovoideships <- read_excel('Data/DaneWojewodztwa.xlsx') |>
+  pivot_wider(names_from = zmienna, values_from = wartosc, values_fill = NA) |>
+  mutate(rok = rok + 1) |> 
+  filter(rok >= 2000)  |> 
+  left_join(size_vovoideships, by = 'wojewodztwo') |>
+  group_by(wojewodztwo) |>
+  dplyr::mutate(
+    `gęstość zaludnienia [osób na km2]` = (1000 * `ludność w tysiącach [tys. osób]`) / km2,
+    `zmiana produktu krajowego brutto na 1 mieszkańca [%, 1 rok]` = (`produkt krajowy brutto na 1 mieszkańca [zł]` - lag(`produkt krajowy brutto na 1 mieszkańca [zł]`)) / lag(`produkt krajowy brutto na 1 mieszkańca [zł]`)*100,
+    `zmiana produktu krajowego brutto na 1 mieszkańca [%, 2 lata]` = (`produkt krajowy brutto na 1 mieszkańca [zł]` - lag(`produkt krajowy brutto na 1 mieszkańca [zł]`)) / lag(`produkt krajowy brutto na 1 mieszkańca [zł]`, 2)*100,
+    `zmiana produktu krajowego brutto na 1 mieszkańca [%, 3 lata]` = (`produkt krajowy brutto na 1 mieszkańca [zł]` - lag(`produkt krajowy brutto na 1 mieszkańca [zł]`)) / lag(`produkt krajowy brutto na 1 mieszkańca [zł]`, 3)*100,
+    `zmiana produktu krajowego brutto na 1 mieszkańca [%, 4 lata]` = (`produkt krajowy brutto na 1 mieszkańca [zł]` - lag(`produkt krajowy brutto na 1 mieszkańca [zł]`)) / lag(`produkt krajowy brutto na 1 mieszkańca [zł]`, 4)*100
+  ) |>
+  ungroup() |>
+  group_by(wojewodztwo, rok) |>
+  dplyr::mutate(
+    `przeciętne dalsze trwanie życia; ogółem [lata]` = (
+      (`współczynnik feminizacji ogółem [osoba]` * `przeciętne dalsze trwanie życia; kobiety [lata]`) +
+      (100 * `przeciętne dalsze trwanie życia; mężczyźni [lata]`)
+    ) / (`współczynnik feminizacji ogółem [osoba]` + 100)
+  ) |>
+  mutate(syntetyczna_zmienna_obciazenia = `ludność wg grup wieku i płci; 85 i więcej;ogółem;[osoba]` / `ludność wg grup wieku i płci; 25-29;ogółem;[osoba]`,
+         syntetyczna_zmienna_obciazenia2 = (`ludność wg grup wieku i płci; 70-74;ogółem;[osoba]` + 
+                                            `ludność wg grup wieku i płci; 35-39;ogółem;[osoba]` + 
+                                            `ludność wg grup wieku i płci; 40-44;ogółem;[osoba]` + 
+                                            `ludność wg grup wieku i płci; 85 i więcej;ogółem;[osoba]`) / 
+                                            (`ludność wg grup wieku i płci; 20-24;ogółem;[osoba]` + 
+                                             `ludność wg grup wieku i płci; 25-29;ogółem;[osoba]` + 
+                                             `ludność wg grup wieku i płci; 50-54;ogółem;[osoba]` ),
+         across(starts_with("ludność wg grup wieku i płci"), ~ (.x / `ludność wg grup wieku i płci; ogółem;ogółem;[osoba]`)*100)) |>
+  dplyr::select(-`ludność wg grup wieku i płci; ogółem;ogółem;[osoba]`)
+
+# Dołączenie do frekwencji danych o zmiennych
+dat_vovoideships <- left_join(vtr_trnt, 
+                              var_vovoideships, 
+                              by = c('wojewodztwo', 'rok'))
+```
+
+```{r ww_dane_cbos}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: true # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: true # Catch all for preventing any output
+
+daty_wyborow <- c(dmy("23.05.2005"), dmy("07.09.2007"), dmy("04.08.2011"), dmy("03.08.2015"), dmy("06.08.2019"), dmy("08.08.2023"))
+cbos_data_raw <- read_excel("Data/CBOS-zestaw-new.xlsx")
+
+calculate_average <- function(df, date) {
+  start_date <- date %m-% months(12)
+  df |> 
+    filter(data >= start_date & data < date) |> 
+    group_by(zmienna) |> 
+    dplyr::summarize(wartosc = mean(wartosc, na.rm = TRUE)) |> 
+    mutate(rok = year(date))
+}
+
+cbos_data <- purrr::map_df(daty_wyborow, ~calculate_average(cbos_data_raw, .x))
+
+cbos_data_wide <- cbos_data |> 
+  pivot_wider(names_from = zmienna, values_from = wartosc, values_fill = 0)
+
+# Dołączenie danych CBOS
+dat_vovoideships <- left_join(dat_vovoideships, 
+                              cbos_data_wide, 
+                              by = c('rok'))
+
+```
+
+```{r check_NAs}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: false # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: false # Catch all for preventing any output
+
+#vis_dat(dat_vovoideships)
+
+#colnames(dat_vovoideships[, colSums(is.na(dat_vovoideships)) > 0])
+
+dat_vovoideships <- dat_vovoideships |> 
+  dplyr::select(-`ludność wg grup wieku i płci; 0-14;ogółem;[osoba]`) |> 
+  janitor::clean_names()
+
+```
+
+```{r dataset_division}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: false # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: false # Catch all for preventing any output
+
+# Divide 70% learning to 30% testing
+set.seed(413473)
+
+prob <- as.vector(c(rep(TRUE,ceiling(0.3*nrow(dat_vovoideships))),rep(FALSE,0.7*nrow(dat_vovoideships)))) 
+sample <- sample(prob, replace = FALSE) #Sample randomly
+
+data_train <- dat_vovoideships[!sample, ]
+data_test <- dat_vovoideships[sample, ]
+
+length(unique(data_train$wojewodztwo))
+
+```
+
+```{r model_data}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: false # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: false # Catch all for preventing any output
+
+# LOKALIZACJA ZMIENNYCH -------------------------------------------------------------
+
+# Zlokalizowanie zmiennej objaśnianej i zmiennych objaśniających
+targetvar <- which(colnames(data_train) == 'frekwencja')
+region <- which(colnames(data_train) == 'wojewodztwo')
+year <- which(colnames(data_train) == 'rok')
+allvars <- c(1:length(colnames(data_train)))[-c(targetvar, region, year)]
+
+# CZYSZCZENIE -----------------------------------------------------------------------
+
+# Identyfikacja braków w danych (NA)
+length(data_train[is.na(data_train)])
+
+# Identyfikacja NA dla każdej z kolumn
+nas <- as.data.frame(count_NAs(data_train))
+colnames(nas) <- "n"
+nas
+
+# Usunięcie kolumn z więcej niż 16 NA
+many_NAs <- rownames(nas)[which(nas$n > 33)]
+
+data_train <- data_train[, !colnames(data_train) %in% many_NAs]
+allvars <- c(1:length(colnames(data_train)))[-c(targetvar, region, year)]
+
+# Wiersze z NA
+nrow(data_train[!complete.cases(data_train), ])/nrow(data_train)
+
+# Zastąpienie NA średnią z kolumny
+data_train <- as.data.frame(data_train)
+for(i in 3:(ncol(data_train))){
+  data_train[is.na(data_train[,i]), i] <- mean(data_train[,i], na.rm = TRUE)
+}
+
+# Weryfikacja ilości wierszy z NA
+nrow(data_train[!complete.cases(data_train), ])/nrow(data_train)
+
+# PONOWNA LOKALIZACJA ZMIENNYCH -----------------------------------------------------
+
+# Zlokalizowanie zmiennej objaśnianej i zmiennych objaśniających
+targetvar <- which(colnames(data_train) == 'frekwencja')
+region <- which(colnames(data_train) == 'wojewodztwo')
+year <- which(colnames(data_train) == 'rok')
+allvars <- c(1:length(colnames(data_train)))[-c(targetvar, region, year)]
+
+# ANALIZA KORELACJI -----------------------------------------------------------------
+
+data_num <- data_train |>
+  select_if(~all(!is.character(.)))
+
+targetvar_num <- which(colnames(data_num) == 'frekwencja')
+
+# Obliczenie macierzy korelacji R oraz R0
+cor_matrix <- cor(data_num)
+R_0 <- cor_matrix[targetvar_num,-targetvar_num]
+R <- cor_matrix[-targetvar_num,-targetvar_num]
+Rzero <- (as.data.frame(R_0))
+
+most_correlated <- Rzero |>
+  mutate(name = gsub("X", "", rownames(Rzero)),
+         abs = abs(R_0)) |>
+  arrange(desc(abs))
+
+most_correlated
+
+# ANALIZA WIZUALNA ------------------------------------------------------------------
+# 
+# # Wykresy zalezności zmiennych od frekwencji
+# for (var_name in (names(data_train)[allvars])) {
+#   cat("Plotting ", var_name, "\n", sep = '')
+#   
+#   plot <- ggplot() +
+#     geom_point(data = data_train,
+#                aes(x = frekwencja,
+#                    y = .data[[var_name]],
+#                    color = wojewodztwo),
+#                size = 3) +
+#     labs(x = "Voter Turnout", y = var_name) +
+#     ggtitle(paste("Scatterplot of", var_name, "against Voter Turnout"))
+#   
+#   print(plot)
+# }
+
+# Pojedyńczy wykres
+data_train_long <- data_train |> 
+  pivot_longer(4:ncol(data_train), names_to = "zmienna", values_to = "wartosc")
+
+dat_vov_lng_plot <- ggplot() +
+    geom_point(data = data_train_long, 
+               aes(x = frekwencja,
+                   y = wartosc,
+                   color = wojewodztwo,
+                   shape = as.factor(rok)),
+               size = 3) +
+    ggtitle(paste("Wykres rozrzutu zmiennych względem frekwencji wyborczej")) +
+  facet_wrap(~zmienna, ncol = 3, scales = "free")
+
+#dat_vov_lng_plot
+
+
+```
+
+## Model bazujący na modelu autorstwa Blais & Dobrzyńskiej
+
+W modelu autorstwa @BlaisDobrzynska98, po usunięciu zbędnych zmiennych związanych z położeniem geograficznym oraz otoczeniem instytucjonalnym, wzięto pod uwagę szereg przytoczonych wyżej czynników socjoekonomicznych, do których należą średnia długość życia, gęstość zaludnienia, PNB per capita, wzrost PNB per capita względem roku poprzedniego, wskaźnik analfabetyzmu oraz wielkość populacji.
+
+Znalezienie danych dla każdego z tych wskaźników na poziomie krajowym jest względnie proste, nawet w przypadku niewielkich i odległych państw. Niestety, pomiarów niektórych z tych wskaźników nie dokonuje się na poziomie regionalnym (np. produkt narodowy brutto per capita lub wskaźnik analfabetyzmu), w związku z czym przy odtwarzaniu tego modelu zastąpiono je zmiennymi pokrewnymi. Ponadto ponownie obliczono jego parametry metodą najmniejszych kwadratów, ponieważ odtwarzany model nie zawiera tej samej selekcji zmiennych, co oryginalny model, a zatem zastosowanie oryginalnych wartości parametrów nie byłoby zasadne.
+
+W opisanym modelu znalazły się ostatecznie następujące zmienne:
+
+1.  **Przeciętne dalsze trwanie życia w chwili narodzin**, liczone w latach, obliczone zostało na podstawie analogicznych zmiennych dla kobiet oraz mężczyzn, z wagą równą współczynnikowi feminizacji. Przeciętne dalsze trwanie życia dla kobiet oraz mężczyzn połączono z uwagi na bardzo wysoki poziom korelacji tych zmiennych wynoszący 0.8734. Powstała w ten sposób zmienna charakteryzuje się umiarkowanym poziomem korelacji z frekwencją wyborczą na poziomie 0.5360 (rys. 3.).
+
+```{r life_expectancy_ww}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: true # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: true # Catch all for preventing any output
+#| fig-cap: "Frekwencja wyborcza a przeciętne dalsze trwanie życia [lata]."
+#| fig-align: "center"
+#| fig-width: 6
+#| fig-height: 2
+
+cor_life_exp <- 
+  cor(data_train$przecietne_dalsze_trwanie_zycia_kobiety_lata,
+      data_train$przecietne_dalsze_trwanie_zycia_mezczyzni_lata)
+
+cor_life_exp_vot_trnt <- 
+  cor(data_train$przecietne_dalsze_trwanie_zycia_ogolem_lata,
+      data_train$frekwencja)
+
+# Scatterplot: (Ogółem ~ Frekwencja, Mężczyźni ~ Frekwencja, Kobiety ~ Frekwencja): 
+life_exp_plt <- data_train |> 
+  ggplot(aes(x = frekwencja)) +
+  geom_point(aes(y = przecietne_dalsze_trwanie_zycia_kobiety_lata, color = "Kobiety")) + 
+  geom_point(aes(y = przecietne_dalsze_trwanie_zycia_mezczyzni_lata, color = "Mężczyźni")) + 
+  geom_point(aes(y = przecietne_dalsze_trwanie_zycia_ogolem_lata, color = "Ogółem")) + 
+  xlab("Frekwencja wyborcza") +
+  ylab(paste("Przeciętne trwanie życia \nw chwili narodzin [lata]")) +
+  theme_light(base_size = 8) +
+  scale_color_manual(
+    values = c("Kobiety" = "#087c3e",
+               "Mężczyźni" = "#034ea1",
+               "Ogółem" = "#d21619"),
+    name = "",
+    labels = c("Kobiety",
+               "Mężczyźni",
+               "Ogółem")
+  ) +  
+  theme(legend.direction = "horizontal", legend.position = "bottom")
+
+# Scatterplot: (Ogółem ~ Frekwencja): 
+life_exp_general_plt <- data_train |> 
+ggplot(aes(x = frekwencja)) + 
+  geom_point(aes(y = przecietne_dalsze_trwanie_zycia_ogolem_lata), col = "#d21619") +
+  geom_smooth(formula = y ~ x, aes(y = przecietne_dalsze_trwanie_zycia_ogolem_lata),  
+              method = "lm", col = "#d21619",fullrange = T, na.rm = T, se = F) +
+  xlab("Frekwencja wyborcza") +
+  theme_light(base_size = 8) +
+  theme(legend.direction = "horizontal", legend.position = "bottom",axis.title.y = element_blank()) +
+  stat_cor(label.x = 55, label.y	= 74.3, aes(y = przecietne_dalsze_trwanie_zycia_ogolem_lata), method = "pearson", size = 3)
+  
+grid.arrange(life_exp_plt, life_exp_general_plt, ncol = 2)
+
+# Lineplot: (Frekwencja wyborcza ~ Rok, Ogółem ~ Rok)
+# range_frekwencja <- range(data_train$frekwencja, na.rm = TRUE)
+# range_trwanie_zycia <- range(data_train$`przeciętne dalsze trwanie życia; ogółem [lata]`, na.rm = TRUE)
+# scale_factor <- 0.1 * (diff(range_frekwencja) / diff(range_trwanie_zycia))
+# 
+# data_train |>
+#   filter(wojewodztwo == "małopolskie") |>
+#   ggplot(aes(x = rok)) +
+#   geom_line(aes(y = frekwencja, color = "Frekwencja")) + 
+#   geom_line(aes(y = `przeciętne dalsze trwanie życia; ogółem [lata]` * scale_factor, color = "Ogółem")) + 
+#   xlab("Rok") +
+#   ylab("Frekwencja wyborcza") +
+#   labs(title = "Frekwencja wyborcza a przeciętne dalsze trwanie życia") +
+#   theme_classic() + 
+#   scale_color_manual(
+#     values = c("Frekwencja" = "#087c3e",
+#                "Ogółem" = "#d21619"),
+#     name = "",
+#     labels = c("Frekwencja",
+#                "Ogółem")
+#   ) + 
+#   scale_y_continuous(
+#     name = "Frekwencja wyborcza",
+#     sec.axis = sec_axis(~ . / scale_factor, name = "Przeciętne dalsze trwanie życia (lata)")
+#   ) + 
+#   theme(legend.direction = "horizontal", legend.position = "bottom")
+
+```
+
+2.  **Gęstość zaludnienia (liczba osób przypadająca na kilometr kwadratowy)**, obliczona jako iloraz liczby ludności zamieszkującej dane województwo i jego powierzchni. Zmienna ta bardzo słabo koreluje z frekwencją wyborczą ze współczynnikiem korelacji Pearsona wynoszącym 0.1444 (rys. 4.).
+
+```{r density_pop}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: true # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: true # Catch all for preventing any output
+#| fig-cap: "Frekwencja wyborcza a gęstość zaludnienia."
+#| fig-align: "center"
+#| fig-width: 4
+#| fig-height: 2
+
+cor_density_pop <- 
+  cor(data_train$frekwencja,
+      data_train$gestosc_zaludnienia_osob_na_km2)
+
+data_train |> 
+ggplot(aes(x = frekwencja)) + 
+  geom_point(aes(y = gestosc_zaludnienia_osob_na_km2), col = "#d21619") +
+  geom_smooth(formula = y ~ x, aes(y = gestosc_zaludnienia_osob_na_km2),  
+              method = "lm", col = "#d21619",fullrange = T, na.rm = T, se = F) +
+  xlab("Frekwencja wyborcza") +
+  theme_light(base_size = 8) +
+  theme(legend.direction = "horizontal", legend.position = "bottom",axis.title.y = element_blank()) +
+  stat_cor(label.x = 40, label.y	= 300, aes(y = gestosc_zaludnienia_osob_na_km2), method = "pearson", size = 3)
+  
+```
+
+3.  **Produkt krajowy brutto na 1 mieszkańca \[zł\]** jako niedoskonały odpowiednik zmiennej Produkt Narodowy Brutto per capita z przytoczonego wyżej modelu [@Blais14]. Różnica między tymi wskaźnikami polega na tym, ze PNB jest uzupełniony o saldo dochodów z własności za granicą. W przypadku tego modelu zastosowano PKB, ponieważ informacje o PNB nie są dostępne dla regionów i województw. Produkt Krajowy Brutto na 1 mieszkańca silnie koreluje z frekwencją wyborczą, ze współczynnikiem korelacji Pearsona na poziomie 0.8705 (rys. 5.).
+
+```{r pnb_ww}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: true # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: true # Catch all for preventing any output
+#| fig-cap: "Frekwencja wyborcza a produkt krajowy brutto (PKB) na 1 mieszkańca [zł]."
+#| fig-align: "center"
+#| fig-width: 4
+#| fig-height: 2
+
+
+cor_pnb_ww <- 
+  cor(data_train$frekwencja,
+      data_train$produkt_krajowy_brutto_na_1_mieszkanca_zl)
+
+# Scatterplot: (Produkt krajowy brutto na 1 mieszkańca ~ Frekwencja): 
+data_train |> 
+ggplot(aes(x = frekwencja)) + 
+  geom_point(aes(y = produkt_krajowy_brutto_na_1_mieszkanca_zl), col = "#d21619", na.rm = T) +
+  geom_smooth(formula = y ~ x, aes(y = produkt_krajowy_brutto_na_1_mieszkanca_zl),
+              method = "lm", 
+              col = "#d21619", 
+              fullrange = T, 
+              na.rm = T, 
+              se = F) +
+  xlab("Frekwencja wyborcza") +
+  ylab(paste("Produkt krajowy brutto \nna 1 mieszkańca [zł]")) +
+  theme_light(base_size = 8) +
+  theme(legend.direction = "horizontal", legend.position = "bottom") +
+  stat_cor(label.x = 35, label.y	= 75000, aes(y = produkt_krajowy_brutto_na_1_mieszkanca_zl), method = "pearson", na.rm = T, size = 3)
+  
+```
+
+4.  **Zmiana produktu krajowego brutto na 1 mieszkańca względem poprzedniego roku**, obliczona na jako stosunek produktu krajowego brutto danego roku względem produktu krajowego brutto w ubiegłym roku, wskazuje na dynamikę rozwoju regionu względem minionych lat, a zatem powinna korelować na przykład z jakością usług, standardem życia i wzrostem liczby nowo utworzonych miejsc pracy, co może mieć wpływ na frekwencję wyborczą.
+
+    Podczas analizy zaobserwowano, że wykres rozrzutu zaburzony jest przez obserwacje z 2004 roku, co może wskazywać na rozbieżne trendy zachowań wyborczych w okresie od 2005 roku. Frekwencja w roku 2005 była na względnie niskim poziomie, choć zmiana PKB w okresie 2 lat była znaczna (maksymalny wzrost PKB wyniósł 18.60% w przypadku województwa opolskiego, ze średnią krajową na poziomie 10.43%).
+
+    Od 2005 roku we wszystkich pięciu wyborach parlamentarnych i w każdym województwie zachowanie wyborców podlegało już spójnemu trendowi: im wyższy odnotowano wzrost gospodarczy, tym wyższa była frekwencja. Przytoczona zmiana może być spowodowana dołączeniem Polski do Unii Europejskiej 1 maja 2004 roku oraz nasileniem polaryzacji w Polskim społeczeństwie w następstwie nieudanej koalicji rządowej między Platformą Obywatelską a Prawem i Sprawiedliwością w 2005 roku, na co wskazuje @Zagala2023. Dokładny powód takiej zależności jest jednak niejasny i wymaga dalszych badań, aby lepiej zrozumieć jej mechanizmy.
+
+    Współczynnik korelacji Pearsona frekwencji ze zmianą PKB w porównaniu do roku poprzedniego wynosi 0.4396 przy ujęciu danych z 2005 roku i 0.8084 po ich wykluczeniu (rys. 6.). W niniejszym przykładowym modelu ujęto jednak wszystkie cykle wyborcze, włącznie z 2005 rokiem.
+
+    ```{r pnb_change_ww}
+    #| eval: true # Evaluate the code chunk
+    #| echo: false # Include the source code in output
+    #| output: true # Include the results of executing the code in the output
+    #| warning: false # Include warnings in the output
+    #| error: false # Include errors in the output
+    #| include: true # Catch all for preventing any output
+    #| fig-cap: "Frekwencja wyborcza a zmiana produktu krajowego brutto (PKB) na 1 mieszkańca [zł] z ujętym oraz nieujętym 2005 rokiem."
+    #| fig-align: "center"
+
+    cor_gdp_1year <- cor(data_train$frekwencja, 
+                         data_train$zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_1_rok)
+
+    cor_gdp_2year <- cor(data_train$frekwencja, 
+                         data_train$zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_2_lata)
+    cor_gdp_3year <- cor(data_train$frekwencja, 
+                         data_train$zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_3_lata)
+
+    post_2004 <- data_train |> 
+      filter(rok > 2005)
+
+    cor_gdp_1year_post2004 <- cor(post_2004$frekwencja, 
+                                  post_2004$zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_1_rok)
+    cor_gdp_2year_post2004 <- cor(post_2004$frekwencja, 
+                                  post_2004$zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_2_lata)
+    cor_gdp_3year_post2004 <- cor(post_2004$frekwencja, 
+                                  post_2004$zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_3_lata)
+
+    # Scatterplot: (Zmiana produktu krajowego brutto na 1 mieszkańca w okresie 2 lat [%] ~ Frekwencja): 
+    gdp_change_plt <- data_train |> 
+    ggplot(aes(x = frekwencja, 
+               y = zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_1_rok, 
+               na.rm = TRUE)) + 
+      geom_point(aes(colour = rok)) +
+      labs(subtitle = "Wykres z 2005 rokiem") + 
+      xlab("Frekwencja wyborcza (2005 - 2023)") +
+      ylab(paste("Zmiana produktu krajowego brutto na \n1 mieszkańca w okresie 2 lat [%]")) +
+      theme_light(base_size = 8) +
+      theme(legend.direction = "horizontal", legend.position = "bottom") +
+      stat_cor(aes(y = zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_1_rok), method = "pearson", size = 3)
+
+    # Scatterplot: (Zmiana produktu krajowego brutto na 1 mieszkańca w okresie 2 lat [%], post 2004 ~ Frekwencja): 
+
+    gdp_change_post2004_plt <- data_train |>
+      filter(rok > 2005) |> 
+    ggplot(aes(x = frekwencja, 
+               y = zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_1_rok, 
+               na.rm = TRUE)) + 
+      geom_point(aes(colour = rok)) +
+      labs(subtitle = "Wykres bez 2005 roku") + 
+      xlab("Frekwencja wyborcza (2007 - 2023") +
+      theme_light(base_size = 8) +
+      theme(legend.direction = "horizontal", legend.position = "bottom", axis.title.y = element_blank()) +
+      stat_cor(aes(y = zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_1_rok), method = "pearson", size = 3) +
+      geom_smooth(formula = y ~ x,
+                  aes(y = zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_1_rok),  
+                  method = "lm", 
+                  col = "#d21619", 
+                  fullrange = T, na.rm = T, se = F)
+
+    grid.arrange(gdp_change_plt, gdp_change_post2004_plt, ncol = 2)
+
+    # data_train$`zmiana produktu krajowego brutto na 1 mieszkańca [%, 2 lata, pre 2004]` <- 
+    #   ifelse(data_train$post2005 == 0, 
+    #          data_train$`zmiana produktu krajowego brutto na 1 mieszkańca [%, 2 lata]`, 
+    #          0)
+    # 
+    # data_train$`zmiana produktu krajowego brutto na 1 mieszkańca [%, 2 lata, post 2004]` <- 
+    #   ifelse(data_train$post2005 == 1, 
+    #          data_train$`zmiana produktu krajowego brutto na 1 mieszkańca [%, 2 lata]`, 
+    #          0)
+    ```
+
+5.  **Współczynnik skolaryzacji netto dla szkół podstawowych** włączono z uwagi na pokrewieństwo ze wskaźnikiem analfabetyzmu, którego pomiaru nie dokonuje się w Polsce w podziale na regiony z uwagi na wysoki stopień piśmienności Polaków. Według oficjalnych statystyk Banku Światowego, stopień alfabetyzmu Polaków utrzymuje się na poziomie powyżej 99.3 od 1988 roku[^2]. Z tego powodu zarówno dokonywanie pomiarów analfabetyzmu, jak również szacowanie na jego podstawie frekwencji wyborczej może w przypadku Polski nie przynieść oczekiwanego efektu. W modelu ujęto zatem współczynnik skolaryzacji netto dla szkół podstawowych, który określa stosunek liczby wszystkich osób uczących się na danym poziomie do całej populacji osób będących w wieku nominalnie przypisanym temu poziomowi kształcenia. Współczynnik skolaryzacji netto dla szkół podstawowych koreluje z frekwencją wyborczą ujemnie na poziomie -0.3325 (rys. 7.).
+
+[^2]: Wskaźnik alfabetyzacji osób dorosłych (udział osób w wieku 15 lat i więcej), UNESCO Institute for Statistics (UIS), UIS.Stat Bulk Data Download Service, dostęp 24 kwietnia 2024, https://data.worldbank.org/indicator/SE.ADT.LITR.ZS.
+
+```{r scolarisation}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: true # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: true # Catch all for preventing any output
+#| fig-cap: "Frekwencja wyborcza a gęstość zaludnienia."
+#| fig-align: "center"
+#| fig-width: 4
+#| fig-height: 2
+
+cor_scolarisation <- 
+  cor(data_train$frekwencja,
+      data_train$wspolczynnik_skolaryzacji_netto_szkoly_podstawowe_percent)
+
+data_train |> 
+ggplot(aes(x = frekwencja)) + 
+  geom_point(aes(y = wspolczynnik_skolaryzacji_netto_szkoly_podstawowe_percent), col = "#d21619") +
+  geom_smooth(formula = y ~ x, aes(y = wspolczynnik_skolaryzacji_netto_szkoly_podstawowe_percent),  
+              method = "lm", col = "#d21619",fullrange = T, na.rm = T, se = F) +
+  xlab("Frekwencja wyborcza") +
+  theme_light(base_size = 8) +
+  theme(legend.direction = "horizontal", legend.position = "bottom",axis.title.y = element_blank()) +
+  stat_cor(label.x = 60, label.y	= 98.1, aes(y = wspolczynnik_skolaryzacji_netto_szkoly_podstawowe_percent), method = "pearson", size = 3)
+  
+```
+
+6.  **Ludność w tysiącach**, oznaczająca liczbę mieszkańców danego województwa, korelująca z frekwencją wyborcą na poziomie 0.2713 (rys. 8.).
+
+```{r population_size}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: true # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: true # Catch all for preventing any output
+#| fig-cap: "Frekwencja wyborcza a gęstość zaludnienia."
+#| fig-align: "center"
+#| fig-width: 4
+#| fig-height: 2
+
+cor_population_size <- 
+  cor(data_train$frekwencja,
+      data_train$ludnosc_w_tysiacach_tys_osob)
+
+data_train |> 
+ggplot(aes(x = frekwencja)) + 
+  geom_point(aes(y = ludnosc_w_tysiacach_tys_osob), col = "#d21619") +
+  geom_smooth(formula = y ~ x, aes(y = ludnosc_w_tysiacach_tys_osob),  
+              method = "lm", col = "#d21619",fullrange = T, na.rm = T, se = F) +
+  xlab("Frekwencja wyborcza") +
+  theme_light(base_size = 8) +
+  theme(legend.direction = "horizontal", legend.position = "bottom",axis.title.y = element_blank()) +
+  stat_cor(label.x = 35, label.y	= 4000, aes(y = ludnosc_w_tysiacach_tys_osob), method = "pearson", size = 3)
+  
+```
+
+Zrekonstruowany w ten sposób model charakteryzuje się współczynnikiem R-kwadrat na poziomie 0.7581. Pomimo względnie wysokiego współczynnika determinacji, związek części ujętych w modelu zmiennych ze zmienną objaśniana jest statystycznie nieistotny z bardzo wysokimi p-values. Wyniosły one kolejno 0.9854 dla przeciętnego dalszego trwania życia w chwili narodzin, 0.9608 dla gęstości zaludnienia, 0.9371 dla liczby ludności oraz 0.4885 dla współczynnika skolaryzacji. Usunięcie tych zmiennych nieznacznie poprawia współczynnik determinacji do poziomu 0.7670 i skutkuje skromniejszym modelem złożonym z zaledwie trzech zmiennych, którymi są przeciętne trwanie życia, produkt krajowy brutto na 1 mieszkańca oraz zmiana produktu krajowego brutto na 1 mieszkańca w ciągu jednego roku.
+
+Wyniki walidacji modelu na zbiorze testowym wskazują na bardzo podobną wartość R-kwadrat na poziomie 0.7776 z pierwiastkiem błędu średniokwadratowego wynoszącym 6.0712% i średnim błędem absolutnym na poziomie 4.6615%. Niestety, na podstawie wynik testu Breuscha-Pagana (BP = 7.8307, df = 3, p-value = 0.04964) należy odrzucić hipotezę zerową o homoskedastyczności pomimo zadowalających wyników testu t-Studenta na normalność reszt (W = 0.98449, p-value = 0.5706), pozwalającego przyjąć hipotezę zerową o normalności reszt modelu.
+
+```{r model_blais_dobrzynska}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: false # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: false # Catch all for preventing any output
+
+# Response variable name
+response <- "frekwencja"
+
+# Model Blais & Dobrzyńska (Pierwotny) -----------------------------------------
+
+model_BD_1 <- lm(
+  frekwencja ~
+    przecietne_dalsze_trwanie_zycia_ogolem_lata +
+    gestosc_zaludnienia_osob_na_km2 +
+    produkt_krajowy_brutto_na_1_mieszkanca_zl +
+    zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_1_rok +
+    wspolczynnik_skolaryzacji_netto_szkoly_podstawowe_percent +
+    ludnosc_w_tysiacach_tys_osob,
+  data_train
+)
+
+# Podsumowanie modelu
+summary(model_BD_1)
+
+# Model Blais & Dobrzyńska (Zaktualizowany) ------------------------------------
+
+BD_2_vars <- c("przecietne_dalsze_trwanie_zycia_ogolem_lata", 
+               "produkt_krajowy_brutto_na_1_mieszkanca_zl",
+               "zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_1_rok")
+
+# 2. Model
+model_BD_2_formula <- as.formula(paste(response, "~", paste(BD_2_vars, collapse = " + ")))
+model_BD_2 <- lm(model_BD_2_formula, data = data_train)
+summary(model_BD_2)
+
+# 4. Podsumowanie modelu
+print(summary(model_BD_2))
+round(summary(model_BD_2)$coefficients[, "Estimate"], 5)
+
+# 5. Test Modelu, Walidacja "poza próbą"
+BD_2_actual <- unlist(data_test$frekwencja)
+BD_2_predicted <- unlist(predict(model_BD_2, data_test))
+BD_2_RMSE <- sqrt(mean((BD_2_predicted - BD_2_actual)^2))
+BD_2_MAE <- mean(abs(BD_2_predicted - BD_2_actual))
+BD_2_R_squared <- summary(model_BD_2)$r.squared
+
+# 6. Homoskedastyczność
+BD_2_residuals <- resid(model_BD_2)
+#plot(fitted(model_BD_2), BD_2_residuals)
+#abline(h = 0, col = "red")
+#hist(BD_2_residuals, breaks = 30, main = "Residuals Histogram")
+shapiro.test(rstandard(model_BD_2))
+bptest(model_BD_2)
+
+# 7. Istotność zmiennych
+varImp(model_BD_2)
+summary(model_BD_2)$coefficients[, "Pr(>|t|)"]
+
+# 8. Współliniowość
+vif(model_BD_2)
+
+# 9. Diagnostyka modelu
+par(mfrow = c(2, 2))
+#plot(model_BD_2)
+
+```
+
+\newpage
+
+## Udoskonalone modele N95425 i N113549
+
+```{r clustering}
+#| eval: false # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: false # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: false # Catch all for preventing any output
+#| 
+# Step 1: Load your data
+# Replace 'your_data' with your actual data frame name
+data <- data_train[,allvars]
+data_t <- data_train[,c(targetvar, allvars)]
+
+# Obliczenie macierzy korelacji R oraz R0
+cor_matrix_t <- cor(data_t)
+R_0_t <- cor_matrix_t[1,-1]
+R_t <- cor_matrix_t[-1,-1]
+Rzero_t <- (as.data.frame(R_0_t))
+
+most_correlated_t <- Rzero_t |> 
+  mutate(name = gsub("X", "", rownames(Rzero_t)),
+         abs = abs(R_0_t)) |> 
+  arrange(desc(abs)) |> 
+  filter(abs > 0.5)
+
+data_t <- data_t |> 
+  dplyr::select(c("frekwencja", most_correlated_t$name))
+
+data <- data_t |> 
+  dplyr::select(c(most_correlated_t$name))
+
+# Step 2: Calculate the correlation matrix
+cor_matrix <- cor(data, use = "pairwise.complete.obs")
+
+# Step 3: Compute the distance matrix
+# Using 1 - correlation to convert to a distance measure
+dist_matrix <- as.dist(1 - cor_matrix)
+
+# Perform k-means clustering
+set.seed(123) # For reproducibility
+num_clusters <- 6
+kmeans_result <- kmeans(dist_matrix, centers = num_clusters)
+
+# Create a list of variables in each cluster
+clustered_vars <- split(names(data), kmeans_result$cluster)
+
+# Print the clustered variables
+print(clustered_vars)
+
+# Calculate the number of combinations
+lengths <- unlist(lapply(clustered_vars, length))
+combinations <- Reduce(`*`, lengths)
+dim(combinations)
+
+# All combination testing ------------------------------------------------------
+
+# Function to evaluate model
+evaluate_model <- function(vars, data, response) {
+  # Create the formula
+  formula <- as.formula(paste(response, "~", paste(vars, collapse = " + ")))
+  
+  # Fit the linear model
+  model <- lm(formula, data = data_t)
+  
+  # Calculate R-squared
+  r_squared <- summary(model)$r.squared
+  
+  # Get p-values of coefficients
+  p_values <- summary(model)$coefficients[, 4]
+  
+  # Check multicollinearity using VIF
+  max_vif <- tryCatch({
+      max(vif(model))
+    },  error = function(e) NA)
+
+  # Check normality of residuals
+  shapiro_test <- shapiro.test(resid(model))
+  normality_p_value <- shapiro_test$p.value
+  
+  # Perform Breusch-Pagan test for homoscedasticity
+  bp_test <- bptest(model)
+  bp_p_value <- bp_test$p.value
+  
+  # Return a list of results
+  return(list(r_squared = r_squared, 
+              p_values = p_values, 
+              max_vif = max_vif, 
+              normality_p_value = normality_p_value, 
+              bp_p_value = bp_p_value))
+}
+
+# Get all combinations of one variable from each cluster
+combinations <- expand.grid(clustered_vars)
+dim(combinations)
+
+# Initialize a dataframe to store results
+results <- data.frame(matrix(ncol = length(clustered_vars) + 5, nrow = 0))
+colnames(results) <- c(paste("Var", 1:length(clustered_vars), sep = ""), "R_squared", "Max_p_value", "Max_VIF", "Normality_p_value", "BP_p_value")
+
+# Evaluate models for each combination
+for (i in 1:nrow(combinations)) {
+  cat("\rCompletion:", round(100*(i/nrow(combinations)), 4), "%")
+  vars <- as.character(unlist(combinations[i, ]))
+  eval_results <- evaluate_model(vars, data_t, response)
+  
+  # Store results in the dataframe
+  results <- rbind(results, data.frame(
+      t(vars),
+      eval_results$r_squared,
+      max(eval_results$p_values),
+      eval_results$max_vif,
+      eval_results$normality_p_value,
+      eval_results$bp_p_value
+  ))
+}
+
+
+write.csv(results, "results.csv")
+
+```
+
+Ponieważ zmodyfikowany model opierający się na modelu @BlaisDobrzynska98, składający się z zaledwie trzech, a właściwie z dwóch zmiennych (w tym jednej opóźnionej - produkt krajowy brutto na 1 mieszkańca), jest w stanie wyjaśnić niemal 80% zmienności we frekwencji wyborczej, podjęto próbę stworzenia udoskonalonych modeli przy pomocy znanych korelatów frekwencji wyborczej oraz szeregu zmiennych pochodzących z badań opinii publicznej ośrodka CBOS.
+
+Metodologia obejmowała redukcję kombinacji zmiennych z 437 milionów do około 123 tysięcy wykorzystując technikę klastrowania, a następnie ocenę modeli pod kątem R-kwadrat, istotności zmiennych, współczynnika inflacji wariancji (VIF), p-value testu Shapiro-Wilka na normalność reszt oraz p-value testu Breuscha-Pagana na homoskedastyczność. W wyniku tego procesu zidentyfikowano cztery konkurencyjne modele, z których dwa (N95425 i N113549) zawierały najmniejszą ilość zmiennych stałych na poziomie krajowym. Modele N95425 i N113549 wybrano z uwagi na większe większe zróżnicowanie danych wejściowych na poziomie wojewódzkim.
+
+### Opis modelu N95425
+
+```{r N95425}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: false # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: false # Catch all for preventing any output
+#| fig-width: 7
+#| fig-height: 7
+
+# 1. Dane
+results <- read.csv("Data/final_model_results.csv")
+
+final_results <- results |> 
+  filter(!is.na(eval_results.max_vif)) |> 
+  filter(eval_results.max_vif <= 4,
+         eval_results.r_squared > 0.93,
+         eval_results.normality_p_value > 0.65,
+         eval_results.bp_p_value > 0.35,
+         max.eval_results.p_values. < 0.04) |> 
+  arrange(eval_results.max_vif,
+          desc(eval_results.normality_p_value),
+          eval_results.bp_p_value,
+          max.eval_results.p_values.,
+          eval_results.r_squared) |> 
+  filter(X %in% c("BP95425", "BP113549"))
+
+response <- "frekwencja"
+
+comprehensive_model_check <- function(model) {
+  
+  # Performance package diagnostics
+  performance_report <- performance::check_model(model)
+  
+  # olsrr package diagnostics
+  ols_report <- olsrr::ols_regress(model)
+  
+  # car package VIF
+  vif_report <- car::vif(model)
+  
+  # broom package tidy summary and statistics
+  tidy_summary <- broom::tidy(model)
+  glance_stats <- broom::glance(model)
+  
+  list(
+    performance_report = performance_report,
+    ols_report = ols_report,
+    vif_report = vif_report,
+    tidy_summary = tidy_summary,
+    glance_stats = glance_stats
+  )
+}
+
+# 2. Model
+model_N95425_formula <- as.formula(paste(response, "~", paste(final_results[2,2:7], collapse = " + ")))
+model_N95425 <- lm(model_N95425_formula, data = data_train)
+summary(model_N95425)
+
+# 3. Walidacja Krzyżowa
+N95425_predictors <- unlist(unname(final_results[2,2:7]))
+N95425_cv_data <- data_train |> 
+  dplyr::select(c("frekwencja", N95425_predictors))
+
+set.seed(123)
+N95425_train_control <- trainControl(method = "cv", number = 5)
+N95425_cv_model <- train(frekwencja ~ ., data = N95425_cv_data, method = "lm", trControl = N95425_train_control)
+N95425_cv_model
+model_N95425_cv <- N95425_cv_model$finalModel
+summary(model_N95425_cv)
+summary(model_N95425)
+
+# 4. Podsumowanie modelu
+print(summary(model_N95425_cv))
+round(summary(model_N95425_cv)$coefficients[, "Estimate"], 5)
+plot(model_N95425_cv)
+
+comprehensive_report <- comprehensive_model_check(model_N95425_cv)
+print(comprehensive_report)
+print(performance::check_model(model_N95425_cv))
+print(olsrr::ols_regress(model_N95425_cv))
+
+# 5. Test Modelu, Walidacja "poza próbą"
+N95425_actual <- unlist(data_test$frekwencja)
+N95425_predicted <- unlist(predict(model_N95425_cv, data_test))
+N95425_RMSE <- sqrt(mean((N95425_predicted - N95425_actual)^2))
+N95425_MAE <- mean(abs(N95425_predicted - N95425_actual))
+N95425_R_squared <- summary(model_N95425_cv)$r.squared
+
+# 6. Homoskedastyczność
+N95425_residuals <- resid(model_N95425_cv)
+plot(fitted(model_N95425_cv), N95425_residuals)
+abline(h = 0, col = "red")
+hist(N95425_residuals, breaks = 30, main = "Residuals Histogram")
+shapiro.test(rstandard(model_N95425_cv))
+bptest(model_N95425_cv)
+
+# 7. Istotność zmiennych
+varImp(model_N95425_cv)
+summary(model_N95425_cv)$coefficients[, "Pr(>|t|)"]
+
+# 8. Współliniowość
+vif(model_N95425_cv)
+
+# 9. Diagnostyka modelu
+par(mfrow = c(2, 2))
+plot(model_N95425_cv)
+
+```
+
+```{r N95425_boot}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: false # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: false # Catch all for preventing any output
+
+# Function to fit model and return coefficients
+model_fit <- function(data, indices) {
+  d <- data[indices, ]
+  fit <- lm(frekwencja ~ ., data = d)
+  return(coef(fit))
+}
+
+# Function to calculate adjusted R-squared
+model_adj_r2 <- function(data, indices) {
+  d <- data[indices, ]
+  fit <- lm(frekwencja ~ ., data = d)
+  summary(fit)$adj.r.squared
+}
+
+# Function to calculate RMSE
+model_rmse <- function(data, indices) {
+  d <- data[indices, ]
+  fit <- lm(frekwencja ~ ., data = d)
+  predictions <- predict(fit, d)
+  sqrt(mean((d$frekwencja - predictions)^2))
+}
+
+# Function to calculate MAE
+model_mae <- function(data, indices) {
+  d <- data[indices, ]
+  fit <- lm(frekwencja ~ ., data = d)
+  predictions <- predict(fit, d)
+  mean(abs(d$frekwencja - predictions))
+}
+
+combined_data_N95425_boot <- data_test[, c("frekwencja", paste(final_results[2,2:7]))]
+n_iterations <- 1000
+
+# Bootstrapping coefficients
+set.seed(123)
+results_N95425_boot <- boot(data = combined_data_N95425_boot, statistic = model_fit, R = n_iterations)
+boot_N95425_coefficients <- results_N95425_boot$t
+
+boot_N95425_means <- apply(boot_N95425_coefficients, 2, mean)
+boot_N95425_se <- apply(boot_N95425_coefficients, 2, sd)
+boot_N95425_ci <- apply(boot_N95425_coefficients, 2, function(x) quantile(x, c(0.025, 0.975)))
+
+# Bootstrapping adjusted R-squared
+set.seed(123)
+results_N95425_adj_r2 <- boot(data = combined_data_N95425_boot, statistic = model_adj_r2, R = n_iterations)
+boot_N95425_adj_r2 <- results_N95425_adj_r2$t
+
+boot_N95425_adj_r2_mean <- mean(boot_N95425_adj_r2)
+boot_N95425_adj_r2_ci <- quantile(boot_N95425_adj_r2, c(0.025, 0.975))
+
+# Bootstrapping RMSE
+set.seed(123)
+results_N95425_rmse <- boot(data = combined_data_N95425_boot, statistic = model_rmse, R = n_iterations)
+boot_N95425_rmse <- results_N95425_rmse$t
+
+boot_N95425_rmse_mean <- mean(boot_N95425_rmse)
+boot_N95425_rmse_ci <- quantile(boot_N95425_rmse, c(0.025, 0.975))
+
+# Bootstrapping MAE
+set.seed(123)
+results_N95425_mae <- boot(data = combined_data_N95425_boot, statistic = model_mae, R = n_iterations)
+boot_N95425_mae <- results_N95425_mae$t
+
+boot_N95425_mae_mean <- mean(boot_N95425_mae)
+boot_N95425_mae_ci <- quantile(boot_N95425_mae, c(0.025, 0.975))
+
+# Output results
+list(
+  coefficients = list(means = boot_N95425_means, ci = boot_N95425_ci),
+  adj_r_squared = list(mean = boot_N95425_adj_r2_mean, ci = boot_N95425_adj_r2_ci),
+  rmse = list(mean = boot_N95425_rmse_mean, ci = boot_N95425_rmse_ci),
+  mae = list(mean = boot_N95425_mae_mean, ci = boot_N95425_mae_ci)
+)
+
+```
+
+Pośród zmiennych modelu N95425 znalazły się dwie zmienne ankietowe pochodzące z badań opinii publicznej ośrodka CBOS, trzy zmienne ekonomiczne oraz jedna zmienna demograficzna:
+
+1.  Zmienne ankietowe
+
+    1.1. **Udział osób deklarujących się jako przeciwnicy integracji z Unią Europejską** - zmienna reprezentuje średni procent osób, które w 12 miesiącach poprzedzających dane wybory parlamentarne, w ankietach CBOS pod tytułem "Stosunek do członkostwa Polski w Unii Europejskiej", spośród dostępnych deklaracji "zwolennicy", "przeciwnicy" oraz "niezdecydowani", zadeklarowały się jako przeciwnicy członkostwa Polski w Unii Europejskiej.
+
+    Zmienna ta umiarkowanie i odwrotnie koreluje z frekwencją wyborczą, ze współczynnikiem korelacji Pearsona wynoszącym -0.5826 (rys. 9.). Test istotności t-Studenta (p-value = 1.33×10^−14^) wskazuje na istotność zmiennej dla modelu. Wartość parametru przy tej zmiennej wynosi około -1.2485, co oznacza, że wzrost odsetka przeciwników integracji z Unią Europejską o 10% powoduje spadek frekwencji wyborczej w województwie o około 12.49% (ceteris paribus). Województwa z wyższym udziałem przeciwników integracji z Unią Europejską odnotowują niższą frekwencję wyborczą w porównaniu do tych, gdzie udział ten jest mniejszy.
+
+    ```{r zmienne_N95425_1_1}
+    #| eval: true # Evaluate the code chunk
+    #| echo: false # Include the source code in output
+    #| output: true # Include the results of executing the code in the output
+    #| warning: false # Include warnings in the output
+    #| error: false # Include errors in the output
+    #| include: true # Catch all for preventing any output
+    #| fig-cap: "Frekwencja wyborcza a udział osób deklarujących się jako przeciwnicy integracji z Unią Europejską [%]."
+    #| fig-align: "center"
+    #| fig-width: 4
+    #| fig-height: 2
+    #     
+    # test_data_x <- N95425_cv_data |>
+    #   dplyr::select(N95425_significant_predictors) |> 
+    #   slice(1:2)
+    # 
+    # test_data_x[2,] <- test_data_x[1,]
+    # test_data_x$cbos_stosunek_do_integracji_z_ue_przeciwnicy[2] <- test_data_x$cbos_stosunek_do_integracji_z_ue_przeciwnicy[1] + 10
+    # test_data_x[1:2,]
+    # 
+    # round(predict(model_N95425_cv, test_data_x[1,]) - predict(model_N95425_cv, test_data_x[2,]), 4)
+    # 
+    # cor(data_train$frekwencja,data_train$cbos_stosunek_do_integracji_z_ue_przeciwnicy)
+    # round(summary(model_N95425_cv)$coefficients[,1], 4)
+    # summary(model_N95425_cv)$coefficients[,4]
+
+    data_train |> 
+    ggplot(aes(x = frekwencja)) + 
+      geom_point(aes(y = cbos_stosunek_do_integracji_z_ue_przeciwnicy), col = "#d21619") +
+      geom_smooth(formula = y ~ x, aes(y = cbos_stosunek_do_integracji_z_ue_przeciwnicy),  
+              method = "lm", col = "#d21619",fullrange = T, na.rm = T, se = F) +
+      xlab("Frekwencja wyborcza") +
+      theme_light(base_size = 8) +
+      theme(legend.direction = "horizontal", legend.position = "bottom",axis.title.y = element_blank()) +
+      stat_cor(label.x = 60, label.y	= 15, aes(y = cbos_stosunek_do_integracji_z_ue_przeciwnicy), method = "pearson", size = 3)
+      
+    ```
+
+    1.2. **Udział osób średnio zadowolonych z życia** - zmienna reprezentuje średni procent osób, które w 12 miesiącach poprzedzających dane wybory parlamentarne, w ankietach CBOS z pytaniem “Czy na ogół jest Pan(i) zadowolony(a) ogólnie z całego życia?”, spośród odpowiedzi “zadowolony(a)”, “średnio zadowolony(a)” oraz “niezadowolony(a)” wybrały drugą opcję.
+
+    Zmienna ta silnie i odwrotnie koreluje z frekwencją wyborczą, ze współczynnikiem korelacji Pearsona wynoszącym -0.652 (rys. 10.). Test istotności t-Studenta (p-value = 0.008753) wskazuje na istotność zmiennej dla modelu. Wartość parametru przy tej zmiennej wynosi około 0.4098, co oznacza, że wzrost odsetka osób średnio zadowolonych z życia o 10% powoduje wzrost frekwencji wyborczej w województwie o około 4.0978% (ceteris paribus). Województwa z wyższym udziałem osób średnio zadowolonych z życia odnotowują wyższą frekwencję wyborczą w porównaniu do tych, gdzie udział ten jest mniejszy.
+
+    ```{r zmienne_N95425_1_2}
+    #| eval: true # Evaluate the code chunk
+    #| echo: false # Include the source code in output
+    #| output: true # Include the results of executing the code in the output
+    #| warning: false # Include warnings in the output
+    #| error: false # Include errors in the output
+    #| include: true # Catch all for preventing any output
+    #| fig-cap: "Frekwencja wyborcza a udział osób średnio zadowolonych z życia [%]."
+    #| fig-align: "center"
+    #| fig-width: 4
+    #| fig-height: 2
+    #     
+    # summary(model_N95425_cv)
+    # 
+    # test_data_x <- N95425_cv_data |>
+    #   dplyr::select(N95425_significant_predictors) |> 
+    #   slice(1:2)
+    # 
+    # test_data_x[2,] <- test_data_x[1,]
+    # test_data_x$cbos_zadowolenie_z_zycia_srednio_zadowolony[2] <- test_data_x$cbos_zadowolenie_z_zycia_srednio_zadowolony[1] + 10
+    # test_data_x[1:2,]
+    # 
+    # round(predict(model_N95425_cv, test_data_x[2,]) - predict(model_N95425_cv, test_data_x[1,]), 4)
+    # 
+    # round(cor(data_train$frekwencja,data_train$cbos_zadowolenie_z_zycia_srednio_zadowolony), 4)
+    # round(summary(model_N95425_cv)$coefficients[,1], 4)
+    # summary(model_N95425_cv)$coefficients[,4]
+
+    data_train |> 
+    ggplot(aes(x = frekwencja)) + 
+      geom_point(aes(y = cbos_zadowolenie_z_zycia_srednio_zadowolony), col = "#d21619") +
+      geom_smooth(formula = y ~ x, aes(y = cbos_zadowolenie_z_zycia_srednio_zadowolony),  
+              method = "lm", col = "#d21619",fullrange = T, na.rm = T, se = F) +
+      xlab("Frekwencja wyborcza") +
+      theme_light(base_size = 8) +
+      theme(legend.direction = "horizontal", legend.position = "bottom",axis.title.y = element_blank()) +
+      stat_cor(label.x = 35, label.y	= 17.5, aes(y = cbos_zadowolenie_z_zycia_srednio_zadowolony), method = "pearson", size = 3)
+      
+    ```
+
+2.  Zmienne ekonomiczne
+
+    2.1. **Zmiana produktu krajowego brutto na 1 mieszkańca w przeciągu 1 roku** - zmienna reprezentuje roczną zmianę produktu krajowego brutto (PKB) na jednego mieszkańca, wyrażoną w procentach i wskazuje na dynamikę wzrostu lub spadku gospodarczego w danym roku.
+
+    Zmienna ta umiarkowanie koreluje z frekwencją wyborczą, ze współczynnikiem korelacji Pearsona wynoszącym 0.4396 (rys. 11.). Test istotności t-Studenta (p-value = 0.000115) potwierdza istotność zmiennej dla modelu. Wartość parametru przy tej zmiennej wynosi około 0.5117, co oznacza, że wzrost PKB o 10% rok do roku powoduje wzrost frekwencji wyborczej o około 5.1169% (ceteris paribus). Województwa z wyższą dynamiką wzrostu PKB odnotowują wyższą frekwencję wyborczą.
+
+    ```{r zmienne_N95425_2_1}
+    #| eval: true # Evaluate the code chunk
+    #| echo: false # Include the source code in output
+    #| output: true # Include the results of executing the code in the output
+    #| warning: false # Include warnings in the output
+    #| error: false # Include errors in the output
+    #| include: true # Catch all for preventing any output
+    #| fig-cap: "Frekwencja wyborcza a zmiana produktu krajowego brutto na 1 mieszkańca w przeciągu 1 roku [%]."
+    #| fig-align: "center"
+    #| fig-width: 4
+    #| fig-height: 2
+    # 
+    # summary(model_N95425_cv)
+    # 
+    # test_data_x <- N95425_cv_data |>
+    #   dplyr::select(N95425_significant_predictors) |>
+    #   slice(1:2)
+    # 
+    # test_data_x[2,] <- test_data_x[1,]
+    # test_data_x$zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_1_rok[2] <- test_data_x$zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_1_rok[1] + 10
+    # test_data_x[1:2,]
+    # 
+    # round(predict(model_N95425_cv, test_data_x[2,]) - predict(model_N95425_cv, test_data_x[1,]), 4)
+    # 
+    # round(cor(data_train$frekwencja,data_train$zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_1_rok), 4)
+    # round(summary(model_N95425_cv)$coefficients[,1], 4)
+    # summary(model_N95425_cv)$coefficients[,4]
+
+    data_train |> 
+    ggplot(aes(x = frekwencja)) + 
+      geom_point(aes(y = zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_1_rok), col = "#d21619") +
+      geom_smooth(formula = y ~ x, aes(y = zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_1_rok),  
+              method = "lm", col = "#d21619",fullrange = T, na.rm = T, se = F) +
+      xlab("Frekwencja wyborcza") +
+      theme_light(base_size = 8) +
+      theme(legend.direction = "horizontal", legend.position = "bottom",axis.title.y = element_blank()) +
+      stat_cor(label.x = 35, label.y	= 17.5, aes(y = zmiana_produktu_krajowego_brutto_na_1_mieszkanca_percent_1_rok), method = "pearson", size = 3)
+      
+    ```
+
+    2.2. **Nakłady inwestycyjne na 1 mieszkańca w sektorze publicznym \[zł\]** - zmienna reprezentuje wartość nakładów inwestycyjnych w sektorze publicznym przypadających na jednego mieszkańca, wyrażona w złotych. Nakłady te mogą obejmować inwestycje w infrastrukturę, edukację, zdrowie i inne obszary publiczne.
+
+    Zmienna ta silnie koreluje z frekwencją wyborczą, ze współczynnikiem korelacji Pearsona wynoszącym 0.7206 (rys. 12.). Test istotności t-Studenta (p-value = 7.96\*10^-5^) potwierdza istotność zmiennej dla modelu. Wartość parametru przy tej zmiennej wynosi około 0.0024, co oznacza, że wzrost nakładów inwestycyjnych o 1000zł powoduje wzrost frekwencji wyborczej o około 2.3524% (ceteris paribus). Województwa z wyższymi nakładami inwestycyjnymi na mieszkańca w sektorze publicznym odnotowują wyższą frekwencję wyborczą.
+
+    ```{r zmienne_N95425_2_2}
+    #| eval: true # Evaluate the code chunk
+    #| echo: false # Include the source code in output
+    #| output: true # Include the results of executing the code in the output
+    #| warning: false # Include warnings in the output
+    #| error: false # Include errors in the output
+    #| include: true # Catch all for preventing any output
+    #| fig-cap: "Frekwencja wyborcza a nakłady inwestycyjne na 1 mieszkańca w sektorze publicznym [zł]."
+    #| fig-align: "center"
+    #| fig-width: 4
+    #| fig-height: 2
+    # 
+    # summary(model_N95425_cv)
+    # 
+    # test_data_x <- N95425_cv_data |>
+    #   dplyr::select(N95425_significant_predictors) |>
+    #   slice(1:2)
+    # 
+    # test_data_x[2,] <- test_data_x[1,]
+    # test_data_x$naklady_inwestycyjne_na_1_mieszkanca_w_sektorze_publicznym_zl[2] <- test_data_x$naklady_inwestycyjne_na_1_mieszkanca_w_sektorze_publicznym_zl[1] + 1000
+    # test_data_x[1:2,]
+    # 
+    # round(predict(model_N95425_cv, test_data_x[2,]) - predict(model_N95425_cv, test_data_x[1,]), 4)
+    # 
+    # round(cor(data_train$frekwencja,data_train$naklady_inwestycyjne_na_1_mieszkanca_w_sektorze_publicznym_zl), 4)
+    # round(summary(model_N95425_cv)$coefficients[,1], 4)
+    # summary(model_N95425_cv)$coefficients[,4]
+
+    data_train |> 
+    ggplot(aes(x = frekwencja)) + 
+      geom_point(aes(y = naklady_inwestycyjne_na_1_mieszkanca_w_sektorze_publicznym_zl), col = "#d21619") +
+      geom_smooth(formula = y ~ x, aes(y = naklady_inwestycyjne_na_1_mieszkanca_w_sektorze_publicznym_zl),  
+              method = "lm", col = "#d21619",fullrange = T, na.rm = T, se = F) +
+      xlab("Frekwencja wyborcza") +
+      theme_light(base_size = 8) +
+      theme(legend.direction = "horizontal", legend.position = "bottom",axis.title.y = element_blank()) +
+      stat_cor(label.x = 35, label.y	= 4500, aes(y = naklady_inwestycyjne_na_1_mieszkanca_w_sektorze_publicznym_zl), method = "pearson", size = 3)
+      
+    ```
+
+    2.3. **Nakłady inwestycyjne na 1 mieszkańca w sektorze prywatnym \[zł\]** - zmienna reprezentuje wartość nakładów inwestycyjnych w sektorze prywatnym przypadających na jednego mieszkańca, wyrażona w złotych. Nakłady te mogą obejmować inwestycje w przemysł, usługi, handel i inne obszary prywatne.
+
+    Zmienna ta barzo silnie koreluje z frekwencją wyborczą, ze współczynnikiem korelacji Pearsona wynoszącym 0.7740 (rys. 13.). Test istotności t-Studenta (p-value = 1.30\*10^-6^) potwierdza istotność zmiennej dla modelu. Wartość parametru przy tej zmiennej wynosi około 0.0020, co oznacza, że wzrost nakładów inwestycyjnych o 1000zł powoduje wzrost frekwencji wyborczej o około 1.9553% (ceteris paribus). Województwa z wyższymi nakładami inwestycyjnymi na mieszkańca w sektorze prywatnym odnotowują wyższą frekwencję wyborczą.
+
+    ```{r zmienne_N95425_2_3}
+    #| eval: true # Evaluate the code chunk
+    #| echo: false # Include the source code in output
+    #| output: true # Include the results of executing the code in the output
+    #| warning: false # Include warnings in the output
+    #| error: false # Include errors in the output
+    #| include: true # Catch all for preventing any output
+    #| fig-cap: "Frekwencja wyborcza a nakłady inwestycyjne na 1 mieszkańca w sektorze prywatnym [zł]."
+    #| fig-align: "center"
+    #| fig-width: 4
+    #| fig-height: 2
+    # 
+    # summary(model_N95425_cv)
+    # 
+    # test_data_x <- N95425_cv_data |>
+    #   dplyr::select(N95425_significant_predictors) |>
+    #   slice(1:2)
+    # 
+    # test_data_x[2,] <- test_data_x[1,]
+    # test_data_x$naklady_inwestycyjne_na_1_mieszkanca_w_sektorze_prywatnym_zl[2] <- test_data_x$naklady_inwestycyjne_na_1_mieszkanca_w_sektorze_prywatnym_zl[1] + 1000
+    # test_data_x[1:2,]
+    # 
+    # round(predict(model_N95425_cv, test_data_x[2,]) - predict(model_N95425_cv, test_data_x[1,]), 4)
+    # round(cor(data_train$frekwencja,data_train$naklady_inwestycyjne_na_1_mieszkanca_w_sektorze_prywatnym_zl), 4)
+    # round(summary(model_N95425_cv)$coefficients[,1], 4)
+    # summary(model_N95425_cv)$coefficients[,4]
+
+    data_train |> 
+    ggplot(aes(x = frekwencja)) + 
+      geom_point(aes(y = naklady_inwestycyjne_na_1_mieszkanca_w_sektorze_prywatnym_zl), col = "#d21619") +
+      geom_smooth(formula = y ~ x, aes(y = naklady_inwestycyjne_na_1_mieszkanca_w_sektorze_prywatnym_zl),  
+              method = "lm", col = "#d21619",fullrange = T, na.rm = T, se = F) +
+      xlab("Frekwencja wyborcza") +
+      theme_light(base_size = 8) +
+      theme(legend.direction = "horizontal", legend.position = "bottom",axis.title.y = element_blank()) +
+      stat_cor(label.x = 35, label.y	= 7500, aes(y = naklady_inwestycyjne_na_1_mieszkanca_w_sektorze_prywatnym_zl), method = "pearson", size = 3)
+      
+    ```
+
+\newpage
+
+3.  Zmienna demograficzna
+
+    3.1. **Udział ludności w wieku produkcyjnym** - zmienna reprezentuje procent ludności w wieku produkcyjnym (tj. mężczyźni w wieku 18-64 lat i kobiety w wieku 18-59 lat) w całkowitej populacji. Jest to kluczowy wskaźnik struktury demograficznej, wpływający na siłę roboczą i potencjał gospodarczy regionu.
+
+    Zmienna ta bardzo silnie i odwrotnie koreluje z frekwencją wyborczą, ze współczynnikiem korelacji Pearsona wynoszącym -0.7870 (rys. 14.). Test istotności t-Studenta (p-value = 2.96×10^−10^) potwierdza istotność zmiennej dla modelu. Wartość parametru przy tej zmiennej wynosi około -2.3044, co oznacza, że wzrost udziału osób w wieku produkcyjnym o 10% powoduje spadek frekwencji wyborczej o około 23.0442% (ceteris paribus). Województwa z wyższym udziałem ludności w wieku produkcyjnym z reguły odnotowują niższą frekwencję wyborczą.
+
+    ```{r zmienne_N95425_3}
+    #| eval: true # Evaluate the code chunk
+    #| echo: false # Include the source code in output
+    #| output: true # Include the results of executing the code in the output
+    #| warning: false # Include warnings in the output
+    #| error: false # Include errors in the output
+    #| include: true # Catch all for preventing any output
+    #| fig-cap: "Frekwencja wyborcza a udział ludności w wieku produkcyjnym [%]."
+    #| fig-align: "center"
+    #| fig-width: 4
+    #| fig-height: 2
+
+    # summary(model_N95425_cv)
+    # 
+    # test_data_x <- N95425_cv_data |>
+    #   dplyr::select(N95425_significant_predictors) |>
+    #   slice(1:2)
+    # 
+    # test_data_x[2,] <- test_data_x[1,]
+    # test_data_x$udzial_ludnosci_w_wieku_produkcyjnym_percent[2] <- test_data_x$udzial_ludnosci_w_wieku_produkcyjnym_percent[1] + 10
+    # test_data_x[1:2,]
+    # 
+    # round(predict(model_N95425_cv, test_data_x[2,]) - predict(model_N95425_cv, test_data_x[1,]), 4)
+    # round(cor(data_train$frekwencja,data_train$udzial_ludnosci_w_wieku_produkcyjnym_percent), 4)
+    # round(summary(model_N95425_cv)$coefficients[,1], 4)
+    # summary(model_N95425_cv)$coefficients[,4]
+
+    data_train |> 
+    ggplot(aes(x = frekwencja)) + 
+      geom_point(aes(y = udzial_ludnosci_w_wieku_produkcyjnym_percent), col = "#d21619") +
+      geom_smooth(formula = y ~ x, aes(y = udzial_ludnosci_w_wieku_produkcyjnym_percent),  
+              method = "lm", col = "#d21619",fullrange = T, na.rm = T, se = F) +
+      xlab("Frekwencja wyborcza") +
+      ylab("Udział ludności w wieku produkcyjnym") +
+      theme_light(base_size = 8) +
+      theme(legend.direction = "horizontal", legend.position = "bottom",axis.title.y = element_blank()) +
+      stat_cor(label.x = 35, label.y	= 59, aes(y = udzial_ludnosci_w_wieku_produkcyjnym_percent), method = "pearson", size = 3)
+      
+    ```
+
+\newpage
+
+```{r N95425_map_test}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: true # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: true # Catch all for preventing any output
+#| fig-cap: "Mapa szacowanej i faktycznej frekwencji wyborczej w wyborach parlamentarnych w 2023 roku dla modelu N95425."
+#| fig-align: "center"
+#| fig-width: 7
+#| fig-height: 4
+
+region_names <- c(
+  "mazowieckie" = "Mazowieckie",
+  "zachodniopomorskie" = "Zachodniopomorskie",
+  "śląskie" = "Slaskie",
+  "świętokrzyskie" = "Swietokrzyskie",
+  "lubuskie" = "Lubuskie",
+  "lubelskie" = "Lubelskie",
+  "kujawsko-pomorskie" = "Kujawsko-Pomorskie",
+  "wielkopolskie" = "Wielkopolskie",
+  "opolskie" = "Opolskie",
+  "małopolskie" = "Malopolskie",
+  "podlaskie" = "Podlaskie",
+  "podkarpackie" = "Podkarpackie",
+  "warmińsko-mazurskie" = "Warminsko-Mazurskie",
+  "łódzkie" = "Lódzkie",
+  "pomorskie" = "Pomorskie",
+  "dolnośląskie" = "Dolnoslaskie"
+)
+
+N95425_map_dataset <- dat_vovoideships |> 
+  filter(rok == 2023) |> 
+  mutate(name = region_names[as.character(wojewodztwo)])
+
+N95425_map_dataset$predicted <- predict(model_N95425, N95425_map_dataset)
+
+N95425_map_dataset <- N95425_map_dataset |> 
+  dplyr::select(name, frekwencja, predicted) |> 
+  mutate(difference = predicted - frekwencja,
+         abs_difference = abs(difference),
+         frekwencja_rank = rank(frekwencja),
+         predicted_rank = rank(predicted), .after = "predicted") |> 
+  arrange(abs_difference)
+
+map_data <- ne_states(country = "poland", returnclass = "sf")
+N95425_map_dataset <- dplyr::left_join(N95425_map_dataset, map_data, by = c(name = "name_alt"))
+N95425_map_dataset <- st_as_sf(N95425_map_dataset)
+N95425_map_dataset <- st_transform(N95425_map_dataset, crs = 3857)
+
+N95425_actual <- ggplot(N95425_map_dataset) +
+  geom_sf(aes(fill = frekwencja, geometry = geometry)) +
+  coord_sf(crs = st_crs(3857), expand = FALSE, lims_method = "geometry_bbox") + 
+  geom_sf_label(aes(label = paste(round(frekwencja, 2), "%")), label.size  = NA,
+               color = "black", 
+               size = 2.5, 
+               fontface = "bold", 
+               nudge_y = 0.13, 
+               alpha = 0.5) +
+  scale_fill_viridis_c(option = "mako", name = "Zaobserwowana frekwencja") +
+  theme(plot.margin = unit(c(1, 1, 1, 1), "cm")) +
+  theme_light(base_size = 8) +
+  xlab("") +
+  ylab("") +
+  theme(legend.direction = "horizontal", 
+        legend.position = "bottom",
+        axis.title.y = element_blank())
+
+N95425_predicted <- ggplot(N95425_map_dataset) +
+  geom_sf(aes(fill = predicted, geometry = geometry)) +
+  coord_sf(crs = st_crs(3857), expand = FALSE, lims_method = "geometry_bbox") + 
+  geom_sf_label(aes(label = paste(round(predicted, 2), "%")), label.size  = NA,
+               color = "black", 
+               size = 2.5, 
+               fontface = "bold", 
+               nudge_y = 0.13, 
+               alpha = 0.5) +
+  scale_fill_viridis_c(option = "mako", name = "Szacowana frekwencja") +
+  theme(plot.margin = unit(c(1, 1, 1, 1), "cm")) +
+  theme_light(base_size = 8) +
+  xlab("") +
+  ylab("") +
+  theme(legend.direction = "horizontal", 
+        legend.position = "bottom",
+        axis.title.y = element_blank())
+
+grid.arrange(N95425_predicted, N95425_actual, ncol = 2)
+
+# as.data.frame(N95425_map_dataset)[,1:7]
+# 
+# summary(N95425_map_dataset$difference)
+# sd(N95425_map_dataset$difference)
+# 
+# summary(N95425_map_dataset$abs_difference)
+# sd(N95425_map_dataset$abs_difference)
+
+```
+
+Model zastosowano na danych dotyczących wyborów parlamentarnych w 2023 roku. Średnia różnica między rzeczywistą a przewidywaną frekwencją wyborczą wynosiła -1.106 punktów procentowych, z medianą -1.696 pp., co oznacza, że model ma tendencję do niedoszacowywania frekwencji.
+
+Średnie bezwzględne odchylenie predykcji wynosiło 3.621 punktów procentowych, a jego bezwzględne odchylenie standardowe 2.688 pp. Największa odnotowana pozytywna różnica względem frekwencji zaobserwowanej wyniosła +9.839 pp. w województwie mazowieckim, z kolei największa negatywna różnica wyniosła -7.8635 w województwie Małopolskim. Najmniejsze odchylenie wyniosło +0.1322 oraz +0.9070 pp kolejno w województwie Śląskim i Opolskim. Wyniki wskazują na zróżnicowanie dokładności przewidywań modelu w zależności od regionu (rys. 15).
+
+Model w tej postaci, po przeprowadzeniu dziesięciokrotnej walidacji krzyżowej charakteryzuje się skorygowanym współczynnikiem R-kwadrat na poziomie 0.9240. Wyniki walidacji modelu na zbiorze testowym wskazują na bardzo zbliżoną wartość R-kwadrat na poziomie 0.9309 (+0.0069 w porównaniu do skorygowanego R-kwadrat obliczonego na zbiorze treningowym), z pierwiastkiem błędu średniokwadratowego wynoszącym 3.3685 i średnim błędem absolutnym na poziomie 2.4889, wskazując na dużą wydajność modelu na różnych podzbiorach i brak nadmiernego dopasowania, co oznacza, że model daje się dobrze uogólnić na nowe dane [^3].
+
+[^3]: Ze względu na małą liczebność próby (16 województw i 6 cykli wyborczych daje 96 obserwacji, które po podzieleniu na zbiór uczący i testowy w proporcjach 7:3 dają zaledwie 63 obserwacje w zbiorze uczącym i 33 obserwacje w zbiorze testowym), wartości zostały potwierdzone za pomocą bootstrappingu (1000 iteracji). Współczynnik R-kwadrat wyniósł 0.9544 (przedział ufności 95%: 0.9214, 0.9843), pierwiastek błędu średniokwadratowego wyniósł 2.0283 (przedział ufności 95%: 1.2105, 2.7984) a średni błąd absolutny wyniósł 1.5610 (przedział ufności 95%: 0.9100, 2.3183). Niewielkie odchylenia dają podstawy do uznania, że model jest stabilny i dobrze dopasowany, a wyniki są wiarygodne nawet przy ograniczonej liczebności próby. Wartości te sugerują, że model nie jest nadmiernie dopasowany do danych treningowych i zachowuje swoją zdolność predykcyjną w odniesieniu do nowych danych.
+
+Aby zbadać wiarygodność i stabilność modelu, przetestowano go pod kątem homoskedastyczności za pomocą testu Breuscha-Pagana na poziomie istotności α = 0.05. Wynik testu (BP = 1.7351, df = 3, p-value = 0.6292) wskazuje na brak istotnych dowodów przeciwko hipotezie zerowej o homoskedastyczności. Oznacza to, że nie ma podstaw do stwierdzenia, że wariancja reszt modelu nie jest stała.
+
+Ponadto przeprowadzono test normalności reszt za pomocą testu Shapiro-Wilka na poziomie istotności α = 0.05. Wynik testu (W = 0.97258, p-value = 0.6314) wskazuje na brak istotnych dowodów przeciwko hipotezie zerowej o normalności rozkładu reszt. Oznacza to, że nie ma podstaw do stwierdzenia, że rozkład reszt odbiega or rozkładu normalnego.
+
+Dla każdej ze zmiennych w przedstawionym modelu przeprowadzono test istotności zmiennych t-Studenta na poziomie istotności α = 0.05. Wyniki testu wskazują, że wszystkie zmienne ujęte w modelu są istotne. W przypadku każdej ze zmiennych wyniki testu dają podstawy do przyjęcia hipotezy alternatywnej o istotnym ich oddziaływaniu na na zmienną objaśnianą.
+
+W celu zbadania występowania współliniowości pomiędzy zmiennymi modelu dokonano jego oceny za pomocą współczynnika inflacji wariancji (VIF), przyjmując za optymalny zakres od 0 do 5. Wszystkie zmienne modelu charakteryzują się wartością współczynnika VIF na poziomie odpowiadającym wyznaczonemu przedziałowi. Najwyższą wartość współczynnika VIF na poziomie 2.6686 zaobserwowano dla zmiany produktu krajowego brutto na 1 mieszkańca w przeciągu 1 roku oraz następnie na poziomie 2.6563 dla udziału ludności w wieku produkcyjnym. Oznacza to, że zmienne modelu charakteryzują się brakiem lub umiarkowaną współliniowością.
+
+\newpage
+
+### Opis modelu N113549
+
+```{r N113549}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: false # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: false # Catch all for preventing any output
+#| fig-width: 7
+#| fig-height: 7
+
+# 2. Model
+model_N113549_formula <- as.formula(paste(response, "~", paste(final_results[1,2:7], collapse = " + ")))
+model_N113549 <- lm(model_N113549_formula, data = data_train)
+
+# 3. Walidacja Krzyżowa
+N113549_predictors <- unlist(unname(final_results[1,2:7]))
+N113549_cv_data <- data_train |> 
+  dplyr::select(c("frekwencja", N113549_predictors))
+
+set.seed(123)
+N113549_train_control <- trainControl(method = "cv", number = 10)
+N113549_cv_model <- train(frekwencja ~ ., data = N113549_cv_data, method = "lm", trControl = N113549_train_control)
+N113549_cv_model
+model_N113549_cv <- N113549_cv_model$finalModel
+summary(model_N113549_cv)
+summary(model_N113549)
+
+# 4. Podsumowanie modelu
+print(summary(model_N113549_cv))
+round(summary(model_N113549_cv)$coefficients[, "Estimate"], 5)
+plot(model_N113549_cv)
+
+comprehensive_report <- comprehensive_model_check(model_N113549_cv)
+print(comprehensive_report)
+print(performance::check_model(model_N113549_cv))
+print(olsrr::ols_regress(model_N113549_cv))
+
+# 5. Test Modelu, Walidacja "poza próbą"
+N113549_actual <- unlist(data_test$frekwencja)
+N113549_predicted <- unlist(predict(model_N113549_cv, data_test))
+N113549_RMSE <- sqrt(mean((N113549_predicted - N113549_actual)^2))
+N113549_MAE <- mean(abs(N113549_predicted - N113549_actual))
+N113549_R_squared <- summary(model_N113549_cv)$r.squared
+
+# 6. Homoskedastyczność
+N113549_residuals <- resid(model_N113549_cv)
+plot(fitted(model_N113549_cv), N113549_residuals)
+abline(h = 0, col = "red")
+hist(N113549_residuals, breaks = 30, main = "Residuals Histogram")
+shapiro.test(rstandard(model_N113549_cv))
+bptest(model_N113549_cv)
+
+# 7. Istotność zmiennych
+varImp(model_N113549_cv)
+summary(model_N113549_cv)$coefficients[, "Pr(>|t|)"]
+
+# 8. Współliniowość
+vif(model_N113549_cv)
+
+# 9. Diagnostyka modelu
+par(mfrow = c(2, 2))
+plot(model_N113549_cv)
+
+```
+
+```{r N113549_boot}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: false # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: false # Catch all for preventing any output
+
+combined_data_N113549_boot <- data_test[, c("frekwencja", paste(final_results[1,2:7]))]
+n_iterations <- 1000
+
+# Bootstrapping coefficients
+set.seed(123)
+results_N113549_boot <- boot(data = combined_data_N113549_boot, statistic = model_fit, R = n_iterations)
+boot_N113549_coefficients <- results_N113549_boot$t
+
+boot_N113549_means <- apply(boot_N113549_coefficients, 2, mean)
+boot_N113549_se <- apply(boot_N113549_coefficients, 2, sd)
+boot_N113549_ci <- apply(boot_N113549_coefficients, 2, function(x) quantile(x, c(0.025, 0.975)))
+
+# Bootstrapping adjusted R-squared
+set.seed(123)
+results_N113549_adj_r2 <- boot(data = combined_data_N113549_boot, statistic = model_adj_r2, R = n_iterations)
+boot_N113549_adj_r2 <- results_N113549_adj_r2$t
+
+boot_N113549_adj_r2_mean <- mean(boot_N113549_adj_r2)
+boot_N113549_adj_r2_ci <- quantile(boot_N113549_adj_r2, c(0.025, 0.975))
+
+# Bootstrapping RMSE
+set.seed(123)
+results_N113549_rmse <- boot(data = combined_data_N113549_boot, statistic = model_rmse, R = n_iterations)
+boot_N113549_rmse <- results_N113549_rmse$t
+
+boot_N113549_rmse_mean <- mean(boot_N113549_rmse)
+boot_N113549_rmse_ci <- quantile(boot_N113549_rmse, c(0.025, 0.975))
+
+# Bootstrapping MAE
+set.seed(123)
+results_N113549_mae <- boot(data = combined_data_N113549_boot, statistic = model_mae, R = n_iterations)
+boot_N113549_mae <- results_N113549_mae$t
+
+boot_N113549_mae_mean <- mean(boot_N113549_mae)
+boot_N113549_mae_ci <- quantile(boot_N113549_mae, c(0.025, 0.975))
+
+# Output results
+list(
+  coefficients = list(means = boot_N113549_means, ci = boot_N113549_ci),
+  adj_r_squared = list(mean = boot_N113549_adj_r2_mean, ci = boot_N113549_adj_r2_ci),
+  rmse = list(mean = boot_N113549_rmse_mean, ci = boot_N113549_rmse_ci),
+  mae = list(mean = boot_N113549_mae_mean, ci = boot_N113549_mae_ci)
+)
+
+```
+
+Pośród zmiennych modelu N113549 znalazły się dwie zmienne ankietowe pochodzące z badań opinii publicznej ośrodka CBOS, jedna zmienna ekonomiczna, dwie zmienne demograficzne oraz jedna zmienna związana z poziomem edukacji.
+
+1.  Zmienne ankietowe
+
+    1.1. **Udział osób deklarujących obojętny stosunek do rządu** - zmienna ta reprezentuje średni procent osób, które w 12 miesiącach poprzedzających dane wybory parlamentarne, w ankietach CBOS pod tytułem "Stosunek do rządu", spośród dostępnych deklaracji "zwolennicy", "przeciwnicy" oraz "obojętni", zadeklarowały obojętny stosunek do rządu.
+
+    Zmienna ta bardzo silnie i odwrotnie koreluje z frekwencją wyborczą, ze współczynnikiem korelacji Pearsona wynoszącym -0.7784 (rys. 16.). Test istotności t-Studenta (p-value = 9.53×10^−13^) wskazuje na istotność zmiennej dla modelu. Wartość parametru przy tej zmiennej wynosi w przybliżeniu -0.6799, co oznacza, że wzrost odsetka osób deklarujących obojętny stosunek do rządu o 10% powoduje spadek frekwencji wyborczej w województwie o około 6.7992% (ceteris paribus). Województwa z wyższym udziałem osób deklarujących obojętny stosunek do rządu odnotowują niższą frekwencję wyborczą w porównaniu do tych, gdzie udział ten jest mniejszy. Na podstawie tej obserwacji można wywnioskować, że zarówno wyższy odsetek zwolenników jak i przeciwników rządu będzie oddziaływał motywująco na potencjalnych wyborców, przyciągając ich do urn wyborczych.
+
+    ```{r zmienne_N113549_1_1}
+    #| eval: true # Evaluate the code chunk
+    #| echo: false # Include the source code in output
+    #| output: true # Include the results of executing the code in the output
+    #| warning: false # Include warnings in the output
+    #| error: false # Include errors in the output
+    #| include: true # Catch all for preventing any output
+    #| fig-cap: "Frekwencja wyborcza a obojętny stosunek do rządu [%]."
+    #| fig-align: "center"
+    #| fig-width: 4
+    #| fig-height: 2
+    # 
+    #     summary(model_N113549_cv)
+    #     
+    # test_data_x <- N113549_cv_data |>
+    #   dplyr::select(N113549_significant_predictors) |>
+    #   slice(1:2)
+    # 
+    # test_data_x[2,] <- test_data_x[1,]
+    # test_data_x$cbos_stosunek_do_rzadu_obojetni[2] <- test_data_x$cbos_stosunek_do_rzadu_obojetni[1] + 10
+    # test_data_x[1:2,]
+    # 
+    # round(predict(model_N113549_cv, test_data_x[1,]) - predict(model_N113549_cv, test_data_x[2,]), 4)
+    # cor(data_train$frekwencja,data_train$cbos_stosunek_do_rzadu_obojetni)
+    # round(summary(model_N113549_cv)$coefficients[,1], 4)
+    # summary(model_N113549_cv)$coefficients[,4]
+
+    data_train |> 
+    ggplot(aes(x = frekwencja)) + 
+      geom_point(aes(y = cbos_stosunek_do_rzadu_obojetni), col = "#d21619") +
+      geom_smooth(formula = y ~ x, aes(y = cbos_stosunek_do_rzadu_obojetni),  
+              method = "lm", col = "#d21619",fullrange = T, na.rm = T, se = F) +
+      xlab("Frekwencja wyborcza") +
+      theme_light(base_size = 8) +
+      theme(legend.direction = "horizontal", legend.position = "bottom",axis.title.y = element_blank()) +
+      stat_cor(label.x = 35, label.y	= 22.5, aes(y = cbos_stosunek_do_rzadu_obojetni), method = "pearson", size = 3)
+      
+    ```
+
+    1.2. **Udział osób deklarujących brak większych problemów ze znalezieniem odpowiedniej pracy** - zmienna ta reprezentuje średni procent osób, które w 12 miesiącach poprzedzających dane wybory parlamentarne, w ankietach CBOS z pytaniem "Jak określił(a)by Pan(i) sytuację na rynku pracy w Pana(i) miejscowości lub okolicy? Czy, Pana(i) zdaniem, obecnie:", spośród dostępnych odpowiedzi "bez większych problemów można znaleźć odpowiednią pracę", "można wprawdzie znaleźć jakąś pracę, ale trudno jest o pracę odpowiednią", "trudno jest znaleźć jakąkolwiek pracę", "nie można znaleźć żadnej pracy" oraz "Trudno powiedzieć" wybrały pierwszą odpowiedź.
+
+    Zmienna ta bardzo silnie koreluje z frekwencją wyborczą, ze współczynnikiem korelacji Pearsona wynoszącym 0.8302 (rys. 17.). Test istotności t-Studenta (p-value = 0.00203) wskazuje na istotność zmiennej dla modelu. Wartość parametru przy tej zmiennej wynosi około 0.2988, co oznacza, że wzrost odsetka osób deklarujących brak większych problemów ze znalezieniem odpowiedniej pracy o 10% powoduje wzrost frekwencji wyborczej w województwie o około 2.9881% (ceteris paribus). Województwa z wyższym udziałem osób deklarujących brak większych problemów ze znalezieniem odpowiedniej pracy odnotowują średnio wyższą frekwencję wyborczą w porównaniu do tych, gdzie udział ten jest mniejszy. Na tej podstawie można stwierdzić, że postrzeganie przez obywateli sytuacji na rynku pracy ma istotny wpływ na frekwencję wyborczą.
+
+    ```{r zmienne_N113549_1_2}
+    #| eval: true # Evaluate the code chunk
+    #| echo: false # Include the source code in output
+    #| output: true # Include the results of executing the code in the output
+    #| warning: false # Include warnings in the output
+    #| error: false # Include errors in the output
+    #| include: true # Catch all for preventing any output
+    #| fig-cap: "Frekwencja wyborcza a obojętny stosunek do rządu [%]."
+    #| fig-align: "center"
+    #| fig-width: 4
+    #| fig-height: 2
+    # 
+    # summary(model_N113549_cv)
+    #     
+    # test_data_x <- N113549_cv_data |>
+    #   dplyr::select(N113549_significant_predictors) |>
+    #   slice(1:2)
+    # 
+    # test_data_x[2,] <- test_data_x[1,]
+    # test_data_x
+    # test_data_x$cbos_rynek_pracy_bez_wiekszych_problemow_mozna_znalezc_odpowiednia_prace[2] <- test_data_x$cbos_rynek_pracy_bez_wiekszych_problemow_mozna_znalezc_odpowiednia_prace[1] + 10
+    # test_data_x[1:2,]
+    # 
+    # round(predict(model_N113549_cv, test_data_x[2,]) - predict(model_N113549_cv, test_data_x[1,]), 4)
+    # cor(data_train$frekwencja,data_train$cbos_rynek_pracy_bez_wiekszych_problemow_mozna_znalezc_odpowiednia_prace)
+    # round(summary(model_N113549_cv)$coefficients[,1], 4)
+    # summary(model_N113549_cv)$coefficients[,4]
+
+    data_train |> 
+    ggplot(aes(x = frekwencja)) + 
+      geom_point(aes(y = cbos_rynek_pracy_bez_wiekszych_problemow_mozna_znalezc_odpowiednia_prace), col = "#d21619") +
+      geom_smooth(formula = y ~ x, aes(y = cbos_rynek_pracy_bez_wiekszych_problemow_mozna_znalezc_odpowiednia_prace),  
+              method = "lm", col = "#d21619",fullrange = T, na.rm = T, se = F) +
+      xlab("Frekwencja wyborcza") +
+      theme_light(base_size = 8) +
+      theme(legend.direction = "horizontal", legend.position = "bottom",axis.title.y = element_blank()) +
+      stat_cor(label.x = 35, label.y	= 15, aes(y = cbos_rynek_pracy_bez_wiekszych_problemow_mozna_znalezc_odpowiednia_prace), method = "pearson", size = 3)
+      
+    ```
+
+2.  Zmienne ekonomiczne
+
+    2.1. **Nakłady inwestycyjne na 1 mieszkańca ogółem \[zł\]** - zmienna ta reprezentuje średnią wartość nakładów inwestycyjnych przypadających na jednego mieszkańca, wyrażoną w złotych. Nakłady te obejmują inwestycje zarówno w sektorze publicznym, jak i prywatnym.
+
+    Zmienna ta bardzo silnie koreluje z frekwencją wyborczą, ze współczynnikiem korelacji Pearsona wynoszącym 0.8151 (rys. 18.). Test istotności t-Studenta (p-value = 2.17\*10^-9^) potwierdza istotność zmiennej dla modelu. Wartość parametru przy tej zmiennej wynosi w przybliżeniu 0.0016, co oznacza, że wzrost nakładów inwestycyjnych o 1000zł powoduje wzrost frekwencji wyborczej o około 1.5829% (ceteris paribus). Województwa z wyższymi nakładami inwestycyjnymi na mieszkańca odnotowują wyższą frekwencję wyborczą.
+
+    ```{r zmienne_N113549_2_1}
+    #| eval: true # Evaluate the code chunk
+    #| echo: false # Include the source code in output
+    #| output: true # Include the results of executing the code in the output
+    #| warning: false # Include warnings in the output
+    #| error: false # Include errors in the output
+    #| include: true # Catch all for preventing any output
+    #| fig-cap: "Frekwencja wyborcza a nakłady inwestycyjne na 1 mieszkańca w sektorze prywatnym [zł]."
+    #| fig-align: "center"
+    #| fig-width: 4
+    #| fig-height: 2
+    # 
+    # summary(model_N113549_cv)
+    # 
+    # test_data_x <- N113549_cv_data |>
+    #   dplyr::select(N113549_significant_predictors) |>
+    #   slice(1:2)
+    # 
+    # test_data_x[2,] <- test_data_x[1,]
+    # test_data_x$naklady_inwestycyjne_na_1_mieszkanca_ogolem_zl[2] <- test_data_x$naklady_inwestycyjne_na_1_mieszkanca_ogolem_zl[1] + 1000
+    # test_data_x[1:2,]
+    # 
+    # round(predict(model_N113549_cv, test_data_x[2,]) - predict(model_N113549_cv, test_data_x[1,]), 4)
+    # round(cor(data_train$frekwencja,data_train$naklady_inwestycyjne_na_1_mieszkanca_ogolem_zl), 4)
+    # round(summary(model_N113549_cv)$coefficients[,1], 4)
+    # summary(model_N113549_cv)$coefficients[,4]
+
+    data_train |> 
+    ggplot(aes(x = frekwencja)) + 
+      geom_point(aes(y = naklady_inwestycyjne_na_1_mieszkanca_ogolem_zl), col = "#d21619") +
+      geom_smooth(formula = y ~ x, aes(y = naklady_inwestycyjne_na_1_mieszkanca_ogolem_zl),  
+              method = "lm", col = "#d21619",fullrange = T, na.rm = T, se = F) +
+      xlab("Frekwencja wyborcza") +
+      theme_light(base_size = 8) +
+      theme(legend.direction = "horizontal", legend.position = "bottom",axis.title.y = element_blank()) +
+      stat_cor(label.x = 35, label.y	= 10000, aes(y = naklady_inwestycyjne_na_1_mieszkanca_ogolem_zl), method = "pearson", size = 3)
+      
+    ```
+
+3.  Zmienne demograficzne
+
+    3.1. **Udział ludności w wieku przedprodukcyjnym** - zmienna ta reprezentuje procent ludności w wieku przedprodukcyjnym (tj. dzieci i młodzież w wieku 0-17 lat) w całkowitej populacji. Jest to kluczowy wskaźnik struktury demograficznej, wpływający na obciążenie systemów edukacji i zabezpieczenia społecznego.
+
+    Zmienna ta umiarkowanie i odwrotnie koreluje z frekwencją wyborczą, ze współczynnikiem korelacji Pearsona wynoszącym -0.4481 (rys. 19.). Test istotności t-Studenta (p-value = 2.10×10^−5^) wskazuje na istotność zmiennej dla modelu. Wartość parametru przy tej zmiennej wynosi w przybliżemiu 1.2374, co oznacza, że wzrost udziału ludności w wieku przedprodukcyjnym w populacji o 10% powoduje wzrost frekwencji wyborczej w województwie o około 12.3744% (ceteris paribus). Województwa z wyższym udziałem ludności w wieku przedprodukcyjnym odnotowują niższą frekwencję wyborczą w porównaniu do tych, gdzie udział ten jest mniejszy.
+
+    ```{r zmienne_N113549_3_1}
+    #| eval: true # Evaluate the code chunk
+    #| echo: false # Include the source code in output
+    #| output: true # Include the results of executing the code in the output
+    #| warning: false # Include warnings in the output
+    #| error: false # Include errors in the output
+    #| include: true # Catch all for preventing any output
+    #| fig-cap: "Frekwencja wyborcza a udział ludności w wieku przedprodukcyjnym [%]."
+    #| fig-align: "center"
+    #| fig-width: 4
+    #| fig-height: 2
+    # 
+    # summary(model_N113549_cv)
+    # 
+    # test_data_x <- N113549_cv_data |>
+    #   dplyr::select(N113549_significant_predictors) |>
+    #   slice(1:2)
+    # 
+    # test_data_x[2,] <- test_data_x[1,]
+    # test_data_x$udzial_ludnosci_w_wieku_przedprodukcyjnym_percent[2] <- test_data_x$udzial_ludnosci_w_wieku_przedprodukcyjnym_percent[1] + 10
+    # test_data_x[1:2,]
+    # 
+    # round(predict(model_N113549_cv, test_data_x[2,]) - predict(model_N113549_cv, test_data_x[1,]), 4)
+    # round(cor(data_train$frekwencja,data_train$udzial_ludnosci_w_wieku_przedprodukcyjnym_percent), 4)
+    # round(summary(model_N113549_cv)$coefficients[,1], 4)
+    # summary(model_N113549_cv)$coefficients[,4]
+
+    data_train |> 
+    ggplot(aes(x = frekwencja)) + 
+      geom_point(aes(y = udzial_ludnosci_w_wieku_przedprodukcyjnym_percent), col = "#d21619") +
+      geom_smooth(formula = y ~ x, aes(y = udzial_ludnosci_w_wieku_przedprodukcyjnym_percent),  
+              method = "lm", col = "#d21619",fullrange = T, na.rm = T, se = F) +
+      xlab("Frekwencja wyborcza") +
+      theme_light(base_size = 8) +
+      theme(legend.direction = "horizontal", legend.position = "bottom",axis.title.y = element_blank()) +
+      stat_cor(label.x = 60, label.y	= 23, aes(y = udzial_ludnosci_w_wieku_przedprodukcyjnym_percent), method = "pearson", size = 3)
+      
+    ```
+
+    3.2. **Udział ludności w wieku 25-29 lat** - zmienna ta reprezentuje całkowitą liczbę ludności w wieku 25-29 lat, bez podziału na płeć. Jest to istotny wskaźnik struktury demograficznej, odnoszący się do młodych dorosłych, którzy zazwyczaj kończą edukację i wchodzą na rynek pracy.
+
+    Zmienna ta bardzo silnie i odwrotnie koreluje z frekwencją wyborczą, ze współczynnikiem korelacji Pearsona wynoszącym -0.785 (rys. 20.). Test istotności t-Studenta (p-value = 1.06×10^−5^) wskazuje na istotność zmiennej dla modelu. Wartość parametru przy tej zmiennej wynosi około -3.1844, co oznacza, że wzrost udzialu ludności w wieku 25-29 lat o 1% powoduje spadek frekwencji wyborczej w województwie o około 3.1844% (ceteris paribus). Województwa z wyższym udziałem ludności w wieku 25-29 lat odnotowują niższą frekwencję wyborczą w porównaniu do tych, gdzie udział ten jest mniejszy.
+
+    ```{r zmienne_N113549_3_2}
+    #| eval: true # Evaluate the code chunk
+    #| echo: false # Include the source code in output
+    #| output: true # Include the results of executing the code in the output
+    #| warning: false # Include warnings in the output
+    #| error: false # Include errors in the output
+    #| include: true # Catch all for preventing any output
+    #| fig-cap: "Frekwencja wyborcza a udział ludności w wieku 25-29 lat [%]."
+    #| fig-align: "center"
+    #| fig-width: 4
+    #| fig-height: 2
+    # 
+    # summary(model_N113549_cv)
+    # 
+    # test_data_x <- N113549_cv_data |>
+    #   dplyr::select(N113549_significant_predictors) |>
+    #   slice(1:2)
+    # 
+    # test_data_x[2,] <- test_data_x[1,]
+    # test_data_x$ludnosc_wg_grup_wieku_i_plci_25_29_ogolem_osoba [2] <- test_data_x$ludnosc_wg_grup_wieku_i_plci_25_29_ogolem_osoba [1] + 1
+    # test_data_x[1:2,]
+    # 
+    # round(predict(model_N113549_cv, test_data_x[2,]) - predict(model_N113549_cv, test_data_x[1,]), 4)
+    # round(cor(data_train$frekwencja,data_train$ludnosc_wg_grup_wieku_i_plci_25_29_ogolem_osoba ), 4)
+    # round(summary(model_N113549_cv)$coefficients[,1], 4)
+    # summary(model_N113549_cv)$coefficients[,4]
+
+    data_train |> 
+    ggplot(aes(x = frekwencja)) + 
+      geom_point(aes(y = ludnosc_wg_grup_wieku_i_plci_25_29_ogolem_osoba), col = "#d21619") +
+      geom_smooth(formula = y ~ x, aes(y = ludnosc_wg_grup_wieku_i_plci_25_29_ogolem_osoba ),  
+              method = "lm", col = "#d21619",fullrange = T, na.rm = T, se = F) +
+      xlab("Frekwencja wyborcza") +
+      theme_light(base_size = 8) +
+      theme(legend.direction = "horizontal", legend.position = "bottom",axis.title.y = element_blank()) +
+      stat_cor(label.x = 35, label.y	= 6, aes(y = ludnosc_wg_grup_wieku_i_plci_25_29_ogolem_osoba ), method = "pearson", size = 3)
+      
+    ```
+
+4.  Zmienna edukacyjna
+
+    4.1. **Współczynnik skolaryzacji brutto w szkołach policealnych, w tym kolegiach (dla ludności w wieku 19-21 lat)** - zmienna ta reprezentuje procent młodych ludzi w wieku 19-21 lat uczęszczających do szkół policealnych lub kolegiów. Jest to wskaźnik poziomu kształcenia i zaangażowania w dalszą edukację po ukończeniu szkoły średniej.
+
+    Zmienna ta umiarkowanie koreluje z frekwencją wyborczą, ze współczynnikiem korelacji Pearsona wynoszącym 0.6462 (rys. 21.). Test istotności t-Studenta (p-value = 0.00181) wskazuje na istotność zmiennej dla modelu. Wartość parametru przy tej zmiennej wynosi w przybliżeniu 0.4512, co oznacza, że wzrost tego współczynnika skolaryzacji o 10% powoduje wzrost frekwencji wyborczej w województwie o około 4.512% (ceteris paribus). Województwa z wyższym udziałem współczynnikiem skolaryzacji brutto w szkołach policealnych, w tym kolegiach odnotowują wyższą frekwencję wyborczą w porównaniu do tych, gdzie współczynnik ten jest mniejszy.
+
+    ```{r zmienne_N113549_4_1}
+    #| eval: true # Evaluate the code chunk
+    #| echo: false # Include the source code in output
+    #| output: true # Include the results of executing the code in the output
+    #| warning: false # Include warnings in the output
+    #| error: false # Include errors in the output
+    #| include: true # Catch all for preventing any output
+    #| fig-cap: "Frekwencja wyborcza a współczynnik skolaryzacji brutto w szkołach policealnych, w tym kolegiach (dla ludności w wieku 19-21 lat) [%]."
+    #| fig-align: "center"
+    #| fig-width: 4
+    #| fig-height: 2
+    # 
+    # summary(model_N113549_cv)
+    # 
+    # test_data_x <- N113549_cv_data |>
+    #   dplyr::select(N113549_significant_predictors) |>
+    #   slice(1:2)
+    # 
+    # test_data_x[2,] <- test_data_x[1,]
+    # test_data_x$wspolczynnik_skolaryzacji_brutto_szkoly_policealne_w_tym_kolegia_wiek_19_21_lat_percent[2] <- test_data_x$wspolczynnik_skolaryzacji_brutto_szkoly_policealne_w_tym_kolegia_wiek_19_21_lat_percent[1] + 10
+    # test_data_x[1:2,]
+    # 
+    # round(predict(model_N113549_cv, test_data_x[2,]) - predict(model_N113549_cv, test_data_x[1,]), 4)
+    # round(cor(data_train$frekwencja,data_train$wspolczynnik_skolaryzacji_brutto_szkoly_policealne_w_tym_kolegia_wiek_19_21_lat_percent), 4)
+    # round(summary(model_N113549_cv)$coefficients[,1], 4)
+    # summary(model_N113549_cv)$coefficients[,4]
+
+    data_train |> 
+    ggplot(aes(x = frekwencja)) + 
+      geom_point(aes(y = wspolczynnik_skolaryzacji_brutto_szkoly_policealne_w_tym_kolegia_wiek_19_21_lat_percent), col = "#d21619") +
+      geom_smooth(formula = y ~ x, aes(y = wspolczynnik_skolaryzacji_brutto_szkoly_policealne_w_tym_kolegia_wiek_19_21_lat_percent),  
+              method = "lm", col = "#d21619",fullrange = T, na.rm = T, se = F) +
+      xlab("Frekwencja wyborcza") +
+      theme_light(base_size = 8) +
+      theme(legend.direction = "horizontal", legend.position = "bottom",axis.title.y = element_blank()) +
+      stat_cor(label.x = 60, label.y	= 10, aes(y = wspolczynnik_skolaryzacji_brutto_szkoly_policealne_w_tym_kolegia_wiek_19_21_lat_percent), method = "pearson", size = 3)
+      
+    ```
+
+\newpage
+
+```{r N113549_map_test}
+#| eval: true # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: true # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: true # Catch all for preventing any output
+#| fig-cap: "Mapa szacowanej i faktycznej frekwencji wyborczej w wyborach parlamentarnych w 2023 roku dla modelu N113549."
+#| fig-align: "center"
+#| fig-width: 7
+#| fig-height: 4
+
+N113549_map_dataset <- dat_vovoideships |> 
+  filter(rok == 2023) |> 
+  mutate(name = region_names[as.character(wojewodztwo)])
+
+N113549_map_dataset$predicted <- predict(model_N113549, N113549_map_dataset)
+
+N113549_map_dataset <- N113549_map_dataset |> 
+  dplyr::select(name, frekwencja, predicted) |> 
+  mutate(difference = predicted - frekwencja,
+         abs_difference = abs(difference),
+         frekwencja_rank = rank(frekwencja),
+         predicted_rank = rank(predicted), .after = "predicted") |> 
+  arrange(abs_difference)
+
+map_data <- ne_states(country = "poland", returnclass = "sf")
+N113549_map_dataset <- dplyr::left_join(N113549_map_dataset, map_data, by = c(name = "name_alt"))
+N113549_map_dataset <- st_as_sf(N113549_map_dataset)
+N113549_map_dataset <- st_transform(N113549_map_dataset, crs = 3857)
+
+N113549_actual <- ggplot(N113549_map_dataset) +
+  geom_sf(aes(fill = frekwencja, geometry = geometry)) +
+  coord_sf(crs = st_crs(3857), expand = FALSE, lims_method = "geometry_bbox") + 
+  geom_sf_label(aes(label = paste(round(frekwencja, 2), "%")), label.size  = NA,
+               color = "black", 
+               size = 2.5, 
+               fontface = "bold", 
+               nudge_y = 0.13, 
+               alpha = 0.5) +
+  scale_fill_viridis_c(option = "mako", name = "Zaobserwowana frekwencja") +
+  theme(plot.margin = unit(c(1, 1, 1, 1), "cm")) +
+  theme_light(base_size = 8) +
+  xlab("") +
+  ylab("") +
+  theme(legend.direction = "horizontal", 
+        legend.position = "bottom",
+        axis.title.y = element_blank())
+
+N113549_predicted <- ggplot(N113549_map_dataset) +
+  geom_sf(aes(fill = predicted, geometry = geometry)) +
+  coord_sf(crs = st_crs(3857), expand = FALSE, lims_method = "geometry_bbox") + 
+  geom_sf_label(aes(label = paste(round(predicted, 2), "%")), label.size  = NA,
+               color = "black", 
+               size = 2.5, 
+               fontface = "bold", 
+               nudge_y = 0.13, 
+               alpha = 0.5) +
+  scale_fill_viridis_c(option = "mako", name = "Szacowana frekwencja") +
+  theme(plot.margin = unit(c(1, 1, 1, 1), "cm")) +
+  theme_light(base_size = 8) +
+  xlab("") +
+  ylab("") +
+  theme(legend.direction = "horizontal", 
+        legend.position = "bottom",
+        axis.title.y = element_blank())
+
+grid.arrange(N113549_predicted, N113549_actual, ncol = 2)
+
+# as.data.frame(N113549_map_dataset)[,1:7]
+# # 
+# summary(N113549_map_dataset$difference)
+# sd(N113549_map_dataset$difference)
+# # 
+# summary(N113549_map_dataset$abs_difference)
+# sd(N113549_map_dataset$abs_difference)
+
+```
+
+Model zastosowano na danych dotyczących wyborów parlamentarnych w 2023 roku. Średnia różnica między rzeczywistą a przewidywaną frekwencją wyborczą wynosiła 0.1890 punktu procentowego, z medianą -0.6964 pp., co oznacza, że model częściej zaniża frekwencję, jednocześnie zwracając w niektórych przypadkach bardzo wysokie wartości, które zawyżają średnią predykcji.
+
+Średnie bezwzględne odchylenie predykcji wynosiło 3.0183 punktów procentowych, a jego bezwzględne odchylenie standardowe 2.3827 pp. Największa odnotowana pozytywna różnica względem frekwencji zaobserwowanej wyniosła +9.2159 pp. w województwie Mazowieckim, z kolei największa negatywna różnica wyniosła -5.7392 pp. w województwie Małopolskim. Najmniejsze odchylenie wyniosło +0.2957 oraz -0.3304 pp kolejno w województwie Kujawsko-Pomorskim oraz Warmińsko-Mazurskim. Również w tym przypadku wyniki wskazują na zróżnicowanie dokładności przewidywań modelu w zależności od regionu (rys. 22).
+
+Model w tej postaci, po przeprowadzeniu dziesięciokrotnej walidacji krzyżowej charakteryzuje się skorygowanym współczynnikiem R-kwadrat na poziomie 0.9372. Wyniki walidacji modelu na zbiorze testowym wskazują na zbliżoną wartość R-kwadrat na poziomie 0.9429 (-0.0057 w porównaniu do skorygowanego R-kwadrat obliczonego na zbiorze treningowym), z pierwiastkiem błędu średniokwadratowego wynoszącym 4.0806% i średnim błędem absolutnym na poziomie 3.2904%, wskazując na dużą wydajność modelu na różnych podzbiorach i brak nadmiernego dopasowania, co oznacza, że model daje się dobrze uogólnić na nowe dane [^4].
+
+[^4]: Ze względu na małą liczebność próby statystyki modelu N113549 także zostały potwierdzone za pomocą bootstrappingu (1000 iteracji). Współczynnik R-kwadrat wyniósł 0.9273 (przedział ufności 95%: 0.8735, 0.9694), pierwiastek błędu średniokwadratowego wyniósł 2.5544% (przedział ufności 95%: 1.6955, 3.2169) a średni błąd absolutny wyniósł 2.0093% (przedział ufności 95%: 1.216, 2.7376). Niewielkie odchylenia dają podstawy do uznania, że model jest stabilny i dobrze dopasowany, a wyniki są wiarygodne nawet przy ograniczonej liczebności próby. Wartości te sugerują, że model nie jest nadmiernie dopasowany do danych treningowych i zachowuje swoją zdolność predykcyjną w odniesieniu do nowych danych.
+
+Aby zbadać wiarygodność i stabilność modelu, przetestowano go pod kątem homoskedastyczności za pomocą testu Breuscha-Pagana na poziomie istotności α = 0.05. Wynik testu (BP = 4.5045, df = 6, p-value = 0.6087) wskazuje na brak istotnych dowodów przeciwko hipotezie zerowej o homoskedastyczności. Oznacza to, że nie ma podstaw do stwierdzenia, że wariancja reszt modelu nie jest stała.
+
+Ponadto przeprowadzono test normalności reszt za pomocą testu Shapiro-Wilka na poziomie istotności α = 0.05. Wynik testu (W = 0.99199, p-value = 0.9465) wskazuje na brak istotnych dowodów przeciwko hipotezie zerowej o normalności rozkładu reszt. Oznacza to, że nie ma podstaw do stwierdzenia, że rozkład reszt odbiega or rozkładu normalnego.
+
+Dla każdej ze zmiennych w przedstawionym modelu przeprowadzono test istotności zmiennych t-Studenta na poziomie istotności α = 0.05. Wyniki testu wskazują, że wszystkie zmienne ujęte w modelu są istotne. W przypadku każdej ze zmiennych wyniki testu dają podstawy do przyjęcia hipotezy alternatywnej o istotnym ich oddziaływaniu na na zmienną objaśnianą.
+
+W celu zbadania występowania współliniowości pomiędzy zmiennymi modelu dokonano jego oceny za pomocą współczynnika inflacji wariancji (VIF), przyjmując za optymalny zakres od 0 do 5.
+
+Wszystkie zmienne modelu charakteryzują się wartością współczynnika VIF na poziomie odpowiadającym wyznaczonemu przedziałowi. Najwyższą wartość współczynnika VIF na poziomie 3.7493 zaobserwowano dla udziału osób deklarujących brak większych problemów ze znalezieniem odpowiedniej pracy oraz następnie na poziomie 2.9662 dla udziału ludności w wieku 25-29 lat. Oznacza to, że zmienne modelu charakteryzują się brakiem lub umiarkowaną współliniowością.
+
+\newpage
+
+# Podsumowanie i wnioski
+
+```{r summary}
+#| eval: false # Evaluate the code chunk
+#| echo: false # Include the source code in output
+#| output: false # Include the results of executing the code in the output
+#| warning: false # Include warnings in the output
+#| error: false # Include errors in the output
+#| include: false # Catch all for preventing any output
+
+N95425_cv_model
+N113549_cv_model
+
+round(summary(model_N113549)$r.squared - summary(model_N95425)$r.squared,9)
+round(summary(model_N113549_cv)$r.squared - summary(model_N95425_cv)$r.squared, 9)
+
+round(N113549_RMSE - N95425_RMSE, 4)
+round(N113549_MAE - N95425_MAE, 4)
+round(N113549_R_squared - N95425_R_squared, 4)
+
+```
+
+Głównym celem niniejszej pracy było zaproponowanie modelu objaśniającego frekwencję wyborczą na poziomie wojewódzkim. W wyniku zastosowanej metodologii powstały dwa konkurencyjne modele oparte o różne rodzaje zmiennych, z których oba osiągają porównywalne wyniki w procesie diagnostycznym. Udoskonalone modele N113549 i N95425 wyraźnie przewyższają model pierwotny pod względem zarówno współczynnika determinacji, jak i statystycznej istotności zmiennych. Dzieje się tak dzięki lepszemu doborowi zmiennych, które pomagają trafniej objaśnić wariancję we frekwencji wyborczej w Polsce.
+
+Oba zaprezentowane modele są stabilne i dobrze dopasowane, co zostało potwierdzone przez testy na homoskedastyczność i normalność reszt. W wyniku walidacji krzyżowej uzyskano porównywalne statystyki R-kwadrat wynoszące 0.9438 dla modelu N113549 i 0.9197 dla modelu N95425 (+0.0241 na korzyść modelu N113549). Wskaźniki RMSE i MAE również znajdują się na nieznacznie lepszym poziomie w przypadku modelu N113549, wynosząc kolejno 3.1784 i 2.6015 w porównaniu do 3.3787 i 2.7849 w przypadku modelu N95425 (-0.2003 i -0.1834).
+
+Po walidacji "poza próbą" na zbiorze testowym skorygowany współczynnik R-kwadrat był wyższy w przypadku modelu N113549, wynosząc 0.9429 w porównaniu do 0.9309 dla modelu N95425 (+0.012). Wskaźnik RMSE wyniósł 4.0806 dla modelu N113549 i 3.3685 dla modelu N95425 (+0.712), a wskaźnik MAE 3.2904 dla modelu N113549 i 2.4889 dla modelu N95425 (+0.8014). Oznacza to, że pomimo lepszych wyników diagnozy modelu N113549, model N95425 osiąga nieznacznie lepsze wyniki na realnych danych. Różnice są jednak marginalne a wydajność modeli porównywalna.
+
+Po zastosowaniu obu modeli na danych dotyczących 2023 roku zaobserwowano, że oba modele mają skłonność do zaniżania frekwencji, choć zjawisko to wyraźniej występuje w modelu N95425 niż N113549. Oba modele mają także tendencję do przeszacowywania frekwencji w województwie Mazowieckim i jednocześnie niedoszacowywania frekwencji w województwie Małopolskim. Jednocześnie, oba modele relatywnie trafnie przewidują frekwencję w takich województwach jak Kujawsko-Pomorskie, Warmińsko-Mazurskie, Lubuskie, Pomorskie i Śląskie (absolutny błąd predykcji poniżej 2%) (rys. 15 i 22.).
+
+Cele pracy zostały w pełni osiągnięte. Opracowane modele skutecznie realizują założenia badawcze, dostarczając adekwatnych wyjaśnień zmienności frekwencji wyborczej na poziomie wojewódzkim. Modele te charakteryzują się wysoką jakością diagnostyczną i istotnością statystyczną, a także potwierdzają swoją zdolność predykcyjną na danych spoza próby. Mimo drobnych różnic, oba modele stanowią cenne narzędzie analityczne w badaniach nad zachowaniami wyborczymi, umożliwiając efektywne przewidywanie wzorców frekwencji wyborczej. Dalsze prace nad tymi modelami, bazujące na zaprezentowanej metodologii i danych z kolejnych cykli wyborczych, mogą znacząco poprawić ich precyzję.
+
+\newpage
+
+# Bibliografia

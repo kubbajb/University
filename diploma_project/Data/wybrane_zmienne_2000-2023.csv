@@ -1,0 +1,566 @@
+"","id-zmienna","nazwa-zmienna","id-przekroj","nazwa-przekroj","id-okres"
+"1",1,"Pracujący - BAEL (do 2020 r.)",221,"Polska, województwa; Charakter miejscowości; Płeć; Grupy wieku",282
+"2",7,"Mediana wieku",1193,"Polska, województwa, powiaty, gminy; Charakter miejscowości; Płeć",282
+"3",8,"Gęstość zaludnienia",391,"Polska, województwa, powiaty, gminy; Charakter miejscowości",282
+"4",9,"Współczynnik feminizacji",391,"Polska, województwa, powiaty, gminy; Charakter miejscowości",282
+"5",10,"Współczynnik obciążenia demograficznego – całkowity",391,"Polska, województwa, powiaty, gminy; Charakter miejscowości",282
+"6",11,"Współczynnik obciążenia demograficznego ludnością w wieku przedprodukcyjnym",391,"Polska, województwa, powiaty, gminy; Charakter miejscowości",282
+"7",17,"Współczynnik obciążenia demograficznego ludnością w wieku poprodukcyjnym",391,"Polska, województwa, powiaty, gminy; Charakter miejscowości",282
+"8",18,"Przyrost naturalny",1193,"Polska, województwa, powiaty, gminy; Charakter miejscowości; Płeć",282
+"9",24,"Przyrost naturalny na 1000 ludności",1193,"Polska, województwa, powiaty, gminy; Charakter miejscowości; Płeć",282
+"10",28,"Urodzenia żywe na 1000 ludności",1215,"Polska, województwa, powiaty, gminy; Charakter miejscowości; Płeć dziecka",282
+"11",29,"Małżeństwa na 1000 ludności",391,"Polska, województwa, powiaty, gminy; Charakter miejscowości",282
+"12",81,"Aktywne jednostki reintegracji społeczno-zawodowej",321,"Polska, województwa; Rodzaj jednostki reintegracyjnej; Typ organu prowadzącego jednostkę reintegracyjną",282
+"13",82,"Przeciętne koszty działalności jednostek reintegracji społeczno-zawodowej",322,"Polska, województwa; Rodzaj jednostki reintegracyjnej",282
+"14",89,"Turystyczne obiekty noclegowe",174,"Polska, województwa; Rodzaj obiektu noclegowego; Sezonowość",282
+"15",90,"Miejsca noclegowe w turystycznych obiektach noclegowych",174,"Polska, województwa; Rodzaj obiektu noclegowego; Sezonowość",282
+"16",91,"Liczba pokoi w obiektach hotelowych",181,"Polska, województwa; Rodzaj obiektu hotelowego",282
+"17",92,"Wynajęte pokoje w obiektach hotelowych",176,"Polska, województwa; Rodzaj obiektu hotelowego; Pochodzenie turystów korzystających z noclegów, turyści zagraniczni",282
+"18",93,"Turyści korzystający z turystycznych obiektów noclegowych",178,"Polska, województwa, powiaty; Pochodzenie turystów korzystających z noclegów",282
+"19",94,"Udzielone noclegi w turystycznych obiektach noclegowych",178,"Polska, województwa, powiaty; Pochodzenie turystów korzystających z noclegów",282
+"20",95,"Stopień wykorzystania miejsc noclegowych w turystycznych obiektach noclegowych",180,"Polska, województwa; Obiekty hotelowe i pozostałe obiekty noclegowe",282
+"21",96,"Stopień wykorzystania pokoi w obiektach hotelowych",181,"Polska, województwa; Rodzaj obiektu hotelowego",282
+"22",97,"Placówki gastronomiczne w turystycznych obiektach noclegowych",182,"Polska, województwa; Rodzaj placówki gastronomicznej",282
+"23",102,"Placówki gastronomiczne",182,"Polska, województwa; Rodzaj placówki gastronomicznej",282
+"24",106,"Sklepy",837,"Polska, województwa; Przedziały powierzchni sprzedażowej",282
+"25",107,"Stacje paliw",2,"Polska, województwa",282
+"26",109,"Sprzedaż detaliczna towarów",831,"Polska, województwa; Grupy towarów w sprzedaży",282
+"27",110,"Sprzedaż hurtowa towarów",831,"Polska, województwa; Grupy towarów w sprzedaży",282
+"28",113,"Absolwenci kursów",537,"Polska, województwa; Charakter miejscowości; Grupy wiekowe członków grup artystycznych, kół/klubów/sekcji i absolwentów kursów; Rodzaje podmiotów kultury 3",282
+"29",114,"Członkowie grup artystycznych",537,"Polska, województwa; Charakter miejscowości; Grupy wiekowe członków grup artystycznych, kół/klubów/sekcji i absolwentów kursów; Rodzaje podmiotów kultury 3",282
+"30",115,"Członkowie kół/klubów/sekcji",537,"Polska, województwa; Charakter miejscowości; Grupy wiekowe członków grup artystycznych, kół/klubów/sekcji i absolwentów kursów; Rodzaje podmiotów kultury 3",282
+"31",116,"Ekspozycje galerii sztuki",1020,"Polska, województwa; Rodzaje ekspozycji w galeriach sztuki",282
+"32",117,"Grupy artystyczne",523,"Polska, województwa; Charakter miejscowości; Rodzaje podmiotów kultury 3",282
+"33",118,"Imprezy (wydarzenia kulturalne)",523,"Polska, województwa; Charakter miejscowości; Rodzaje podmiotów kultury 3",282
+"34",119,"Koła /kluby/sekcje",523,"Polska, województwa; Charakter miejscowości; Rodzaje podmiotów kultury 3",282
+"35",120,"Kursy zorganizowane przez centra kultury, domy kultury, ośrodki kultury, kluby i świetlice",523,"Polska, województwa; Charakter miejscowości; Rodzaje podmiotów kultury 3",282
+"36",121,"Miejsca na widowni w kinach stałych",156,"Polska, województwa; Charakter miejscowości",282
+"37",122,"Pracownie specjalistyczne",523,"Polska, województwa; Charakter miejscowości; Rodzaje podmiotów kultury 3",282
+"38",123,"Seanse filmowe",1262,"Polska, województwa; Rodzaj kina 1",282
+"39",124,"Uczestnicy imprez kulturalnych",523,"Polska, województwa; Charakter miejscowości; Rodzaje podmiotów kultury 3",282
+"40",126,"Widzowie w kinach",1262,"Polska, województwa; Rodzaj kina 1",282
+"41",129,"Wypożyczenia księgozbioru",591,"Polska, województwa; Rodzaje podmiotów kultury 4",282
+"42",130,"Wystawy organizowane przez muzea",220,"Polska, województwa; Rodzaje wystaw w muzeach",282
+"43",131,"Wystawy w galeriach sztuki",189,"Polska, województwa; Rodzaje wystaw w galeriach sztuki",282
+"44",206,"Mieszkania",156,"Polska, województwa; Charakter miejscowości",282
+"45",207,"Powierzchnia użytkowa mieszkań",156,"Polska, województwa; Charakter miejscowości",282
+"46",208,"Indywidualne przydomowe oczyszczalnie ścieków",156,"Polska, województwa; Charakter miejscowości",282
+"47",209,"Zbiorniki bezodpływowe",156,"Polska, województwa; Charakter miejscowości",282
+"48",210,"Odbiorcy gazu z sieci – gospodarstwa domowe",662,"Polska, województwa; Charakter miejscowości; Rodzaj gazu; Odbiorcy gazu z sieci w gospodarstwach domowych",282
+"49",211,"Sieć gazowa",1072,"Polska, województwa; Charakter miejscowości; Rodzaj gazu; Rodzaj sieci gazowej",282
+"50",212,"Sieć gazowa rozdzielcza",1072,"Polska, województwa; Charakter miejscowości; Rodzaj gazu; Rodzaj sieci gazowej",282
+"51",213,"Sieć gazowa przesyłowa",1072,"Polska, województwa; Charakter miejscowości; Rodzaj gazu; Rodzaj sieci gazowej",282
+"52",214,"Przyłącza gazowe prowadzące do budynków mieszkalnych i niemieszkalnych",661,"Polska, województwa; Charakter miejscowości; Rodzaj gazu",282
+"53",215,"Przyłącza kanalizacyjne prowadzące do budynków mieszkalnych",156,"Polska, województwa; Charakter miejscowości",282
+"54",216,"Przyłącza wodociągowe prowadzące do budynków mieszkalnych",156,"Polska, województwa; Charakter miejscowości",282
+"55",217,"Sieć kanalizacyjna - rozdzielcza i kolektory",156,"Polska, województwa; Charakter miejscowości",282
+"56",218,"Sieć wodociągowa przesyłowa (magistralna)",156,"Polska, województwa; Charakter miejscowości",282
+"57",219,"Sieć wodociągowa rozdzielcza",156,"Polska, województwa; Charakter miejscowości",282
+"58",244,"Placówki opieki nad dziećmi do lat 3",549,"Polska, województwa; Typ placówki opieki; Czas pracy placówki opieki ; Sektor własności",282
+"59",245,"Miejsca w placówkach opieki nad dziećmi do lat 3",565,"Polska, województwa; Typ placówki opieki; Sektor własności",282
+"60",246,"Dzieci przebywające w placówkach opieki nad dziećmi do lat 3 (stan na 31 XII)",566,"Polska, województwa; Typ placówki opieki; Płeć dziecka; Wiek dzieci w placówkach opieki",282
+"61",247,"Opiekunowie w placówkach opieki nad dziećmi do lat 3",568,"Polska, województwa; Typ placówki opieki; Typ personelu placówki opieki; Płeć",282
+"62",248,"Odsetek gmin, w których znajduje się przynajmniej jedna placówka opieki nad dziećmi do lat 3",2,"Polska, województwa",282
+"63",254,"Placówki wsparcia dziennego",601,"Polska, województwa; Typ placówki wsparcia dziennego",282
+"64",255,"Korzystający z placówek wsparcia dziennego (stan na 31 XII)",601,"Polska, województwa; Typ placówki wsparcia dziennego",282
+"65",256,"Miejsca w placówkach wsparcia dziennego",601,"Polska, województwa; Typ placówki wsparcia dziennego",282
+"66",257,"Rodzinna piecza zastępcza",606,"Polska, województwa; Formy rodzinnej pieczy zastępczej; Organizator rodzinnej pieczy zastępczej",282
+"67",258,"Rodziny zastępcze",718,"Polska, województwa; Organizator rodzinnej pieczy zastępczej",282
+"68",259,"Rodzinne domy dziecka",718,"Polska, województwa; Organizator rodzinnej pieczy zastępczej",282
+"69",260,"Dzieci w rodzinnej pieczy zastępczej",611,"Polska, województwa; Formy rodzinnej pieczy zastępczej; Płeć dziecka",282
+"70",261,"Dzieci w rodzinach zastępczych",713,"Polska, województwa; Płeć dziecka",282
+"71",262,"Dzieci w rodzinnych domach dziecka",713,"Polska, województwa; Płeć dziecka",282
+"72",263,"Wychowankowie do 18 r.ż. opuszczający rodzinną pieczę zastępczą",615,"Polska, województwa; Formy rodzinnej pieczy zastępczej; Powody opuszczenia RPZ przez dzieci do 18 roku życia",282
+"73",264,"Osoby pełnoletnie, które opuściły rodzinną pieczę zastępczą",614,"Polska, województwa; Formy rodzinnej pieczy zastępczej; Powody opuszczenia RPZ przez pełnoletnich wychowanków",282
+"74",265,"Dzieci przekazane do adopcji z rodzinnej pieczy zastępczej",712,"Polska, województwa; Formy rodzinnej pieczy zastępczej",282
+"75",267,"Instytucjonalna piecza zastępcza",593,"Polska, województwa; Typ placówki instytucjonalnej pieczy zastępczej; Rodzaj organu prowadzącego placówkę ",282
+"76",269,"Wychowankowie placówek instytucjonalnej pieczy zastępczej",595,"Polska, województwa; Typ placówki instytucjonalnej pieczy zastępczej",282
+"77",270,"Miejsca w placówkach instytucjonalnej pieczy zastępczej",595,"Polska, województwa; Typ placówki instytucjonalnej pieczy zastępczej",282
+"78",271,"Wychowankowie niepełnoletni opuszczający instytucjonalną pieczę zastępczą",600,"Polska, województwa; Typ placówki instytucjonalnej pieczy zastępczej; Powody opuszczenia IPZ przez dzieci do 18 roku życia",282
+"79",272,"Wychowankowie instytucjonalnej pieczy zastępczej (powyżej 18 roku życia), którzy ubyli w roku sprawozdawczym",599,"Polska, województwa; Typ placówki instytucjonalnej pieczy zastępczej; Powody opuszczenia placówki przez pełnoletnich wychowanków",282
+"80",273,"Wolontariusze w instytucjonalnej pieczy zastępczej",595,"Polska, województwa; Typ placówki instytucjonalnej pieczy zastępczej",282
+"81",274,"Dzieci przekazane do adopcji z instytucjonalnej pieczy zastępczej",595,"Polska, województwa; Typ placówki instytucjonalnej pieczy zastępczej",282
+"82",275,"Placówki stacjonarne pomocy społecznej",616,"Polska, województwa; Typ zakładu stacjonarnego pomocy społecznej; Rodzaj organu prowadzącego ZSPS",282
+"83",276,"Miejsca w placówkach stacjonarnych pomocy społecznej",616,"Polska, województwa; Typ zakładu stacjonarnego pomocy społecznej; Rodzaj organu prowadzącego ZSPS",282
+"84",277,"Mieszkańcy placówek stacjonarnych pomocy społecznej (stan na 31 XII)",619,"Polska, województwa; Typ zakładu stacjonarnego pomocy społecznej; Płeć",282
+"85",278,"Osoby po raz pierwszy umieszczone w placówkach",630,"Polska, województwa; Typ zakładu stacjonarnego pomocy społecznej",282
+"86",279,"Domy pomocy społecznej",617,"Polska, województwa; Przeznaczenie zakładu stacjonarnego pomocy społecznej",282
+"87",280,"Personel medyczny w zakładach stacjonarnych pomocy społecznej",629,"Polska, województwa; Typ zakładu stacjonarnego pomocy społecznej; Typ personelu w ZSPS",282
+"88",281,"Osoby korzystające ze świadczeń pomocy społecznej",2,"Polska, województwa",282
+"89",282,"Kwota świadczeń pomocy społecznej",2,"Polska, województwa",282
+"90",296,"Przeciętna miesięczna liczba wypłaconych świadczeń rodzinnych",39,"Polska, województwa, powiaty, gminy; Rodzaje świadczeń rodzinnych",282
+"91",297,"Wydatki na świadczenia rodzinne",39,"Polska, województwa, powiaty, gminy; Rodzaje świadczeń rodzinnych",282
+"92",298,"Przeciętna miesięczna kwota świadczeń rodzinnych",39,"Polska, województwa, powiaty, gminy; Rodzaje świadczeń rodzinnych",282
+"93",299,"Przeciętna miesięczna liczba świadczeń z funduszu alimentacyjnego",114,"Polska, województwa; Rodzaje świadczeń z funduszu alimentacyjnego",282
+"94",300,"Wydatki na świadczenia z funduszu alimentacyjnego",114,"Polska, województwa; Rodzaje świadczeń z funduszu alimentacyjnego",282
+"95",301,"Przeciętna miesięczna kwota z funduszu alimentacyjnego",114,"Polska, województwa; Rodzaje świadczeń z funduszu alimentacyjnego",282
+"96",307,"Mediana cen za 1 m2 lokali mieszkalnych sprzedanych w ramach transakcji rynkowych",485,"Polska, województwa, powiaty; Rodzaj rynku nieruchomości",282
+"97",308,"Średnie ceny lokali mieszkalnych sprzedanych w ramach transakcji rynkowych",485,"Polska, województwa, powiaty; Rodzaj rynku nieruchomości",282
+"98",309,"Średnie ceny za 1 m2 lokali mieszkalnych sprzedanych w ramach transakcji rynkowych",485,"Polska, województwa, powiaty; Rodzaj rynku nieruchomości",282
+"99",316,"Przeciętne ceny gruntów ornych w obrocie prywatnym",486,"Polska, województwa; Rodzaj gruntów ornych",282
+"100",330,"Wskaźnik lesistości",143,"Polska, województwa, powiaty",282
+"101",331,"Odsetek przedsiębiorstw wykorzystujących komputery stacjonarne lub przenośne",2,"Polska, województwa",282
+"102",332,"Odsetek przedsiębiorstw posiadających dostęp do Internetu",4,"Polska, województwa; Rodzaje połączeń internetowych",282
+"103",333,"Odsetek przedsiębiorstw posiadających własną stronę internetową",2,"Polska, województwa",282
+"104",334,"Odsetek przedsiębiorstw korzystających z e-administracji",2,"Polska, województwa",282
+"105",335,"Odsetek przedsiębiorstw korzystających z mediów społecznościowych",11,"Polska, województwa; Rodzaje mediów społecznościowych",282
+"106",336,"Odsetek przedsiębiorstw dokonujących sprzedaży poprzez Internet",2,"Polska, województwa",282
+"107",337,"Odnowienia lasów",184,"Polska, województwa; Odnowienia; Formy własności leśnej",282
+"108",339,"Odsetek przedsiębiorstw zatrudniających specjalistów ICT",2,"Polska, województwa",282
+"109",345,"Odsetek przedsiębiorstw kupujących usługi w chmurze obliczeniowej",13,"Polska, województwa; Rodzaje usług dostępnych w chmurze obliczeniowej ",282
+"110",347,"Pielęgnowanie lasu",183,"Polska, województwa; Formy własności leśnej",282
+"111",350,"Powierzchnia gruntów leśnych",186,"Polska, województwa; Formy własności leśnej - publiczne, prywatne",282
+"112",351,"Powierzchnia lasów",2,"Polska, województwa",282
+"113",352,"Ogrody botaniczne",2,"Polska, województwa",282
+"114",353,"Ogrody zoologiczne",2,"Polska, województwa",282
+"115",354,"Sadzenie krzewów",2,"Polska, województwa",282
+"116",355,"Sadzenie drzew",2,"Polska, województwa",282
+"117",356,"Zalesienia gruntów nieleśnych",183,"Polska, województwa; Formy własności leśnej",282
+"118",357,"Powierzchnia strefy ochronnej zwierzyny parku narodowego",122,"Polska, województwa; Parki narodowe",282
+"119",358,"Powierzchnia rezerwatów i pozostałych form ochrony w parku krajobrazowym",125,"Polska, województwa; Parki krajobrazowe",282
+"120",359,"Świadczenia rodzinne",39,"Polska, województwa, powiaty, gminy; Rodzaje świadczeń rodzinnych",282
+"121",360,"Odsetek gospodarstw domowych wyposażonych w komputery stacjonarne lub przenośne",2,"Polska, województwa",282
+"122",361,"Odsetek gospodarstw domowych z dostępem do Internetu",136,"Polska, województwa; Rodzaje połączeń internetowych w gospodarstwach domowych",282
+"123",362,"Odsetek osób regularnie korzystających z Internetu",2,"Polska, województwa",282
+"124",363,"Odsetek osób zamawiających lub kupujących przez Internet towary lub usługi do użytku prywatnego (w ciągu ostatnich 12 miesięcy)",2,"Polska, województwa",282
+"125",364,"Odsetek osób korzystających z Internetu w kontaktach z administracją publiczną",142,"Polska, województwa; Cele korzystania z e-administracji",282
+"126",365,"Ludność - BAEL (do 2020 r.)",221,"Polska, województwa; Charakter miejscowości; Płeć; Grupy wieku",282
+"127",366,"Aktywni zawodowo - BAEL (do 2020 r.)",221,"Polska, województwa; Charakter miejscowości; Płeć; Grupy wieku",282
+"128",367,"Bezrobotni - BAEL (do 2020 r.)",221,"Polska, województwa; Charakter miejscowości; Płeć; Grupy wieku",282
+"129",368,"Bierni zawodowo - BAEL (do 2020 r.)",221,"Polska, województwa; Charakter miejscowości; Płeć; Grupy wieku",282
+"130",369,"Stopa bezrobocia - BAEL (do 2020 r.)",221,"Polska, województwa; Charakter miejscowości; Płeć; Grupy wieku",282
+"131",370,"Wskaźnik zatrudnienia - BAEL (do 2020 r.)",221,"Polska, województwa; Charakter miejscowości; Płeć; Grupy wieku",282
+"132",371,"Współczynnik aktywności zawodowej - BAEL (do 2020 r.)",221,"Polska, województwa; Charakter miejscowości; Płeć; Grupy wieku",282
+"133",381,"Mieszkania oddane do użytkowania",2,"Polska, województwa",282
+"134",392,"Produkcja budowlano-montażowa",2,"Polska, województwa",282
+"135",393,"Długość szlaków turystycznych Polskiego Towarzystwa Turystyczno-Krajoznawczego",2,"Polska, województwa",282
+"136",398,"Przeciętne miesięczne wynagrodzenie brutto w gospodarce narodowej",234,"Polska, województwa; Sekcje PKD 2007 + Przemysł (zgrupowane BCDE)",282
+"137",401,"Przeciętne zatrudnienie w gospodarce narodowej",234,"Polska, województwa; Sekcje PKD 2007 + Przemysł (zgrupowane BCDE)",282
+"138",406,"Nakłady wewnętrzne na działalność badawczą i rozwojową",2,"Polska, województwa",282
+"139",407,"Nakłady wewnętrzne na działalność badawczą i rozwojową w relacji do produktu krajowego brutto",58,"Polska, województwa; Sektory wykonawcze",282
+"140",408,"Podmioty w działalności badawczej i rozwojowej",79,"Polska, województwa; Rodzaje podmiotów B+R",282
+"141",409,"Personel w działalności badawczej i rozwojowej",80,"Polska, województwa; Rodzaje podmiotów B+R; Grupy personelu B+R; Funkcje personelu B+R",282
+"142",410,"Zatrudnieni w działalności badawczej i rozwojowej",84,"Polska, województwa; Funkcje personelu B+R; Płeć",282
+"143",411,"Stopień zużycia aparatury naukowo-badawczej w działalności badawczej i rozwojowej",2,"Polska, województwa",282
+"144",414,"Wskaźnik strajkujących w jednostkach, w których wystąpiły strajki",2,"Polska, województwa",282
+"145",415,"Strajki",2,"Polska, województwa",282
+"146",416,"Pracownicy biorący udział w strajku",2,"Polska, województwa",282
+"147",417,"Dni robocze nieprzepracowane w związku z uczestnictwem w strajkach",2,"Polska, województwa",282
+"148",431,"Wskaźnik wypadkowości",2,"Polska, województwa",282
+"149",462,"Zgłoszenia wynalazków",2,"Polska, województwa",282
+"150",463,"Udzielone patenty",2,"Polska, województwa",282
+"151",465,"Zgłoszenia wzorów użytkowych",2,"Polska, województwa",282
+"152",466,"Udzielone prawa ochronne dla wzorów użytkowych",172,"Polska, województwa; Tryb zgłoszenia/udzielenia",282
+"153",468,"Rezerwaty przyrody",119,"Polska, województwa; Rodzaje rezerwatów przyrody",282
+"154",485,"Rezerwaty przyrody posiadające otulinę",119,"Polska, województwa; Rodzaje rezerwatów przyrody",282
+"155",486,"Powierzchnia otuliny parku krajobrazowego",125,"Polska, województwa; Parki krajobrazowe",282
+"156",487,"Powierzchnia otuliny parku narodowego",122,"Polska, województwa; Parki narodowe",282
+"157",488,"Powierzchnia otuliny rezerwatów przyrody",119,"Polska, województwa; Rodzaje rezerwatów przyrody",282
+"158",489,"Powierzchnia rezerwatów i pozostałych form ochrony przyrody w obszarze chronionego krajobrazu",128,"Polska, województwa; Obszary chronionego krajobrazu",282
+"159",490,"Widzowie i słuchacze w teatrach i instytucjach muzycznych",491,"Polska, województwa; Rodzaje teatrów i instytucji muzycznych",282
+"160",491,"Miejsca na widowni w teatrach i instytucjach muzycznych",1180,"Polska, województwa; Rodzaje teatrów i instytucji muzycznych 2",282
+"161",492,"Przedstawienia i koncerty",491,"Polska, województwa; Rodzaje teatrów i instytucji muzycznych",282
+"162",493,"Czytelnicy bibliotek",591,"Polska, województwa; Rodzaje podmiotów kultury 4",282
+"163",494,"Miejsca dla czytelników",591,"Polska, województwa; Rodzaje podmiotów kultury 4",282
+"164",495,"Uczestnicy imprez masowych",521,"Polska, województwa; Rodzaj imprezy masowej",282
+"165",496,"Imprezy masowe",521,"Polska, województwa; Rodzaj imprezy masowej",282
+"166",498,"Parki narodowe",2,"Polska, województwa",282
+"167",499,"Parki krajobrazowe",2,"Polska, województwa",282
+"168",500,"Obszary chronionego krajobrazu",2,"Polska, województwa",282
+"169",501,"Powierzchnia o szczególnych walorach przyrodniczych prawnie chroniona",143,"Polska, województwa, powiaty",282
+"170",502,"Świadczenia z Funduszu Alimentacyjnego",114,"Polska, województwa; Rodzaje świadczeń z funduszu alimentacyjnego",282
+"171",503,"Beneficjenci środowiskowej pomocy społecznej",52,"Polska, województwa, powiaty; Charakter miejscowości; Płeć; Grupy wieku - ekonomiczne, biologiczne, edukacyjne",282
+"172",504,"Gospodarstwa domowe beneficjentów środowiskowej pomocy społecznej",213,"Polska, województwa, powiaty; Charakter miejscowości; Kryterium dochodowe gospodarstw domowych; Typ wieloosobowych gospodarstw domowych ; Wielkość gospodarstwa domowego",282
+"173",510,"Subiektywna ocena sytuacji materialnej gospodarstwa domowego",251,"Polska, makroregiony, województwa; Ocena sytuacji materialnej przez gospodarstwo domowe",282
+"174",511,"Odsetek gospodarstw domowych wyposażonych w niektóre przedmioty trwałego użytkowania",257,"Polska, makroregiony, województwa; Przedmioty trwałego użytkowania",282
+"175",515,"Przeciętne miesięczne przychody netto na 1 osobę w gospodarstwach domowych",269,"Polska, makroregiony, województwa; Rodzaj przychodów",282
+"176",517,"Przeciętne miesięczne rozchody netto na 1 osobę w gospodarstwach domowych",276,"Polska, makroregiony, województwa; Rodzaj rozchodów",282
+"177",519,"Przeciętne miesięczne spożycie wybranych artykułów żywnościowych na 1 osobę w gospodarstwach domowych",283,"Polska, makroregiony, województwa; Artykuły żywnościowe",282
+"178",541,"Przeciętna powierzchnia użytkowa 1 mieszkania",2,"Polska, województwa",282
+"179",542,"Produkcja sprzedana budownictwa",2,"Polska, województwa",282
+"180",561,"Osoby korzystające z usług reintegracji społeczno-zawodowej",323,"Polska, województwa; Rodzaj jednostki reintegracyjnej; Typy uczestników zajęć CIS",282
+"181",562,"Aktywne organizacje non-profit",324,"Polska, województwa; Rodzaj organizacji non-profit; Organizacje posiadające status OPP",282
+"182",567,"Sale projekcyjne w kinach stałych",156,"Polska, województwa; Charakter miejscowości",282
+"183",568,"Małżeństwa",353,"Polska, województwa, powiaty, gminy; Charakter miejscowości; Forma zawarcia związku małżeńskiego",282
+"184",569,"Rozwody",442,"Polska, województwa, powiaty; Charakter miejscowości; Rok zawarcia małżeństwa; Okres trwania małżeństwa - grupy lat",282
+"185",570,"Separacje orzeczone",427,"Polska, województwa, powiaty; Charakter miejscowości; Wykształcenie mężczyzny; Wykształcenie kobiety; Okres trwania małżeństwa - grupy lat",282
+"186",571,"Urodzenia żywe",377,"Polska, województwa, powiaty; Charakter miejscowości; Miesiąc urodzenia; Dzień tygodnia",282
+"187",573,"Urodzenia martwe",380,"Polska, województwa; Charakter miejscowości; Miesiąc urodzenia; Dzień tygodnia",282
+"188",574,"Zgony",318,"Polska, województwa, powiaty, gminy; Charakter miejscowości; Płeć; Wiek - pojedyncze roczniki",282
+"189",575,"Zgony niemowląt",342,"Polska, województwa, powiaty; Charakter miejscowości; Płeć dziecka; Wiek niemowlaka",282
+"190",576,"Wskaźnik zasięgu ubóstwa relatywnego",2,"Polska, województwa",282
+"191",577,"Wskaźnik zasięgu ubóstwa skrajnego",2,"Polska, województwa",282
+"192",578,"Wskaźnik zasięgu ubóstwa ustawowego",2,"Polska, województwa",282
+"193",579,"Zakłady wytwarzające odpady (z wyłączeniem odpadów komunalnych)",2,"Polska, województwa",282
+"194",580,"Odpady (z wyłączeniem odpadów komunalnych) wytworzone",239,"Polska, województwa; Zagospodarowanie odpadów; Rodzaje odpadów (zgodnie z obowiązującym Katalogiem Odpadów)",282
+"195",581,"Ludność",50,"Polska, województwa, powiaty; Charakter miejscowości; Płeć; Wiek - pojedyncze roczniki",282
+"196",582,"Tereny składowania odpadów (z wyłączeniem odpadów komunalnych)",244,"Polska, województwa; Powierzchnia terenów składowania odpadów",282
+"197",584,"Nakłady na środki trwałe służące ochronie środowiska",2,"Polska, województwa",282
+"198",585,"Nakłady na środki trwałe służące gospodarce wodnej",2,"Polska, województwa",282
+"199",586,"Efekty rzeczowe inwestycji w ochronie środowiska",227,"Polska, województwa; Rodzaje efektów rzeczowych w ochronie środowiska",282
+"200",587,"Efekty rzeczowe inwestycji w gospodarce wodnej",228,"Polska, województwa; Rodzaje efektów rzeczowych w gospodarce wodnej",282
+"201",588,"Rozwody na 1000 ludności",391,"Polska, województwa, powiaty, gminy; Charakter miejscowości",282
+"202",589,"Współczynnik dzietności",155,"Polska, województwa, powiaty; Charakter miejscowości",282
+"203",590,"Współczynnik reprodukcji brutto",155,"Polska, województwa, powiaty; Charakter miejscowości",282
+"204",591,"Współczynnik płodności",460,"Polska, województwa, powiaty; Charakter miejscowości; Wiek matki - płodność",282
+"205",593,"Zgony niemowląt na 1000 urodzeń żywych",342,"Polska, województwa, powiaty; Charakter miejscowości; Płeć dziecka; Wiek niemowlaka",282
+"206",594,"Emigracja na pobyt stały",127,"Polska, województwa, powiaty, gminy",282
+"207",595,"Imigracja na pobyt stały",127,"Polska, województwa, powiaty, gminy",282
+"208",596,"Saldo migracji zagranicznych na pobyt stały",127,"Polska, województwa, powiaty, gminy",282
+"209",597,"Napływ na pobyt stały",127,"Polska, województwa, powiaty, gminy",282
+"210",598,"Odpływ na pobyt stały",127,"Polska, województwa, powiaty, gminy",282
+"211",599,"Odpady (z wyłączeniem odpadów komunalnych) dotychczas składowane (nagromadzone) w obiektach własnych",2,"Polska, województwa",282
+"212",600,"Saldo migracji wewnętrznych na pobyt stały",127,"Polska, województwa, powiaty, gminy",282
+"213",601,"Zużycie wody na potrzeby gospodarki narodowej i ludności",310,"Polska, województwa; Zużycie wody",282
+"214",602,"Wody zasolone",2,"Polska, województwa",282
+"215",603,"Wody z odwadniania zakładów górniczych oraz obiektów budowlanych",2,"Polska, województwa",282
+"216",604,"Powierzchnia nawadnianych użytków rolnych i gruntów leśnych",2,"Polska, województwa",282
+"217",605,"Pobór wody na potrzeby gospodarki narodowej i ludności",309,"Polska, województwa; Pobór wody",282
+"218",616,"Zanieczyszczenia pyłowe zatrzymane lub zneutralizowane w urządzeniach oczyszczających w zakładach szczególnie uciążliwych",2,"Polska, województwa",282
+"219",617,"Zanieczyszczenia gazowe (bez dwutlenku węgla) zatrzymane lub zneutralizowane w urządzeniach oczyszczających w zakładach szczególnie uciążliwych",2,"Polska, województwa",282
+"220",618,"Zakłady szczególnie uciążliwe dla czystości powietrza",232,"Polska, województwa; Zakłady szczególnie uciążliwe dla czystości powietrza",282
+"221",619,"Ścieki przemysłowe wymagające oczyszczenia odprowadzone bezpośrednio do wód lub do ziemi",231,"Polska, województwa; Metody oczyszczania ścieków",282
+"222",620,"Ścieki przemysłowe odprowadzone",308,"Polska, województwa; Ścieki przemysłowe odprowadzone",282
+"223",621,"Ścieki przemysłowe i komunalne wymagające oczyszczenia odprowadzone do wód lub do ziemi",231,"Polska, województwa; Metody oczyszczania ścieków",282
+"224",622,"Ścieki przemysłowe i komunalne odprowadzone do wód lub do ziemi",315,"Polska, województwa; Sposoby odprowadzania ścieków",282
+"225",623,"Ścieki komunalne odprowadzane siecią kanalizacyjną",314,"Polska, województwa; Metody oczyszczania ścieków komunalnych",282
+"226",624,"Przepustowość projektowa oczyszczalni ścieków przemysłowych",2,"Polska, województwa",282
+"227",625,"Osady z oczyszczalni ścieków przemysłowych i komunalnych",313,"Polska, województwa; Metody zagospodarowania osadów",282
+"228",626,"Komunalne oczyszczalnie ścieków",311,"Polska, województwa; Typ oczyszczalni ścieków komunalnych",282
+"229",627,"Przemysłowe oczyszczalnie ścieków",233,"Polska, województwa; Przemysłowe oczyszczalnie ścieków według typu oczyszczalni",282
+"230",628,"Ludność korzystająca z oczyszczalni ścieków",2,"Polska, województwa",282
+"231",629,"Urządzenia oczyszczające w zakładach szczególnie uciążliwych dla czystości powietrza",907,"Polska, województwa; Urządzenia oczyszczające",282
+"232",630,"Emitory na terenie zakładów szczególnie uciążliwych dla czystości powietrza",2,"Polska, województwa",282
+"233",631,"Emisja pyłowych zanieczyszczeń powietrza z zakładów szczególnie uciążliwych dla czystości powietrza",230,"Polska, województwa; Rodzaje zanieczyszczeń pyłowych",282
+"234",632,"Emisja gazowych zanieczyszczeń powietrza z zakładów szczególnie uciążliwych dla czystości powietrza",211,"Polska, województwa; Typy zanieczyszczeń gazowych",282
+"235",633,"Miasta obsługiwane przez oczyszczalnie ścieków",2,"Polska, województwa",282
+"236",636,"Podmioty kultury",492,"Polska, województwa; Rodzaje podmiotów kultury 2",282
+"237",641,"Nakłady na działalność innowacyjną w zakresie innowacji produktowych i procesowych",493,"Polska, województwa; Rodzaj działalności w badaniach innowacji (PKD); Klasa wielkości przedsiębiorstw",282
+"238",642,"Nakłady na działalność innowacyjną",493,"Polska, województwa; Rodzaj działalności w badaniach innowacji (PKD); Klasa wielkości przedsiębiorstw",282
+"239",643,"Udział przychodów netto ze sprzedaży produktów nowych lub ulepszonych w przychodach netto ze sprzedaży",493,"Polska, województwa; Rodzaj działalności w badaniach innowacji (PKD); Klasa wielkości przedsiębiorstw",282
+"240",647,"Zwiedzający muzea",465,"Polska, województwa; Kategorie osób zwiedzających muzea ",282
+"241",656,"Linie kolejowe eksploatowane",725,"Polska, województwa; Rodzaj linii kolejowych eksploatowanych",282
+"242",663,"Drogi publiczne",542,"Polska, województwa; Kategorie dróg",282
+"243",665,"Przychody z działalności gastronomicznej",846,"Polska, województwa; Rodzaje przychodów z działalności gastronomicznej",282
+"244",666,"Wypadki drogowe",707,"Polska, województwa; Ważniejsze przyczyny wypadków drogowych",282
+"245",677,"Członkowie organizacji kultury fizycznej",294,"Polska, województwa; Organizacje kultury fizycznej",282
+"246",679,"Ćwiczący w organizacjach kultury fizycznej",298,"Polska, województwa; Organizacje kultury fizycznej; Grupa wiekowa do 18 roku życia",282
+"247",682,"Jednostki organizacyjne organizacji kultury fizycznej",294,"Polska, województwa; Organizacje kultury fizycznej",282
+"248",684,"Sędziowie sportowi",299,"Polska, województwa; Wybrane rodzaje sportów",282
+"249",707,"Linie komunikacji miejskiej/gminnych przewozów pasażerskich",759,"Polska, województwa; Linie komunikacji miejskiej",282
+"250",708,"Abonenci radia i telewizji",527,"Polska, województwa; Charakter miejscowości; Rodzaj abonenta",282
+"251",709,"Praca przewozowa przy przewozie pasażerów transportem autobusowym",760,"Polska, województwa; Komunikacja międzymiastowa krajowa",282
+"252",710,"Przewozy pasażerów w ramach gminnych przewozów pasażerskich/komunikacji miejskiej",2,"Polska, województwa",282
+"253",711,"Przewozy pasażerów transportem autobusowym",760,"Polska, województwa; Komunikacja międzymiastowa krajowa",282
+"254",712,"Tabor komunikacji miejskiej/gminnych przewozów pasażerskich",763,"Polska, województwa; Rodzaj taboru",282
+"255",729,"Ratownicy medyczni",2,"Polska, województwa",282
+"256",730,"Izby przyjęć",2,"Polska, województwa",282
+"257",731,"Zespoły ratownictwa medycznego",2,"Polska, województwa",282
+"258",732,"Lotnicze zespoły ratownictwa medycznego",2,"Polska, województwa",282
+"259",733,"Szpitalne oddziały ratunkowe",2,"Polska, województwa",282
+"260",734,"Porady ambulatoryjne",156,"Polska, województwa; Charakter miejscowości",282
+"261",735,"Specjalistyczne porady stomatologiczne",157,"Polska, województwa, powiaty; Charakter miejscowości; Płeć",282
+"262",736,"Specjalistyczne porady lekarskie",157,"Polska, województwa, powiaty; Charakter miejscowości; Płeć",282
+"263",737,"Porady lekarskie w podstawowej opiece zdrowotnej",157,"Polska, województwa, powiaty; Charakter miejscowości; Płeć",282
+"264",738,"Osoby, którym udzielono świadczenia zdrowotnego w miejscu zdarzenia",2,"Polska, województwa",282
+"265",739,"Przychodnie",155,"Polska, województwa, powiaty; Charakter miejscowości",282
+"266",740,"Praktyki stomatologiczne",155,"Polska, województwa, powiaty; Charakter miejscowości",282
+"267",741,"Praktyki lekarskie",155,"Polska, województwa, powiaty; Charakter miejscowości",282
+"268",742,"Podmioty ambulatoryjne (przychodnie i praktyki)",155,"Polska, województwa, powiaty; Charakter miejscowości",282
+"269",743,"Wyjazdy zespołów ratownictwa medycznego na miejsce zdarzenia",2,"Polska, województwa",282
+"270",744,"Łóżka w zakładach lecznictwa uzdrowiskowego",202,"Polska, województwa; Rodzaje zakładów lecznictwa uzdrowiskowego - stacjonarne",282
+"271",745,"Zakłady lecznictwa uzdrowiskowego",201,"Polska, województwa; Rodzaje zakładów lecznictwa uzdrowiskowego",282
+"272",746,"Zabiegi lecznicze",316,"Polska, województwa; Rodzaje zabiegów leczniczych",282
+"273",747,"Księgozbiór",541,"Polska, województwa; Rodzaje podmiotów kultury 4; Kategorie zbiorów bibliotecznych",282
+"274",748,"Instruktorzy amatorskiego ruchu artystycznego",523,"Polska, województwa; Charakter miejscowości; Rodzaje podmiotów kultury 3",282
+"275",749,"Instruktorzy/animatorzy",518,"Polska, województwa; Charakter miejscowości; Rodzaje podmiotów kultury 3; Płeć - Kobiety",282
+"276",750,"Kuracjusze stacjonarni",197,"Polska, województwa; Rodzaje zakładów lecznictwa uzdrowiskowego - stacjonarne; Płeć",282
+"277",751,"Kuracjusze ambulatoryjni",195,"Polska, województwa; Rodzaje zakładów lecznictwa uzdrowiskowego; Płeć",282
+"278",752,"Punkty apteczne",155,"Polska, województwa, powiaty; Charakter miejscowości",282
+"279",753,"Liczba ludności przypadająca na aptekę ogólnodostępną / punkt apteczny",155,"Polska, województwa, powiaty; Charakter miejscowości",282
+"280",754,"Apteki ogólnodostępne",155,"Polska, województwa, powiaty; Charakter miejscowości",282
+"281",755,"Technicy farmaceutyczni pracujący w aptekach i punktach aptecznych",157,"Polska, województwa, powiaty; Charakter miejscowości; Płeć",282
+"282",756,"Farmaceuci pracujący w aptekach i w punktach aptecznych",157,"Polska, województwa, powiaty; Charakter miejscowości; Płeć",282
+"283",758,"Relacja osób niepracujących do pracujących - BAEL (do 2020 r.)",221,"Polska, województwa; Charakter miejscowości; Płeć; Grupy wieku",282
+"284",764,"Powierzchnia rezerwatów przyrody",120,"Polska, województwa; Rodzaje rezerwatów przyrody; Kategorie użytkowania gruntów - lasy i użytki rolne",282
+"285",765,"Powierzchnia parków narodowych",123,"Polska, województwa; Parki narodowe; Kategorie użytkowania gruntów - parki narodowe",282
+"286",766,"Powierzchnia parków krajobrazowych",126,"Polska, województwa; Parki krajobrazowe; Kategorie użytkowania gruntów - lasy, użytki rolne i wody",282
+"287",767,"Powierzchnia obszarów chronionego krajobrazu",129,"Polska, województwa; Obszary chronionego krajobrazu; Kategorie użytkowania gruntów - lasy, użytki rolne i wody",282
+"288",768,"Powierzchnia trzebieży",183,"Polska, województwa; Formy własności leśnej",282
+"289",769,"Powierzchnia obszarów specjalnej ochrony ptaków (OSO)",2,"Polska, województwa",282
+"290",770,"Powierzchnia ogrodów botanicznych",2,"Polska, województwa",282
+"291",771,"Powierzchnia ogrodów zoologicznych",2,"Polska, województwa",282
+"292",772,"Wielkość komunalnych oczyszczalni ścieków",2,"Polska, województwa",282
+"293",773,"Osady z oczyszczalni ścieków przemysłowych i komunalnych wykorzystane z dotychczas składowanych",2,"Polska, województwa",282
+"294",774,"Osady z oczyszczalni ścieków przemysłowych i komunalnych dotychczas składowane",2,"Polska, województwa",282
+"295",775,"Powierzchnia napełnianych stawów rybnych",2,"Polska, województwa",282
+"296",777,"Placówki pocztowe",507,"Polska, województwa; Rodzaj operatora pocztowego",282
+"297",778,"Liczba ludności przypadająca na 1 placówkę pocztową",507,"Polska, województwa; Rodzaj operatora pocztowego",282
+"298",786,"Pozyskanie drewna",187,"Polska, województwa; Formy własności leśnej; Sortymenty drewna bez karpiny",282
+"299",787,"Pozyskanie drewna (grubizny)",2,"Polska, województwa",282
+"300",788,"Pozyskanie drewna (grubizny) z zadrzewień",185,"Polska, województwa; Sortymenty drewna",282
+"301",790,"Dzieci w zniesionych separacjach",372,"Polska, województwa, powiaty; Charakter miejscowości; Typ rodziny; Wiek dzieci",282
+"302",791,"Dzieci z rozwiedzionych małżeństw",372,"Polska, województwa, powiaty; Charakter miejscowości; Typ rodziny; Wiek dzieci",282
+"303",792,"Dzieci z separowanych małżeństw pozostające na utrzymaniu",372,"Polska, województwa, powiaty; Charakter miejscowości; Typ rodziny; Wiek dzieci",282
+"304",793,"Małżeństwa wyznaniowe",354,"Polska, województwa, powiaty; Charakter miejscowości; Kościół lub związek wyznaniowy",282
+"305",794,"Mediana wieku nowożeńca",410,"Polska, województwa, powiaty; Charakter miejscowości; Kobiety, mężczyźni; Stan cywilny",282
+"306",795,"Mediana wieku rodzenia dziecka",375,"Polska, województwa, powiaty; Charakter miejscowości; Kolejność urodzenia",282
+"307",796,"Mediana wieku w momencie rozwodu",444,"Polska, województwa; Charakter miejscowości; Kobiety, mężczyźni",282
+"308",797,"Mediana wieku w momencie wniesienia powództwa",444,"Polska, województwa; Charakter miejscowości; Kobiety, mężczyźni",282
+"309",798,"Odsetek małżeństw pierwszych",355,"Polska, województwa; Charakter miejscowości; Płeć",282
+"310",799,"Odsetek urodzeń martwych",156,"Polska, województwa; Charakter miejscowości",282
+"311",800,"Odsetek urodzeń żywych",376,"Polska, województwa, powiaty; Charakter miejscowości; Kolejność urodzenia; Rodzaj związku",282
+"312",801,"Odsetek urodzeń żywych małżeńskich",155,"Polska, województwa, powiaty; Charakter miejscowości",282
+"313",802,"Odsetek urodzeń żywych pozamałżeńskich",155,"Polska, województwa, powiaty; Charakter miejscowości",282
+"314",803,"Porody",379,"Polska, województwa; Charakter miejscowości; Wielorakość porodu",282
+"315",804,"Przeciętna liczba dzieci w zniesionych separacjach",155,"Polska, województwa, powiaty; Charakter miejscowości",282
+"316",805,"Przeciętna liczba dzieci z separowanych małżeństw",155,"Polska, województwa, powiaty; Charakter miejscowości",282
+"317",807,"Separacje zniesione",427,"Polska, województwa, powiaty; Charakter miejscowości; Wykształcenie mężczyzny; Wykształcenie kobiety; Okres trwania małżeństwa - grupy lat",282
+"318",808,"Współczynnik późnych urodzeń martwych",156,"Polska, województwa; Charakter miejscowości",282
+"319",809,"Separacje orzeczone na 100000 ludności",391,"Polska, województwa, powiaty, gminy; Charakter miejscowości",282
+"320",810,"Separacje zniesione na 100000 ludności",391,"Polska, województwa, powiaty, gminy; Charakter miejscowości",282
+"321",811,"Współczynnik umieralności okołoporodowej",156,"Polska, województwa; Charakter miejscowości",282
+"322",812,"Odpady (z wyłączeniem odpadów komunalnych) składowane",245,"Polska, województwa; Obiekty składowania odpadów ",282
+"323",813,"Zakłady składujące odpady (z wyłączeniem odpadów komunalnych)",2,"Polska, województwa",282
+"324",814,"Produkcja sprzedana przemysłu",2,"Polska, województwa",282
+"325",850,"Abonenci telewizji kablowej",671,"Polska, województwa; Rodzaj usług telekomunikacyjnych",282
+"326",851,"Pojazdy drogowe zarejestrowane",741,"Polska, województwa; Rodzaje pojazdów drogowych 2; Wiek pojazdów",282
+"327",853,"Telefoniczne łącza główne",672,"Polska, województwa; Charakter miejscowości; Rodzaj łączy abonenckich",282
+"328",856,"Aparaty telefoniczne ogólnodostępne",674,"Polska, województwa; Charakter miejscowości; Sposób płatności",282
+"329",857,"Abonenci telefonii stacjonarnej",675,"Polska, województwa; Rodzaj użytkownika",282
+"330",862,"Łącza abonenckie",675,"Polska, województwa; Rodzaj użytkownika",282
+"331",866,"Gospodarstwa rolne posiadające użytki rolne",851,"Polska, województwa; Rodzaj użytków rolnych ; Formy własności w badaniach rolniczych",282
+"332",867,"Powierzchnia zasiewów",852,"Polska, województwa; Rodzaj upraw rolnych; Formy własności w badaniach rolniczych",282
+"333",868,"Zbiory ziemiopłodów",852,"Polska, województwa; Rodzaj upraw rolnych; Formy własności w badaniach rolniczych",282
+"334",872,"Skup produktów rolnych",860,"Polska, województwa; Wybrane produkty rolne",282
+"335",876,"Dzieci pod opieką dziennego opiekuna",2,"Polska, województwa",282
+"336",878,"Dzienny opiekun",2,"Polska, województwa",282
+"337",879,"Niania",570,"Polska, województwa; Wiek niań; Płeć",282
+"338",881,"Liczba wypłaconych świadczeń wychowawczych",646,"Polska, województwa; Typ podmiotu otrzymującego świadczenie do 2021 r.",282
+"339",882,"Dzieci, na które wypłacono świadczenia wychowawcze",2,"Polska, województwa",282
+"340",883,"Kwota wypłaconych świadczeń wychowawczych",2,"Polska, województwa",282
+"341",896,"Usługa Internetu stacjonarnego",156,"Polska, województwa; Charakter miejscowości",282
+"342",905,"Liczba ludności przypadająca na 1 sklep",2,"Polska, województwa",282
+"343",906,"Targowiska stałe",2,"Polska, województwa",282
+"344",907,"Targowiska sezonowe",2,"Polska, województwa",282
+"345",908,"Stałe punkty sprzedaży drobnodetalicznej",2,"Polska, województwa",282
+"346",909,"Roczne wpływy z opłaty targowej",2,"Polska, województwa",282
+"347",910,"Sprzedaż z działalności gastronomicznej",847,"Polska, województwa; Rodzaje sprzedaży z działalności gastronomicznej",282
+"348",911,"Przeciętna liczba dzieci z rozwiedzionych małżeństw",155,"Polska, województwa, powiaty; Charakter miejscowości",282
+"349",929,"Rodziny posiadające Kartę Dużej Rodziny",2,"Polska, województwa",282
+"350",932,"Prowadzący rodzinną pieczę zastępczą",609,"Polska, województwa; Formy rodzinnej pieczy zastępczej; Status cywilny prowadzącego rodzinną pieczę zastępczą",282
+"351",934,"Urodzenia żywe małżeńskie",461,"Polska, województwa, powiaty; Charakter miejscowości; Kolejność urodzenia; Okres trwania małżeństwa rodziców; Wiek matki",282
+"352",935,"Urodzenia martwe małżeńskie",462,"Polska, województwa; Charakter miejscowości; Kolejność urodzenia; Wiek matki; Okres trwania małżeństwa rodziców",282
+"353",936,"Powierzchnia targowisk stałych",2,"Polska, województwa",282
+"354",937,"Ilość skupionych produktów leśnych",667,"Polska, województwa; Produkty leśne",282
+"355",938,"Wartość skupionych produktów leśnych",667,"Polska, województwa; Produkty leśne",282
+"356",941,"Powierzchnia pożarów lasów",2,"Polska, województwa",282
+"357",942,"Pożary lasów",2,"Polska, województwa",282
+"358",943,"Średnia defoliacja monitorowanych gatunków drzew",668,"Polska, województwa; Grupy rodzajowe drzew",282
+"359",944,"Powierzchnia gruntów leśnych wyłączonych z produkcji leśnej",2,"Polska, województwa",282
+"360",945,"Wolontariusze w zakładach stacjonarnych pomocy społecznej",630,"Polska, województwa; Typ zakładu stacjonarnego pomocy społecznej",282
+"361",946,"Powierzchnia specjalnych obszarów ochrony siedlisk (SOO)",2,"Polska, województwa",282
+"362",948,"Ważniejsze zwierzęta chronione",716,"Polska, województwa; Gatunki zwierząt chronionych",282
+"363",949,"Noworodki martwo urodzone w szpitalach ogólnych",1025,"Polska, województwa; Waga noworodków",282
+"364",950,"Noworodki żywo urodzone w szpitalach ogólnych",1025,"Polska, województwa; Waga noworodków",282
+"365",951,"Inkubatory w szpitalach ogólnych",2,"Polska, województwa",282
+"366",952,"Prognoza urodzeń na lata 2014-2050",2,"Polska, województwa",282
+"367",953,"Prognoza zgonów na lata 2014-2050",2,"Polska, województwa",282
+"368",954,"Prognoza imigracji wewnętrznych na pobyt stały na lata 2014-2050",2,"Polska, województwa",282
+"369",955,"Prognoza emigracji wewnętrznych na pobyt stały na lata 2014-2050",2,"Polska, województwa",282
+"370",956,"Prognoza imigracji zagranicznych na pobyt stały na lata 2014-2050",2,"Polska, województwa",282
+"371",957,"Prognoza emigracji zagranicznych na pobyt stały na lata 2014-2050",2,"Polska, województwa",282
+"372",958,"Oczekiwane trwanie życia w zdrowiu osób w wieku x lat (HLYx)",643,"Polska, województwa; Kobiety, mężczyźni; Wiek do 75 lat - trwanie życia",282
+"373",961,"Przeciętne dalsze trwanie życia osób w wieku x lat (ex)",639,"Polska, województwa; Charakter miejscowości; Kobiety, mężczyźni; Wiek do 75 lat - trwanie życia",282
+"374",967,"Prognoza ludności na lata 2014-2050",634,"Polska, województwa; Płeć; Wiek pojedyncze roczniki do 90 lat i więcej",282
+"375",971,"Zmarli w szpitalach ogólnych",1024,"Polska, województwa; Wiek pacjentów",282
+"376",976,"Średni czas pobytu w placówkach opieki stacjonarnej",1093,"Polska, województwa; Wybrane placówki stacjonarnej opieki zdrowotnej",282
+"377",977,"Wydane orzeczenia lekarskie",2,"Polska, województwa",282
+"378",978,"Badania profilaktyczne w służbie medycyny pracy",927,"Polska, województwa; Rodzaje badań profilaktycznych",282
+"379",979,"Praktyki lekarzy medycyny pracy",2,"Polska, województwa",282
+"380",980,"Jednostki podstawowe służby medycyny pracy",2,"Polska, województwa",282
+"381",981,"Lekarze uprawnieni w służbie medycyny pracy",2,"Polska, województwa",282
+"382",982,"Wyprodukowana liczba jednostek świeżo mrożonego osocza (FFP)",2,"Polska, województwa",282
+"383",983,"Donacje pobranej krwi pełnej",2,"Polska, województwa",282
+"384",984,"Krwiodawcy",631,"Polska, województwa; Dawcy krwi",282
+"385",985,"Oddziały terenowe krwiodawstwa",2,"Polska, województwa",282
+"386",986,"Centra krwiodawstwa i krwiolecznictwa",2,"Polska, województwa",282
+"387",987,"Pracownicy medyczni posiadający prawo wykonywania zawodu medycznego",1004,"Polska, województwa; Płeć; Typy pracowników medycznych; Wiek pracowników medycznych",282
+"388",989,"Praktyki zarejestrowane w izbach lekarskich i pielęgniarskich",929,"Polska, województwa; Praktyki zawodowe w działalności leczniczej",282
+"389",990,"Lekarze specjaliści",1003,"Polska, województwa; Specjalizacje lekarzy",282
+"390",992,"Lekarze dentyści ze specjalizacją",928,"Polska, województwa; Specjalizacje lekarzy dentystów",282
+"391",998,"Izby",156,"Polska, województwa; Charakter miejscowości",282
+"392",999,"Przeciętna liczba izb w mieszkaniu",156,"Polska, województwa; Charakter miejscowości",282
+"393",1000,"Przeciętna liczba osób w mieszkaniu",156,"Polska, województwa; Charakter miejscowości",282
+"394",1001,"Przeciętna powierzchnia użytkowa mieszkania",156,"Polska, województwa; Charakter miejscowości",282
+"395",1002,"Zużycie energii elektrycznej w gospodarstwach domowych",156,"Polska, województwa; Charakter miejscowości",282
+"396",1003,"Odbiorcy energii elektrycznej – gospodarstwa domowe",156,"Polska, województwa; Charakter miejscowości",282
+"397",1004,"Zużycie gazu z sieci",661,"Polska, województwa; Charakter miejscowości; Rodzaj gazu",282
+"398",1005,"Ludność korzystająca z sieci wodociągowej",156,"Polska, województwa; Charakter miejscowości",282
+"399",1006,"Ludność korzystająca z sieci kanalizacyjnej",156,"Polska, województwa; Charakter miejscowości",282
+"400",1007,"Ludność korzystająca z sieci gazowej",156,"Polska, województwa; Charakter miejscowości",282
+"401",1012,"Pracujący w zakładach stacjonarnych pomocy społecznej, u których zdiagnozowano COVID-19",630,"Polska, województwa; Typ zakładu stacjonarnego pomocy społecznej",282
+"402",1014,"Zużycie wody z wodociągów przez gospodarstwa domowe",156,"Polska, województwa; Charakter miejscowości",282
+"403",1015,"Ścieki odprowadzone z gospodarstw domowych",2,"Polska, województwa",282
+"404",1016,"Hospitalizowani bez międzyoddziałowego ruchu chorych",2,"Polska, województwa",282
+"405",1017,"Pacjenci stacjonarni",1037,"Polska, województwa; Rodzaje placówek stacjonarnej opieki zdrowotnej",282
+"406",1018,"Łóżka w stacjonarnych zakładach leczniczych",1037,"Polska, województwa; Rodzaje placówek stacjonarnej opieki zdrowotnej",282
+"407",1046,"Nieczystości ciekłe odebrane bytowe",156,"Polska, województwa; Charakter miejscowości",282
+"408",1047,"Korzystający z placówek wsparcia dziennego (w ciągu roku)",601,"Polska, województwa; Typ placówki wsparcia dziennego",282
+"409",1048,"Dzieci przebywające w placówkach opieki na dziećmi do lat 3 (w ciągu roku)",722,"Polska, województwa; Typ placówki opieki",282
+"410",1049,"Mieszkańcy placówek stacjonarnych pomocy społecznej (w ciągu roku)",630,"Polska, województwa; Typ zakładu stacjonarnego pomocy społecznej",282
+"411",1066,"Zachorowania na nowotwory złośliwe",1053,"Polska, województwa; Umiejscowienie nowotworu",282
+"412",1067,"Zachorowania na niektóre choroby zakaźne i zatrucia",1050,"Polska, województwa; Choroby zakaźne i zatrucia",282
+"413",1068,"Zachorowania na gruźlicę płuc",2,"Polska, województwa",282
+"414",1069,"Zachorowania na choroby weneryczne",2,"Polska, województwa",282
+"415",1072,"Hospitalizowani z międzyoddziałowym ruchem chorych",1028,"Polska, województwa; Wiek pacjentów; Oddziały szpitalne",282
+"416",1096,"Powierzchnia gruntów w gospodarstwach rolnych",851,"Polska, województwa; Rodzaj użytków rolnych ; Formy własności w badaniach rolniczych",282
+"417",1097,"Średnia powierzchnia gruntów w gospodarstwie",851,"Polska, województwa; Rodzaj użytków rolnych ; Formy własności w badaniach rolniczych",282
+"418",1100,"Plony upraw rolnych",852,"Polska, województwa; Rodzaj upraw rolnych; Formy własności w badaniach rolniczych",282
+"419",1110,"Zbiory z łąk trwałych",853,"Polska, województwa; Użytkowanie łąk trwałych ; Formy własności w badaniach rolniczych",282
+"420",1111,"Plony z łąk trwałych",853,"Polska, województwa; Użytkowanie łąk trwałych ; Formy własności w badaniach rolniczych",282
+"421",1112,"Zbiory owoców",850,"Polska, województwa; Rodzaj upraw ogrodniczych ; Formy własności w badaniach rolniczych",282
+"422",1113,"Produkcja zwierzęca",937,"Polska, województwa; Produkcja zwierzęca - mleko, jaja, wełna, miód",282
+"423",1123,"Użytkownicy gospodarstw rolnych stosujący środki ochrony roślin",2,"Polska, województwa",282
+"424",1129,"Liczba ekologicznych gospodarstw rolnych",2,"Polska, województwa",282
+"425",1130,"Powierzchnia ekologicznych użytków rolnych",2,"Polska, województwa",282
+"426",1131,"Średnia powierzchnia ekologicznych użytków rolnych w gospodarstwie rolnym",2,"Polska, województwa",282
+"427",1143,"Leczeni dziennie w szpitalach ogólnych",1022,"Polska, województwa; Oddziały szpitalne",282
+"428",1144,"Miejsca dzienne w szpitalach ogólnych",2,"Polska, województwa",282
+"429",1145,"Stanowiska porodowe w szpitalach ogólnych",1027,"Polska, województwa; Stanowiska porodowe",282
+"430",1146,"Przyjęte porody w szpitalach ogólnych",1026,"Polska, województwa; Rodzaje porodów",282
+"431",1152,"Wytworzone odpady komunalne",872,"Polska, województwa; Wytworzone odpady komunalne",282
+"432",1153,"Przetwarzanie odpadów komunalnych",868,"Polska, województwa; Przetwarzanie odpadów komunalnych",282
+"433",1162,"Pracownicy medyczni pracujący bezpośrednio z pacjentem",1006,"Polska, województwa; Rodzaje pracowników medycznych",282
+"434",1164,"Sprzedaż detaliczna w przedsiębiorstwach handlowych",2,"Polska, województwa",282
+"435",1169,"Pojazdy drogowe zarejestrowane (stan na 31 grudnia)",1105,"Polska, województwa; Pojazdy zarejestrowane; Rodzaje pojazdów drogowych",282
+"436",1170,"Samochody osobowe",975,"Polska, województwa; DMC pojazdów",282
+"437",1171,"Samochody ciężarowe",977,"Polska, województwa; Ładowność pojazdów ciężarowych",282
+"438",1177,"Średni czas pobytu w szpitalu ogólnym",1022,"Polska, województwa; Oddziały szpitalne",282
+"439",1178,"Łóżka w szpitalach ogólnych",2,"Polska, województwa",282
+"440",1179,"Wydatki budżetów województw",1064,"Polska, województwa; Rodzaje wydatków budżetów JST",282
+"441",1181,"Wydatki budżetów miast na prawach powiatu",1120,"Polska, województwa, miasta na prawach powiatu; Rodzaje wydatków budżetów JST",282
+"442",1184,"Wynik budżetów województw",2,"Polska, województwa",282
+"443",1186,"Wynik budżetów miast na prawach powiatu",1124,"Polska, województwa, miasta na prawach powiatu",282
+"444",1190,"Dochody budżetów miast na prawach powiatu",1122,"Polska, województwa, miasta na prawach powiatu; Dochody budżetów JST według działów",282
+"445",1192,"Dochody budżetów województw",1046,"Polska, województwa; Dochody budżetów JST według działów",282
+"446",1193,"Zwiedzający galerie sztuki",189,"Polska, województwa; Rodzaje wystaw w galeriach sztuki",282
+"447",1197,"Liczba wypadków drogowych",143,"Polska, województwa, powiaty",282
+"448",1202,"Turyści zagraniczni korzystający z turystycznych obiektów noclegowych",1021,"Polska, województwa; Wybrany kraj zamieszkania turystów zagranicznych",282
+"449",1203,"Udzielone noclegi turystom zagranicznym w turystycznych obiektach noclegowych",1021,"Polska, województwa; Wybrany kraj zamieszkania turystów zagranicznych",282
+"450",1206,"Aktywa obrotowe przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"451",1208,"Aktywa trwałe przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"452",1209,"Długoterminowe rozliczenia międzyokresowe przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"453",1210,"Kapitał (fundusz) podstawowy przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"454",1211,"Kapitał (fundusz) podstawowy przedsiębiorstw niefinansowych z kapitałem zagranicznym",706,"Polska, województwa; Klasa wielkości (mikro/pow.10 pracujących)",282
+"455",1212,"Kapitał (fundusz) własny przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"456",1213,"Kapitał (fundusz) z aktualizacji wyceny przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"457",1214,"Kapitał (fundusz) zapasowy przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"458",1217,"Krótkoterminowe rozliczenia międzyokresowe przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"459",1221,"Liczba przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób",1039,"Polska, województwa; Rodzaj ewidencji księgowej (wybrane pozycje)",282
+"460",1222,"Liczba przedsiębiorstw niefinansowych z kapitałem zagranicznym",706,"Polska, województwa; Klasa wielkości (mikro/pow.10 pracujących)",282
+"461",1224,"Liczba pracujących w przedsiębiorstwach niefinansowych o liczbie pracujących 10 i więcej osób",1039,"Polska, województwa; Rodzaj ewidencji księgowej (wybrane pozycje)",282
+"462",1226,"Pozostałe kapitały (fundusze) rezerwowe przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"463",1236,"Zaliczki na podatek dochodowy przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących podatkową księgę przychodów i rozchodów",2,"Polska, województwa",282
+"464",1239,"Zapasy przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób",1039,"Polska, województwa; Rodzaj ewidencji księgowej (wybrane pozycje)",282
+"465",1248,"Koszty finansowe przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"466",1251,"Koszty ogółem (koszty uzyskania przychodów z całokształtu działalności) przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób",1039,"Polska, województwa; Rodzaj ewidencji księgowej (wybrane pozycje)",282
+"467",1257,"Obowiązkowe obciążenia wyniku finansowego brutto przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"468",1260,"Pozostałe koszty operacyjne przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"469",1263,"Pozostałe przychody operacyjne przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"470",1266,"Przychody finansowe przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"471",1269,"Przychody netto ze sprzedaży produktów przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"472",1272,"Przychody netto ze sprzedaży towarów i materiałów przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"473",1275,"Przychody ogółem (przychody z całokształtu działalności) przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób",1039,"Polska, województwa; Rodzaj ewidencji księgowej (wybrane pozycje)",282
+"474",1279,"Strata netto przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"475",1282,"Strata brutto przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"476",1290,"Wskaźnik płynności finansowej I stopnia przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"477",1293,"Wskaźnik płynności finansowej II stopnia przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"478",1296,"Wskaźnik płynności finansowej III stopnia przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"479",1299,"Wskaźnik poziomu kosztów przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"480",1301,"Wskaźnik rentowności aktywów przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"481",1302,"Wskaźnik rentowności aktywów obrotowych przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"482",1303,"Wskaźnik rentowności aktywów trwałych przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"483",1304,"Wskaźnik rentowności kapitału własnego przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"484",1307,"Wskaźnik rentowności obrotu brutto przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"485",1311,"Wskaźnik rentowności obrotu netto przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"486",1314,"Wskaźnik rentowności sprzedaży brutto przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"487",1317,"Wynik finansowy brutto przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"488",1321,"Wynik finansowy na działalności gospodarczej przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"489",1324,"Wynik finansowy netto przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"490",1327,"Wynik finansowy ze sprzedaży produktów, towarów i materiałów przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"491",1330,"Wynik zdarzeń nadzwyczajnych przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"492",1333,"Zysk brutto przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"493",1337,"Zysk netto przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"494",1338,"Inwestycje długoterminowe przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"495",1339,"Inwestycje krótkoterminowe przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"496",1348,"Należności długoterminowe przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"497",1349,"Należności krótkoterminowe przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"498",1353,"Odpisy z zysku netto w ciągu roku obrotowego (wielkość ujemna) przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"499",1355,"Rezerwy na zobowiązania przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"500",1356,"Rozliczenia międzyokresowe przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"501",1357,"Rzeczowe aktywa trwałe przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"502",1358,"Wartości niematerialne i prawne przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"503",1361,"Zobowiązania długoterminowe przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"504",1364,"Zobowiązania i rezerwy na zobowiązania przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"505",1365,"Zobowiązania krótkoterminowe przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"506",1367,"Zysk (strata) z lat ubiegłych przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"507",1369,"Cmentarze",2,"Polska, województwa",282
+"508",1370,"Długość żywopłotów formowanych i nieformowanych",2,"Polska, województwa",282
+"509",1371,"Nasadzenia drzew",2,"Polska, województwa",282
+"510",1372,"Nasadzenia krzewów",2,"Polska, województwa",282
+"511",1373,"Parki spacerowo-wypoczynkowe",2,"Polska, województwa",282
+"512",1374,"Powierzchnia cmentarzy",2,"Polska, województwa",282
+"513",1375,"Powierzchnia parków spacerowo-wypoczynkowych",2,"Polska, województwa",282
+"514",1376,"Powierzchnia pozostałych terenów zieleni",2,"Polska, województwa",282
+"515",1377,"Powierzchnia terenów zieleni osiedlowej",2,"Polska, województwa",282
+"516",1378,"Powierzchnia zieleni ulicznej",2,"Polska, województwa",282
+"517",1379,"Powierzchnia zieleńców",2,"Polska, województwa",282
+"518",1380,"Pozostałe tereny zieleni",2,"Polska, województwa",282
+"519",1381,"Ubytki drzew",2,"Polska, województwa",282
+"520",1382,"Ubytki krzewów",2,"Polska, województwa",282
+"521",1383,"Zieleńce",2,"Polska, województwa",282
+"522",1384,"Pomniki przyrody",2,"Polska, województwa",282
+"523",1385,"Powierzchnia stanowisk dokumentacyjnych",2,"Polska, województwa",282
+"524",1386,"Powierzchnia użytków ekologicznych",2,"Polska, województwa",282
+"525",1387,"Powierzchnia zespołów przyrodniczo-krajobrazowych",2,"Polska, województwa",282
+"526",1388,"Stanowiska dokumentacyjne",2,"Polska, województwa",282
+"527",1389,"Użytki ekologiczne",2,"Polska, województwa",282
+"528",1390,"Zespoły przyrodniczo-krajobrazowe",2,"Polska, województwa",282
+"529",1404,"Nieczystości ciekłe przekazane do stacji zlewnej",1098,"Polska, województwa; Charakter miejscowości; Nieczystości ciekłe przekazane do stacji zlewnej ",282
+"530",1405,"Stacje zlewne",156,"Polska, województwa; Charakter miejscowości",282
+"531",1409,"Stacjonarne zakłady lecznicze",1037,"Polska, województwa; Rodzaje placówek stacjonarnej opieki zdrowotnej",282
+"532",1410,"Wypisani ze szpitala ogólnego",2,"Polska, województwa",282
+"533",1426,"Kapitał (fundusz) podstawowy przedsiębiorstw niefinansowych z kapitałem zagranicznym - kapitał krajowy ogółem",706,"Polska, województwa; Klasa wielkości (mikro/pow.10 pracujących)",282
+"534",1427,"Kapitał (fundusz) podstawowy przedsiębiorstw niefinansowych z kapitałem zagranicznym - kapitał krajowy osób fizycznych",706,"Polska, województwa; Klasa wielkości (mikro/pow.10 pracujących)",282
+"535",1428,"Kapitał (fundusz) podstawowy przedsiębiorstw niefinansowych z kapitałem zagranicznym - kapitał krajowy osób prawnych",706,"Polska, województwa; Klasa wielkości (mikro/pow.10 pracujących)",282
+"536",1429,"Kapitał (fundusz) podstawowy przedsiębiorstw niefinansowych z kapitałem zagranicznym - kapitał zagraniczny ogółem",706,"Polska, województwa; Klasa wielkości (mikro/pow.10 pracujących)",282
+"537",1430,"Kapitał (fundusz) podstawowy przedsiębiorstw niefinansowych z kapitałem zagranicznym - kapitał rozproszony",706,"Polska, województwa; Klasa wielkości (mikro/pow.10 pracujących)",282
+"538",1436,"Prognoza urodzeń na lata 2008-2035",2,"Polska, województwa",282
+"539",1437,"Prognoza zgonów na lata 2008-2035",2,"Polska, województwa",282
+"540",1438,"Prognoza imigracji wewnętrznych na pobyt stały na lata 2008-2035",2,"Polska, województwa",282
+"541",1439,"Prognoza emigracji wewnętrznych na pobyt stały na lata 2008-2035",2,"Polska, województwa",282
+"542",1440,"Prognoza imigracji zagranicznych na pobyt stały na lata 2008-2035",2,"Polska, województwa",282
+"543",1441,"Prognoza emigracji zagranicznych na pobyt stały na lata 2008-2035",2,"Polska, województwa",282
+"544",1442,"Prognoza ludności na lata 2008-2035",634,"Polska, województwa; Płeć; Wiek pojedyncze roczniki do 90 lat i więcej",282
+"545",1443,"Prognoza urodzeń na lata 2003-2030",2,"Polska, województwa",282
+"546",1444,"Prognoza zgonów na lata 2003-2030",2,"Polska, województwa",282
+"547",1445,"Prognoza imigracji wewnętrznych na pobyt stały na lata 2003-2030",2,"Polska, województwa",282
+"548",1446,"Prognoza emigracji wewnętrznych na pobyt stały na lata 2003-2030",2,"Polska, województwa",282
+"549",1447,"Prognoza imigracji zagranicznych na pobyt stały na lata 2003-2030",2,"Polska, województwa",282
+"550",1448,"Prognoza emigracji zagranicznych na pobyt stały na lata 2003-2030",2,"Polska, województwa",282
+"551",1449,"Prognoza ludności na lata 2003-2030",635,"Polska, województwa; Płeć; Pięcioletnie grupy wieku do 90 lat i więcej",282
+"552",1470,"Udziały (akcje) własne przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"553",1471,"Wskaźnik ukończenia edukacji",1191,"Polska, województwa; Typ ukończonej szkoły; Płeć; Rodzaj wskaźnika ukończenia edukacji",282
+"554",1473,"Osoby, które przystąpiły do egzaminu maturalnego",1393,"Polska, województwa; Płeć; Status zdającego",282
+"555",1475,"Średnie wyniki uczniów na egzaminie ósmoklasisty",1257,"Polska, województwa; Przedmiot egzaminacyjny ósmoklasisty",282
+"556",1488,"Należne wpłaty na kapitał podstawowy przedsiębiorstw niefinansowych o liczbie pracujących 10 i więcej osób, prowadzących księgi rachunkowe",2,"Polska, województwa",282
+"557",1492,"Odsetek osób zamawiających lub kupujących przez Internet towary lub usługi do użytku prywatnego (w ciągu ostatnich 3 miesięcy)",2,"Polska, województwa",282
+"558",1520,"Relacja osób niepracujących do pracujących - BAEL",1226,"Polska, województwa; Płeć; Charakter miejscowości; Grupy wieku 5",282
+"559",1526,"Prognoza liczby gospodarstw domowych na lata 2016-2050",1228,"Polska, województwa; Charakter miejscowości; Liczba dorosłych; Liczba dzieci",282
+"560",1527,"Zmieszane odpady komunalne",1230,"Polska, województwa; Zmieszane odpady komunalne wg źródeł pochodzenia ",282
+"561",1528,"Odpady komunalne zebrane (odebrane) selektywnie",1229,"Polska, województwa; Odpady komunalne zebrane (odebrane) selektywnie wg źródeł pochodzenia ; Odpady komunalne zebrane (odebrane) selektywnie wg rodzajów odpadów",282
+"562",1530,"Saldo migracji na pobyt stały",1193,"Polska, województwa, powiaty, gminy; Charakter miejscowości; Płeć",282
+"563",1602,"Współczynnik nadmiarowych zgonów",1325,"Polska, województwa; Płeć; Grupy wieku osób zmarłych; Miesiąc zgonu dla tygodni ISO8601",282
+"564",1629,"Odsetek osób korzystających z Internetu",1347,"Polska, województwa; Cele korzystania z Internetu",282
+"565",1646,"Linie światłowodowe",2,"Polska, województwa",282
